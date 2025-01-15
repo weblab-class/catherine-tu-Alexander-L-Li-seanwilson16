@@ -1,0 +1,55 @@
+/* importing the josefin sans font */
+@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
+
+/* styling for the background */
+body {
+  margin: 0;
+  font-family: "Josefin Sans", sans-serif;
+  background-size: cover; /* Makes the image cover the entire background */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("../assets/lofi-background-purple-blue.jpg");
+}
+
+/* container to center content */
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  text-align: center;
+  color: white; /* Makes text visible on dark backgrounds */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adds shadow for better readability */
+}
+
+/* title styling */
+.homepage-title {
+  font-family: "Cabin", sans-serif;
+  font-size: 200px;
+  /* margin-bottom: 6rem; */
+}
+
+/* Button container for layout */
+.button-container {
+  display: flex;
+  gap: 1rem; /* Spacing between buttons */
+}
+
+/* Button styling */
+.homepage-button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.homepage-button:hover {
+  background-color: #333;
+  color: white;
+}
