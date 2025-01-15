@@ -5,10 +5,11 @@
 /* styling for the background */
 body {
   margin: 0;
-  font-family: "Josefin Sans", sans-serif;
   background-size: cover; /* Makes the image cover the entire background */
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
+  overflow-y: hidden; /* no scrolling */
   background-image: url("src/assets/lofi-background-purple-blue.jpg");
 }
 
@@ -18,7 +19,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
   text-align: center;
   color: white; /* Makes text visible on dark backgrounds */
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adds shadow for better readability */
@@ -28,26 +29,29 @@ body {
 .homepage-title {
   font-family: "Cabin", sans-serif;
   font-size: 200px;
-  /* margin-bottom: 6rem; */
+  margin-bottom: 1rem;
 }
 
 /* Button container for layout */
 .button-container {
-  margin-top: -6rem;
+  margin-top: -1rem;
   display: flex;
-  gap: 1rem; /* Spacing between buttons */
+  gap: 2rem; /* Spacing between buttons */
 }
 
 /* Button styling */
 .homepage-button {
   padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.8); /* White outline */
+  font-family: "Josefin Sans", sans-serif;
+  font-size: 1.3rem;
+  border: 3px solid rgba(255, 255, 255, 0.8); /* White outline */
   background-color: rgba(223, 226, 254, 0.5); /* Transparent #DFE2FE */
   color: white; /* White text */
-  border-radius: 5px;
+  border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease; /* Smooth transition effect */
+  text-align: center;
+  min-width: 15rem;
 }
 
 .homepage-button:hover {
@@ -55,4 +59,14 @@ body {
   /* background-color: #333; */
   border: 2px solid white;
   color: white;
+}
+
+.homepage-subtitle {
+  font-family: "Josefin Sans", sans-serif; /* Matches the main font */
+  font-size: 1rem; /* Adjust size as needed */
+  font-style: italic; /* Makes the text italic */
+  margin-top: -3rem; /* Optional: Adjust spacing above the subtitle */
+  margin-bottom: 2rem; /* Adds spacing below the subtitle */
+  color: rgba(255, 255, 255, 0.8); /* Slightly lighter color than the main title */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Subtle shadow for readability */
 }

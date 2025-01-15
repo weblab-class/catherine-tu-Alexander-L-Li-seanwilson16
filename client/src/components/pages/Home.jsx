@@ -3,6 +3,7 @@ import { GoogleLogin, googleLogout } from "@react-oauth/google";
 
 import "../../utilities.css";
 import "./Home.css";
+import PlayPauseHome from "../modules/PlayPauseHome";
 import { UserContext } from "../App";
 
 const Home = () => {
@@ -24,6 +25,8 @@ const Home = () => {
       <div className="body" />
       <div className="homepage-container">
         <h1 className="homepage-title">chilldeck</h1>
+        <p className="homepage-subtitle">made by chill people for chill people</p>
+        <PlayPauseHome />
         <div className="button-container">
           <button className="homepage-button">log in to dj</button>
           <button className="homepage-button">tutorial</button>
