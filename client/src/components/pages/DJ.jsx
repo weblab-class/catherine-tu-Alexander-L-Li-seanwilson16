@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 
-const Profile = () => {
+const DJ = () => {
   return (
     <div>
-      <h1>Profile Page</h1>
+      <h1>DJ Page</h1>
       {/* Content for DJ page */}
     </div>
   );
 };
 
-export default Profile;
+export default DJ;

@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
+import { Link } from "react-router-dom";
 
 import "../../utilities.css";
 import "./Home.css";
@@ -30,8 +31,12 @@ const Home = () => {
           <p className="homepage-subtitle">made by chill people for chill people</p>
         </h1>
         <div className="button-container">
-          <button className="homepage-button">log in to dj</button>
-          <button className="homepage-button">tutorial</button>
+          <Link to="/dj" className="homepage-button">
+            log in to dj
+          </Link>
+          <Link to="/dj/tutorial" className="homepage-button">
+            tutorial
+          </Link>
         </div>
       </div>
     </>

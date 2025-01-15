@@ -55,11 +55,12 @@ body::before {
 
 /* Button styling */
 .homepage-button {
+  text-decoration: none;
   padding: 0.8rem 1.5rem;
   font-family: "Josefin Sans", sans-serif;
   font-size: 1.3rem;
   border: 3px solid rgba(255, 255, 255, 0.8); /* White outline */
-  background-color: rgba(223, 226, 254, 0.5); /* transparent #DFE2FE */
+  background-color: rgba(223, 226, 254, 0.3); /* transparent #DFE2FE */
   color: white;
   border-radius: 30px;
   cursor: pointer;
