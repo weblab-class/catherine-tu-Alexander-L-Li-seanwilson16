@@ -44,3 +44,6 @@
     "vite-plugin-svgr": "^2.4.0"
   }
 }
+"scripts": {
+       "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm start\" "
+   }

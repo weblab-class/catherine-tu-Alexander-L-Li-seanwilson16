@@ -37,7 +37,7 @@ body::before {
   color: white; /* Makes text visible on dark backgrounds */
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adds shadow for better readability */
   position: relative; /* allows shifting with transform */
-  transform: translateY(-6rem); /* move content up by relative to screen */
+  transform: translateY(-7rem); /* move content up by relative to screen */
 }
 
 /* title styling */
