@@ -2,7 +2,7 @@
 .button-container {
   margin-top: -1rem;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 2rem; /* Spacing between buttons */
 }
 
@@ -23,7 +23,7 @@
   transition: all 0.3s ease; /* smooth transition effect */
   text-align: center;
   height: 2rem;
-  width: 15rem;
+  width: 24rem;
 }
 
 .homepage-button:hover {

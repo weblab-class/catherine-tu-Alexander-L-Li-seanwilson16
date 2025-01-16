@@ -16,6 +16,15 @@ const HomeButtons = (props) => {
     <div className="button-container">
       {userId ? (
         <>
+          <Link to="/dj" className="homepage-button">
+            start dj
+          </Link>
+          <Link to={`/profile/${props.userId}`} className="homepage-button">
+            my profile
+          </Link>
+          <Link to="/dj/tutorial" className="homepage-button">
+            tutorial
+          </Link>
           <button
             className="homepage-button"
             onClick={() => {
@@ -25,12 +34,6 @@ const HomeButtons = (props) => {
           >
             logout
           </button>
-          <Link to="/dj/tutorial" className="homepage-button">
-            tutorial
-          </Link>
-          <Link to={`/profile/${props.userId}`} className="homepage-button">
-            my profile
-          </Link>
         </>
       ) : (
         <>
