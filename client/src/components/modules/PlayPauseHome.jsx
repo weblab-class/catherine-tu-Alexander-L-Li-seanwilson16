@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import backgroundMusic from "../../assets/chill-guy-music.mp3";
+import backgroundMusic from "../../assets/chill-guy-remix.mp3";
 
 import "./PlayPauseHome.css";
 
