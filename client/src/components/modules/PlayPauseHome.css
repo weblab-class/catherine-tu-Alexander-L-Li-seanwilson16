@@ -4,12 +4,13 @@
 
 .play-pause-button {
   position: fixed; /* Fixed position for staying at the top right corner */
+  font-family: "Josefin Sans", sans-serif;
   top: 1rem; /* Distance from the top of the viewport */
   right: 1rem; /* Distance from the right of the viewport */
   z-index: 1000; /* Ensures it stays above other elements */
   padding: 0.5rem 1rem; /* Adds some space inside the button */
   font-size: 1rem; /* Adjusts text size */
-  border: none; /* Removes the default button border */
+  border: 3px solid rgba(255, 255, 255, 0.8); /* Removes the default button border */
   border-radius: 25px; /* Makes the button have rounded edges */
   background-color: #6a5acd; /* Soft purple background */
   color: white; /* White text for contrast */
