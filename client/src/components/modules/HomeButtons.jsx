@@ -4,25 +4,34 @@ import { Link } from "react-router-dom";
 import { UserContext } from "../App";
 import "./HomeButtons.css";
 
-const HomeButtons = () => {
+const HomeButtons = (props) => {
   const [showGoogleLogin, setShowGoogleLogin] = useState(false); // if user clicks sign in to dj
   const { userId, handleLogin, handleLogout } = useContext(UserContext);
 
-  const handleDJLoginClick = () => {
+  const handleDJLoginClick = (res) => {
     setShowGoogleLogin(true); // show GoogleLogin when user clicks 'log in to dj'
+    const userToken = res.credential;
   };
   return (
     <div className="button-container">
       {userId ? (
-        <button
-          className="homepage-button"
-          onClick={() => {
-            googleLogout();
-            handleLogout();
-          }}
-        >
-          logout
-        </button>
+        <>
+          <button
+            className="homepage-button"
+            onClick={() => {
+              googleLogout();
+              handleLogout();
+            }}
+          >
+            logout
+          </button>
+          <Link to="/dj/tutorial" className="homepage-button">
+            tutorial
+          </Link>
+          <Link to={`/profile/${props.userId}`} className="homepage-button">
+            my profile
+          </Link>
+        </>
       ) : (
         <>
           {!showGoogleLogin ? (
@@ -34,9 +43,6 @@ const HomeButtons = () => {
           )}
         </>
       )}
-      <Link to="/dj/tutorial" className="homepage-button">
-        tutorial
-      </Link>
     </div>
   );
 };
