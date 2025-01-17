@@ -7,28 +7,9 @@ import "../utilities.css";
 
 import { socket } from "../client-socket";
 
-import { get, post } from "../utilities";
+import { get, post, flask_get, flask_post } from "../utilities";
 
 export const UserContext = createContext(null);
-
-const API_BASE_URL = "http://127.0.0.1:5000";
-
-export const get = async (endpoint) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-  return response.json();
-};
-
-export const post = async (endpoint, body) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return response.json();
-};
-/**
- * Define the "App" component
- */
 
 function App() {
   const [userId, setUserId] = useState(undefined);
@@ -36,6 +17,14 @@ function App() {
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
+      if (user._id) {
+        // they are registed in the database, and currently logged in.
+        setUserId(user._id);
+      }
+    });
+
+    // for our python api
+    flask_get("/api/flaskwhoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);

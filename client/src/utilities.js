@@ -61,3 +61,21 @@ export function post(endpoint, params = {}) {
       throw `POST request to ${endpoint} failed with error:\n${error}`;
     });
 }
+
+// FLASK CONTENT BELOW!!
+
+const API_BASE_URL = "http://127.0.0.1:5000";
+
+export const flask_get = async (endpoint) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  return response.json();
+};
+
+export const flask_post = async (endpoint, body) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return response.json();
+};
