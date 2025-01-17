@@ -49,7 +49,7 @@ const App = () => {
 
   return (
     <UserContext.Provider value={authContextValue}>
-      <Outlet />
+      <Outlet context={{ userId: userId }} />
     </UserContext.Provider>
   );
 };

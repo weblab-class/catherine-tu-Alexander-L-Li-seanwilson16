@@ -19,7 +19,7 @@ const HomeButtons = (props) => {
           <Link to="/dj" className="homepage-button">
             start dj
           </Link>
-          <Link to={`/profile/${props.userId}`} className="homepage-button">
+          <Link to={`/profile/${userId}`} className="homepage-button">
             my profile
           </Link>
           <Link to="/dj/tutorial" className="homepage-button">
