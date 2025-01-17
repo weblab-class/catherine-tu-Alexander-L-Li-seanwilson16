@@ -11,11 +11,28 @@ import { get, post } from "../utilities";
 
 export const UserContext = createContext(null);
 
+const API_BASE_URL = "http://127.0.0.1:5000";
+
+export const get = async (endpoint) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  return response.json();
+};
+
+export const post = async (endpoint, body) => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return response.json();
+};
 /**
  * Define the "App" component
  */
-const App = () => {
+
+function App() {
   const [userId, setUserId] = useState(undefined);
+  // const [data, setData] = useState(""); // test: fetching data from flask backend
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
@@ -52,6 +69,6 @@ const App = () => {
       <Outlet context={{ userId: userId }} />
     </UserContext.Provider>
   );
-};
+}
 
 export default App;

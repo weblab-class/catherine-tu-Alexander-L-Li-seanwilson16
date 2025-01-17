@@ -1,19 +1,62 @@
+<<<<<<< HEAD
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory
+=======
+from flask import Flask, jsonify, request, render_template, redirect, url_for, send_from_directory
+from flask_cors import CORS
+>>>>>>> 225f65f93077b1bd4b3abbf91026b77e7c389a9d
 import os
 import torchaudio
 from openunmix import predict
 
 app = Flask(__name__)
+<<<<<<< HEAD
 app.config['UPLOAD_FOLDER'] = 'client/src/assets/uploads/'
 app.config['PROCESSED_FOLDER'] = 'client/src/assets/processed/'
+=======
+CORS(app)
+
+app.config['UPLOAD_FOLDER'] = '../client/src/assets/uploads/'
+app.config['PROCESSED_FOLDER'] = '../client/src/assets/processed/'
+>>>>>>> 225f65f93077b1bd4b3abbf91026b77e7c389a9d
 
 # Ensure folders exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PROCESSED_FOLDER'], exist_ok=True)
 
+<<<<<<< HEAD
 @app.route('/')
 def index():
     return render_template('/client/index.html')
+=======
+
+@app.route('/api/whoami', methods=['GET'])
+def whoami():
+    # Mock user data
+    user = {"_id": "12345", "name": "Test User"}
+    return jsonify(user)
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    token = data.get('token')
+    # Process token and authenticate user
+    user = {"_id": "12345", "name": "Test User"}
+    return jsonify(user)
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    # Logout logic
+    return jsonify({"message": "Logged out"})
+
+@app.route('/api/test', methods=['GET'])
+def test():
+    return jsonify({"message": "Backend and frontend are connected!"})
+
+# @app.route("/dj")
+# def dj():
+#     return "hi"
+    # return render_template('/client/index.html')
+>>>>>>> 225f65f93077b1bd4b3abbf91026b77e7c389a9d
 
 # @app.route('/upload', methods=['POST'])
 # def upload():
