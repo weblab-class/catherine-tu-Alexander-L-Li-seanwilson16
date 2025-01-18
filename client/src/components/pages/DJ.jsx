@@ -145,36 +145,68 @@ const DJ = () => {
     }
 
     // Create new audio elements for each stem
+    const loadedAudios = [];
     for (const stem of STEM_TYPES) {
       const audio = new Audio();
       const stemName = stem === 'melody' ? 'other' : stem;
       audio.src = `/src/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
       audio.volume = trackState.volume / 100;
+      // Start with all stems unmuted
+      audio.muted = false;
       audioElements[stem] = audio;
 
-      // Sync playback of all stems
-      if (stem !== "bass") {
-        audioElements.bass.addEventListener("play", () => {
-          audio.play();
-        });
-        audioElements.bass.addEventListener("pause", () => {
-          audio.pause();
+      // Create a promise for each audio load
+      const loadPromise = new Promise((resolve) => {
+        audio.addEventListener('loadeddata', () => resolve());
+      });
+      loadedAudios.push(loadPromise);
+    }
+
+    // Wait for all audio elements to load
+    await Promise.all(loadedAudios);
+
+    // Set up synchronization between all stems
+    const stems = Object.entries(audioElements);
+    stems.forEach(([stem, audio], index) => {
+      // Listen to timeupdate on the first stem (bass)
+      if (index === 0) {
+        audio.addEventListener('timeupdate', () => {
+          // Sync all other stems to the bass stem's time
+          stems.slice(1).forEach(([_, otherAudio]) => {
+            if (Math.abs(otherAudio.currentTime - audio.currentTime) > 0.1) {
+              otherAudio.currentTime = audio.currentTime;
+            }
+          });
         });
       }
-    }
+    });
 
     // Load the waveform
     if (waveform.current) {
       waveform.current.load(`/src/assets/processed/${track.path}/${track.path}_bass.mp3`);
     }
 
+    // Start with all effects enabled
     setTrackState((prev) => ({
       ...prev,
       name: track.name,
       bpm: track.bpm,
       key: track.key,
       audioElements,
+      effectsEnabled: {
+        bass: true,
+        drums: true,
+        melody: true,
+        vocals: true,
+      }
     }));
+
+    // If currently playing, start playing the new track immediately
+    if (playing[deck]) {
+      Object.values(audioElements).forEach(audio => {
+        audio.play();
+      });
+    }
 
     setDropdownOpen((prev) => ({
       ...prev,
@@ -190,15 +222,17 @@ const DJ = () => {
 
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
-
+      
       if (newPlaying) {
-        Object.entries(trackState.audioElements).forEach(([stem, audio]) => {
-          if (trackState.effectsEnabled[stem]) {
-            audio.play();
-          }
+        // Start playing all stems at the same time
+        Object.values(trackState.audioElements).forEach((audio) => {
+          audio.currentTime = 0; // Reset all to start
+          // Small delay to ensure synchronized start
+          setTimeout(() => audio.play(), 50);
         });
         waveform.current?.play();
       } else {
+        // Pause all stems
         Object.values(trackState.audioElements).forEach((audio) => {
           audio.pause();
         });
@@ -208,6 +242,29 @@ const DJ = () => {
       return {
         ...prev,
         [deck]: newPlaying,
+      };
+    });
+  };
+
+  const toggleEffect = (deck, effect) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const audio = trackState.audioElements[effect];
+
+    if (!audio) return;
+
+    setTrackState((prev) => {
+      const newEffectsEnabled = {
+        ...prev.effectsEnabled,
+        [effect]: !prev.effectsEnabled[effect],
+      };
+
+      // Just toggle mute state, keep playing
+      audio.muted = !newEffectsEnabled[effect];
+
+      return {
+        ...prev,
+        effectsEnabled: newEffectsEnabled,
       };
     });
   };
@@ -224,32 +281,6 @@ const DJ = () => {
       ...prev,
       volume: value,
     }));
-  };
-
-  const toggleEffect = (deck, effect) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const isPlaying = playing[deck];
-
-    setTrackState((prev) => {
-      const newEffectsEnabled = {
-        ...prev.effectsEnabled,
-        [effect]: !prev.effectsEnabled[effect],
-      };
-
-      if (isPlaying) {
-        if (newEffectsEnabled[effect]) {
-          trackState.audioElements[effect]?.play();
-        } else {
-          trackState.audioElements[effect]?.pause();
-        }
-      }
-
-      return {
-        ...prev,
-        effectsEnabled: newEffectsEnabled,
-      };
-    });
   };
 
   return (

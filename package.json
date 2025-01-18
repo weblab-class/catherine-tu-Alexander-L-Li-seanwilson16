@@ -38,12 +38,8 @@
     "react-router-dom": "^6.0.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-<<<<<<< HEAD
     "url-loader": "^4.1.1",
     "wavesurfer.js": "^7.8.16"
-=======
-    "url-loader": "^4.1.1"
->>>>>>> 22dae3b16f6bd4375981ccb782c9d694b2a8464b
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.0.0",

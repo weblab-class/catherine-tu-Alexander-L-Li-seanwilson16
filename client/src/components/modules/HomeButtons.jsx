@@ -11,7 +11,6 @@ const HomeButtons = () => {
 
   const handleDJLoginClick = (res) => {
     setShowGoogleLogin(true); // show GoogleLogin when user clicks 'log in to dj'
-    // const userToken = res.credential;
   };
   return (
     <div className="button-container-home">

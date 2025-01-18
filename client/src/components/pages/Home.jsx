@@ -1,8 +1,6 @@
 import "../../utilities.css";
 import "./Home.css";
 import PlayPauseHome from "../modules/PlayPauseHome";
-import { ThemeContext } from "../context/Context";
-import React, { useContext, useEffect } from "react";
 import HomeButtons from "../modules/HomeButtons";
 
 const Home = () => {

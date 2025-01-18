@@ -13,7 +13,7 @@ import { UserContext, ThemeContext } from "./context/Context";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  const [theme, setTheme] = useState("/src/assets/lofi-background-purple-blue.jpg");
+  const [theme, setTheme] = useState("");
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
