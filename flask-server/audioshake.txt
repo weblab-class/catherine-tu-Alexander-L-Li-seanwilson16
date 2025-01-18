@@ -1,0 +1,40 @@
+curl -X 'POST' \
+ 'https://groovy.audioshake.ai/upload/' \
+ -H 'accept: application/json' \
+ -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6ImNtNXpubHdtaDBrOTl2MzJ6ZW50djZ0eTMiLCJsaWNlbnNlSWQiOiJjbTV6bm04MWIwcG5vMGpwb2FrbzU2bWU0IiwiaWF0IjoxNzM3MDUxNTA1LCJleHAiOjE4OTQ3MzE1MDV9.50K8Vj9RElGjbQXjh3HqdR4_7r8G-I2pvE2yhjPOSeA' \
+ -H 'Content-Type: multipart/form-data' \
+ -F 'file=@/Users/alxli/CS_Projects/Web Lab/ChillDeck/client/src/assets/NCS_On&On.mp3;type=audio/mpeg'
+
+NCS_Fall_to_Light assetId: cm61916sz0m1qjbqu31yea0ea
+Bass: cm619acrm0qeh0jpocnisgbk3
+Drums: cm619axlk0qdj0ipodqoz9flw
+Vocals: cm619b8xe0qei0jpoddw29qif
+Other: cm619bkyh0stw0joqauln58rl
+
+NCS_On&On assetId: cm6191zwf0m1sjbqug6ct9hmj
+Bass: cm619c03m0qdk0ipo5ir8169c
+Drums: cm619fjm80shw0koqflrf7ofe
+Vocals: cm619fv1j0su90joq0lbvcijb
+Other: cm619g57y0qey0jpo0suk4cmo
+
+Model names: bass, drums, vocals, other
+
+curl -X 'POST' \
+  'https://groovy.audioshake.ai/job/' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6ImNtNXpubHdtaDBrOTl2MzJ6ZW50djZ0eTMiLCJsaWNlbnNlSWQiOiJjbTV6bm04MWIwcG5vMGpwb2FrbzU2bWU0IiwiaWF0IjoxNzM3MDUxNTA1LCJleHAiOjE4OTQ3MzE1MDV9.50K8Vj9RElGjbQXjh3HqdR4_7r8G-I2pvE2yhjPOSeA' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "metadata": {
+    "format": "mp3",
+    "name": "other"
+  },
+  "callbackUrl": "http://audiowebhook.com",
+  "assetId": "cm6191zwf0m1sjbqug6ct9hmj"
+}'
+
+
+curl -X 'GET' \
+ 'https://groovy.audioshake.ai/job/cm619g57y0qey0jpo0suk4cmo' \
+ -H 'accept: application/json' \
+ -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRJZCI6ImNtNXpubHdtaDBrOTl2MzJ6ZW50djZ0eTMiLCJsaWNlbnNlSWQiOiJjbTV6bm04MWIwcG5vMGpwb2FrbzU2bWU0IiwiaWF0IjoxNzM3MDUxNTA1LCJleHAiOjE4OTQ3MzE1MDV9.50K8Vj9RElGjbQXjh3HqdR4_7r8G-I2pvE2yhjPOSeA'

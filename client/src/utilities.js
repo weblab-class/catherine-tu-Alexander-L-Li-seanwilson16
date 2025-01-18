@@ -64,11 +64,22 @@ export function post(endpoint, params = {}) {
 
 // FLASK CONTENT BELOW!!
 
-const API_BASE_URL = "http://127.0.0.1:5000";
+const API_BASE_URL = "http://127.0.0.1:5001";
 
-export const flask_get = async (endpoint) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-  return response.json();
+export const flask_get = async (endpoint, params = {}) => {
+  const fullPath = endpoint + "?" + formatParams(params);
+  // Don't throw errors for whoami endpoint since it's optional
+  if (endpoint === "/flaskwhoami") {
+    return fetch(`${API_BASE_URL}${fullPath}`)
+      .then(convertToJSON)
+      .catch(() => ({ user: null })); // Return null user if endpoint fails
+  }
+  return fetch(`${API_BASE_URL}${fullPath}`)
+    .then(convertToJSON)
+    .catch((error) => {
+      // give a useful error message
+      throw `GET request to ${fullPath} failed with error:\n${error}`;
+    });
 };
 
 export const flask_post = async (endpoint, body) => {

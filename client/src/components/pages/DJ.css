@@ -1,0 +1,313 @@
+.dj-container {
+  padding: 20px;
+  background: #6B4EE6;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  min-height: 100vh;
+  color: white;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.track-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.track-info.left {
+  margin-right: auto;
+}
+
+.track-info.right {
+  margin-left: auto;
+}
+
+.import-container {
+  position: relative;
+  margin-bottom: 10px;
+  z-index: 1000;
+}
+
+.import-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+  min-width: 180px;
+  text-align: left;
+}
+
+.import-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.track-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 4px;
+  z-index: 1000;
+}
+
+/* Scrollbar styles for the dropdown */
+.track-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.track-dropdown::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.track-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.track-info.right .track-dropdown {
+  left: auto;
+  right: 0;
+}
+
+.track-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9em;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.track-details {
+  margin-top: 10px;
+}
+
+.track-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.track-metadata {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.time-display {
+  font-family: monospace;
+  font-size: 1.1em;
+  color: #ffffff;
+  background-color: #1e4976;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.decks-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.deck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.waveform-container {
+  width: 100%;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.turntable {
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  margin: 20px auto;
+  position: relative;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-container::before {
+  content: "BPM";
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.slider-container:last-of-type::before {
+  content: "VOLUME";
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 4px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  border-radius: 2px;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 8px;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.effect-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.effect-btn {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.effect-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.playback-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cue-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+}
+
+.deck-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: center;
+}
+
+.sync-btn,
+.reset-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.turntable::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.turntable::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  background: white;
+  transform-origin: bottom;
+  animation: rotate 2s linear infinite paused;
+}
+
+@keyframes rotate {
+  from {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
+}
