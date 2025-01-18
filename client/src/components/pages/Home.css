@@ -6,7 +6,6 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   overflow-y: hidden; /* no scrolling */
-  /* background-image: url("src/assets/lofi-background-purple-blue.jpg"); */
 }
 
 body::before {

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { get, post } from "../../utilities";
 import { ThemeContext } from "../context/Context";
+import { FileButton, Button, Group, Text } from "@mantine/core";
+// import { Select } from "@mantine/core";
 import "./Profile.css";
-// import { FileButton, Button, Group, Text } from "@mantine/core";
 
 // theme options
 const themeOptions = [
@@ -30,6 +31,21 @@ const Profile = () => {
       });
   };
 
+  // useEffect(() => {
+  //   console.log("in here");
+  //   if (file) {
+  //     // reate a URL from the uploaded file
+  //     const imageUrl = URL.createObjectURL(file); // generate a URL for the uploaded image
+  //     post("/api/theme", { userid: userId, theme: imageUrl })
+  //       .then(() => {
+  //         setTheme(imageUrl); // set the background to the uploaded image URL
+  //       })
+  //       .catch((err) => {
+  //         console.error("Failed to update theme:", err);
+  //       });
+  //   }
+  // }, [file, userId, setTheme]);
+
   useEffect(() => {
     document.title = "Profile Page";
 
@@ -42,7 +58,6 @@ const Profile = () => {
   }, [userId, setTheme]); // changing user id is the dependency
 
   // check if theme changes
-  // for changing theme
   useEffect(() => {
     document.body.style.backgroundImage = `url(${theme})`;
     document.body.style.backgroundSize = "cover";
@@ -65,24 +80,19 @@ const Profile = () => {
               {option.name}
             </button>
           ))}
-          {/* <button
-          className="button-style"
-          onClick={() => updateTheme({ name: "custom", url: "uploaded-url-here" })}
-        >
-          upload your own
-        </button> */}
-          {/* mantineee */}
-          {/* <Group justify="center">
-          <FileButton onChange={setFile} accept="image/png,image/jpeg">
-            {(props) => <Button {...props}>Upload image</Button>}
-          </FileButton>
-        </Group> */}
+          {/* <div className="button-style">
+            <Group justify="center">
+              <FileButton onChange={setFile} accept="image/png,image/jpeg,image/jpg">
+                {(props) => <Button {...props}>upload image</Button>}
+              </FileButton>
+            </Group>
 
-          {/* {file && (
-          <Text size="sm" ta="center" mt="sm">
-            Picked file: {file.name}
-          </Text>
-        )} */}
+            {file && (
+              <Text size="sm" ta="center" mt="sm">
+                {file.name}
+              </Text>
+            )}
+          </div> */}
         </div>
       </div>
     </div>

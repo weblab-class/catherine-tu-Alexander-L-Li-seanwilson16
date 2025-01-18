@@ -2,7 +2,7 @@
   margin-top: 1rem; /* Adjust spacing */
 }
 
-.play-pause-button {
+.play-pause-button-lofi {
   position: fixed; /* Fixed position for staying at the top right corner */
   font-family: "Josefin Sans", sans-serif;
   top: 1rem; /* Distance from the top of the viewport */
@@ -10,7 +10,7 @@
   z-index: 1000; /* Ensures it stays above other elements */
   padding: 0.5rem 1rem; /* Adds some space inside the button */
   font-size: 1rem; /* Adjusts text size */
-  border: 3px solid rgba(255, 255, 255, 0.8); /* Removes the default button border */
+  /* Removes the default button border */
   border-radius: 25px; /* Makes the button have rounded edges */
   background-color: #6a5acd; /* Soft purple background */
   color: white; /* White text for contrast */
@@ -19,7 +19,53 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
 }
 
-.play-pause-button:hover {
+.play-pause-button-ocean {
+  position: fixed; /* Fixed position for staying at the top right corner */
+  font-family: "Josefin Sans", sans-serif;
+  top: 1rem; /* Distance from the top of the viewport */
+  right: 1rem; /* Distance from the right of the viewport */
+  z-index: 1000; /* Ensures it stays above other elements */
+  padding: 0.5rem 1rem; /* Adds some space inside the button */
+  font-size: 1rem; /* Adjusts text size */
+  /* Removes the default button border */
+  border-radius: 25px; /* Makes the button have rounded edges */
+  background-color: #167472; /* Soft purple background */
+  color: white; /* White text for contrast */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s ease; /* Smooth hover effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+}
+
+.play-pause-button-nature {
+  position: fixed; /* Fixed position for staying at the top right corner */
+  font-family: "Josefin Sans", sans-serif;
+  top: 1rem; /* Distance from the top of the viewport */
+  right: 1rem; /* Distance from the right of the viewport */
+  z-index: 1000; /* Ensures it stays above other elements */
+  padding: 0.5rem 1rem; /* Adds some space inside the button */
+  font-size: 1rem; /* Adjusts text size */
+  /* Removes the default button border */
+  border-radius: 25px; /* Makes the button have rounded edges */
+  background-color: #104f27; /* Soft purple background */
+  color: white; /* White text for contrast */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s ease; /* Smooth hover effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth */
+}
+
+.play-pause-button-lofi:hover {
+  background-color: transparent;
+  border-color: white;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3); /* enhance shadow on hover */
+}
+
+.play-pause-button-ocean:hover {
+  background-color: transparent;
+  border-color: white;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3); /* enhance shadow on hover */
+}
+
+.play-pause-button-nature:hover {
   background-color: transparent;
   border-color: white;
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3); /* enhance shadow on hover */
