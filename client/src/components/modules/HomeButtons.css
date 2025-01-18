@@ -1,15 +1,16 @@
 /* Button container for layout */
-.button-container {
+.button-container-home {
   margin-top: -1rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Spacing between buttons */
+  gap: 1.5rem; /* Spacing between buttons */
 }
 
 /* Button styling */
 .homepage-button {
   text-decoration: none;
-  font-family: "Josefin Sans", sans-serif;
+  font-family: var(--josefin);
+  /* font-family: "Josefin Sans", sans-serif; */
   font-size: 1.3rem;
   display: flex;
   align-items: center;

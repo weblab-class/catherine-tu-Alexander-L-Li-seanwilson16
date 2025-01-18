@@ -8,18 +8,23 @@ import "../utilities.css";
 import { socket } from "../client-socket";
 
 import { get, post, flask_get, flask_post } from "../utilities";
+import { MantineProvider } from "@mantine/core";
 
 export const UserContext = createContext(null);
+export const ThemeContext = createContext(null);
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  // const [data, setData] = useState(""); // test: fetching data from flask backend
+  const [theme, setTheme] = useState("/src/assets/lofi-background-purple-blue.jpg");
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
+        if (user.theme) {
+          setTheme(user.theme.url);
+        }
       }
     });
 
@@ -54,9 +59,13 @@ function App() {
   };
 
   return (
-    <UserContext.Provider value={authContextValue}>
-      <Outlet context={{ userId: userId }} />
-    </UserContext.Provider>
+    <MantineProvider>
+      <UserContext.Provider value={authContextValue}>
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+          <Outlet context={{ userId: userId }} />
+        </ThemeContext.Provider>
+      </UserContext.Provider>
+    </MantineProvider>
   );
 }
 

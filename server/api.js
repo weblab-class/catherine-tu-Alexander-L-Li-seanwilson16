@@ -53,6 +53,15 @@ router.get("/user", (req, res) => {
     });
 });
 
+// change the theme
+router.post("/theme", (req, res) => {
+  const { userid, theme } = req.body;
+
+  User.findByIdAndUpdate(userid, { theme }, { new: true })
+    .then((updatedUser) => res.send(updatedUser))
+    .catch((err) => res.status(500).send("Failed to update theme."));
+});
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);

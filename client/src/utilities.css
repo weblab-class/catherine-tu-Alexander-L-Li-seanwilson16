@@ -1,35 +1,29 @@
 /**
-* Welcome to your ✨𝔲𝔱𝔦𝔩𝔦𝔱𝔶 𝔰𝔱𝔶𝔩𝔢𝔰✨!
-* This file includes utility classes that are super simple
-* and can be used to add general styles; variable definitions
-* for colors; and styles to html, body, and other high level
-* DOMs.
-* 
-* All utility classes start with a `u-` and all do
-* one basic CSS thing (for example, making the font-weight
-* 600 for bolding) or are super generic.
-* 
-* This is 𝙉𝙊𝙏 the place to define classes for components or
-* do rigorous styling. You shoud not need to change this file
-* much after initial creation.
+* the secrets to (most) of our ui / ux (: 
 */
 
 /* TODO: REPLACE WITH YOUR OWN FONT! */
-@import url("https://fonts.googleapis.com/css?family=Roboto&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+/* mantine */
+/* @import "@mantine/core/styles.css"; */
 
 :root {
   --dark-purple: #7971ea;
   --medium-purple: #8e98f5;
   --light-purple: #dfe2fe;
   --light-blue: #b1cbfa;
-  /* --medgrey: #e0e0e0;
-  --grey: #f7f7f7; */
   --white: #fff;
 
-  --xs: 4rem;
+  --cabin: "Cabin", sans-serif;
+  --josefin: "Josefin Sans", sans-serif;
+  --raleway: "Raleway", "sans-serif";
+
+  /* --xs: 4rem;
   --s: 8rem;
   --m: 16rem;
-  --l: 24rem;
+  --l: 24rem; */
 }
 
 /* we're taking care of our own formatting! */

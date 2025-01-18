@@ -20,11 +20,11 @@ os.makedirs(app.config['PROCESSED_FOLDER'], exist_ok=True)
 #     return render_template('/client/index.html')
 # =======
 
-@app.route('/api/flaskwhoami', methods=['GET'])
-def flaskwhoami():
-    # Mock user data
-    user = {"_id": "12345", "name": "Test User"}
-    return jsonify(user)
+# @app.route('/api/flaskwhoami', methods=['GET'])
+# def flaskwhoami():
+#     # Mock user data
+#     user = {"_id": "12345", "name": "Test User"}
+#     return jsonify(user)
 
 @app.route('/api/test', methods=['GET'])
 def test():
