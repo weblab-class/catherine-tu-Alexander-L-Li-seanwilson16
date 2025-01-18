@@ -8,12 +8,12 @@ import "../utilities.css";
 import { socket } from "../client-socket";
 
 import { get, post, flask_get, flask_post } from "../utilities";
-
-export const UserContext = createContext(null);
+import { MantineProvider } from "@mantine/core";
+import { UserContext, ThemeContext } from "./context/Context";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  // const [data, setData] = useState(""); // test: fetching data from flask backend
+  const [theme, setTheme] = useState("/src/assets/lofi-background-purple-blue.jpg");
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
@@ -32,6 +32,12 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    get("/api/user", { userid: userId }).then((user) => {
+      console.log("user", user);
+      setTheme(user.theme);
+    });
+  }, [userId]);
   const handleLogin = (credentialResponse) => {
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
@@ -53,10 +59,22 @@ function App() {
     handleLogout,
   };
 
+  useEffect(() => {
+    document.body.style.backgroundImage = `url(${theme})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+    console.log("theme", theme);
+  }, [theme]);
+
   return (
-    <UserContext.Provider value={authContextValue}>
-      <Outlet context={{ userId: userId }} />
-    </UserContext.Provider>
+    <MantineProvider>
+      <UserContext.Provider value={authContextValue}>
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+          <Outlet context={{ userId: userId }} />
+        </ThemeContext.Provider>
+      </UserContext.Provider>
+    </MantineProvider>
   );
 }
 

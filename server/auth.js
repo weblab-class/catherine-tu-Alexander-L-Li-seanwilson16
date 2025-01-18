@@ -26,6 +26,10 @@ function getOrCreateUser(user) {
     const newUser = new User({
       name: user.name,
       googleid: user.sub,
+      theme: {
+        theme_name: "lofi",
+        theme_picture_url: "/src/assets/lofi-background-purple-blue.jpg",
+      },
     });
 
     return newUser.save();
