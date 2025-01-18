@@ -249,6 +249,7 @@ const DJ = () => {
   const toggleEffect = (deck, effect) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
     const audio = trackState.audioElements[effect];
 
     if (!audio) return;
@@ -261,6 +262,18 @@ const DJ = () => {
 
       // Just toggle mute state, keep playing
       audio.muted = !newEffectsEnabled[effect];
+
+      // Check if all stems are now disabled
+      const allStemsMuted = Object.values(newEffectsEnabled).every((enabled) => !enabled);
+
+      // Pause/play waveform based on whether any stems are enabled
+      if (playing[deck]) {
+        if (allStemsMuted) {
+          waveform.current?.pause();
+        } else {
+          waveform.current?.play();
+        }
+      }
 
       return {
         ...prev,
