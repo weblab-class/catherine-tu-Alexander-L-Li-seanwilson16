@@ -28,9 +28,34 @@
 
 .button-container-profile {
   display: flex;
-  flex-direction: row;
+  /* flex-direction: row; */
   justify-content: center;
   align-items: center;
   gap: 10px;
   margin-top: 20px;
+}
+
+.button-text-inline {
+  flex-direction: row;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-title {
+  font-family: var(--cabin);
+  text-align: center;
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.theme-title {
+  font-family: var(--josefin);
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0rem;
+  margin-right: 1rem;
+  color: white;
 }

@@ -9,9 +9,7 @@ import { socket } from "../client-socket";
 
 import { get, post, flask_get, flask_post } from "../utilities";
 import { MantineProvider } from "@mantine/core";
-
-export const UserContext = createContext(null);
-export const ThemeContext = createContext(null);
+import { UserContext, ThemeContext } from "./context/Context";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
@@ -22,9 +20,9 @@ function App() {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
-        if (user.theme) {
-          setTheme(user.theme.url);
-        }
+        // if (user.theme) {
+        //   setTheme(user.theme.url);
+        // }
       }
     });
 
@@ -59,13 +57,13 @@ function App() {
   };
 
   return (
-    <MantineProvider>
-      <UserContext.Provider value={authContextValue}>
-        <ThemeContext.Provider value={{ theme, setTheme }}>
-          <Outlet context={{ userId: userId }} />
-        </ThemeContext.Provider>
-      </UserContext.Provider>
-    </MantineProvider>
+    // <MantineProvider>
+    <UserContext.Provider value={authContextValue}>
+      <ThemeContext.Provider value={{ theme, setTheme }}>
+        <Outlet context={{ userId: userId }} />
+      </ThemeContext.Provider>
+    </UserContext.Provider>
+    // </MantineProvider>
   );
 }
 

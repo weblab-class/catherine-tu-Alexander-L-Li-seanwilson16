@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import { Link } from "react-router-dom";
-import { UserContext } from "../App";
+import { UserContext } from "../context/Context";
 import "./HomeButtons.css";
 
 const HomeButtons = () => {

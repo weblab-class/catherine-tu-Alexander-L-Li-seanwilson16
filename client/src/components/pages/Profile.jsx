@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { get, post } from "../../utilities";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../context/Context";
 import "./Profile.css";
 // import { FileButton, Button, Group, Text } from "@mantine/core";
 
@@ -16,7 +16,7 @@ const Profile = () => {
   let { userId } = useParams();
   const { theme, setTheme } = useContext(ThemeContext);
   const [user, setUser] = useState();
-  const [file, setFile] = useState([]);
+  // const [file, setFile] = useState([]);
 
   // user changing the theme
   const updateTheme = (newTheme) => {
@@ -57,34 +57,35 @@ const Profile = () => {
   }
 
   return (
-    // <div style={{ backgroundImage: `url(${theme.url})`, height: "100vh" }}>
     <div>
-      <h1>Profile Page</h1>
-      <h2>Choose a Theme:</h2>
-      <div className="button-container-profile">
-        {themeOptions.map((option) => (
-          <button className="button-style" key={option.name} onClick={() => updateTheme(option)}>
-            {option.name}
-          </button>
-        ))}
-        {/* <button
+      <h1 class="profile-title">{user.name}'s' profile page</h1>
+      <div class="button-text-inline">
+        <h2 class="theme-title">Choose a Theme:</h2>
+        <div className="button-container-profile">
+          {themeOptions.map((option) => (
+            <button className="button-style" key={option.name} onClick={() => updateTheme(option)}>
+              {option.name}
+            </button>
+          ))}
+          {/* <button
           className="button-style"
           onClick={() => updateTheme({ name: "custom", url: "uploaded-url-here" })}
         >
           upload your own
         </button> */}
-        {/* mantineee */}
-        {/* <Group justify="center">
+          {/* mantineee */}
+          {/* <Group justify="center">
           <FileButton onChange={setFile} accept="image/png,image/jpeg">
             {(props) => <Button {...props}>Upload image</Button>}
           </FileButton>
         </Group> */}
 
-        {/* {file && (
+          {/* {file && (
           <Text size="sm" ta="center" mt="sm">
             Picked file: {file.name}
           </Text>
         )} */}
+        </div>
       </div>
     </div>
   );
