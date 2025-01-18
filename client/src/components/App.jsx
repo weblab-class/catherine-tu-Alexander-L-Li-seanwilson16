@@ -7,7 +7,7 @@ import "../utilities.css";
 
 import { socket } from "../client-socket";
 
-import { get, post, flask_get, flask_post } from "../utilities";
+import { get, post } from "../utilities";
 import { MantineProvider } from "@mantine/core";
 import { UserContext, ThemeContext } from "./context/Context";
 
@@ -15,7 +15,7 @@ import lofibackground from "/assets/lofi-background-purple-blue.jpg";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  const [theme, setTheme] = useState("");
+  const [theme, setTheme] = useState(lofibackground);
 
   useEffect(() => {
     get("/api/whoami").then((user) => {
@@ -24,14 +24,6 @@ function App() {
         setUserId(user._id);
       }
     });
-
-    // for our python api
-    // flask_get("/api/flaskwhoami").then((user) => {
-    //   if (user._id) {
-    //     // they are registed in the database, and currently logged in.
-    //     setUserId(user._id);
-    //   }
-    // });
   }, []);
 
   useEffect(() => {
@@ -68,6 +60,7 @@ function App() {
 
   useEffect(() => {
     console.log("theme dependency");
+    // setTheme(theme);
     document.body.style.backgroundImage = `url(${theme})`;
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";

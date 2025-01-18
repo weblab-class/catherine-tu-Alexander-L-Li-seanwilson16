@@ -27,7 +27,7 @@ const Profile = () => {
     // update theme in MongoDB and fetch it back for consistency
     post("/api/theme", { theme: newTheme.url })
       .then(() => {
-        setTheme(newTheme);
+        setTheme(newTheme.url);
       })
       .catch((err) => {
         console.error("Failed to update theme:", err);
@@ -50,15 +50,13 @@ const Profile = () => {
   // }, [file, userId, setTheme]);
 
   useEffect(() => {
-    document.title = "Profile Page";
-
     if (userId) {
       // Fetch user data including theme
       get(`/api/user`, { userid: userId }).then((userObj) => {
         setUser(userObj);
       });
     }
-  }, [userId, setTheme]); // changing user id is the dependency
+  }, [userId]); // changing user id is the dependency
 
   // check if theme changes
   useEffect(() => {
