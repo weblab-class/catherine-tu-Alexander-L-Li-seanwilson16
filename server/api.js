@@ -59,7 +59,20 @@ router.post("/theme", (req, res) => {
 
   User.findByIdAndUpdate(req.user._id, { theme: theme }, { new: true })
     .then((updatedUser) => res.send(updatedUser))
-    .catch((err) => res.status(500).send("Failed to update theme."));
+    .catch((err) => res.status(500).send("failed to update theme."));
+});
+
+// change profile pic
+router.post("/avatar", (req, res) => {
+  const { profile } = req.body; // The new profile image URL
+
+  // Find the user and update their profile picture
+  User.findByIdAndUpdate(req.user._id, { profile: profile }, { new: true })
+    .then((updatedUser) => res.send(updatedUser))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("failed to update profile picture.");
+    });
 });
 
 // anything else falls to this "not found" case

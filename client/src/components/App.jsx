@@ -29,8 +29,8 @@ function App() {
   useEffect(() => {
     if (userId) {
       get("/api/user", { userid: userId }).then((user) => {
-        console.log("user get", user);
-        console.log("theme has been set!");
+        // console.log("user get", user);
+        // console.log("theme has been set!");
         setTheme(user.theme);
       });
     } else {

@@ -1,6 +1,6 @@
 .dj-container {
   padding: 20px;
-  background: #6B4EE6;
+  /* background: #6B4EE6; */
   background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
   min-height: 100vh;
@@ -280,7 +280,7 @@
 }
 
 .turntable::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -292,7 +292,7 @@
 }
 
 .turntable::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 50%;

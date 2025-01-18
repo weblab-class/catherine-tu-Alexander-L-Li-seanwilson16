@@ -1,0 +1,14 @@
+.selected-avatar {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  border: 3px solid #4caf50;
+}
+
+.profile-container {
+  height: 100vh;
+  background-image: var(--background-image);
+  background-size: cover;
+  background-position: center;
+}
