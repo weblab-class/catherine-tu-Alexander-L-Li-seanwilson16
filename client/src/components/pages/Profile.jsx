@@ -8,9 +8,9 @@ import "./Profile.css";
 
 // theme options
 const themeOptions = [
-  { name: "lofi", url: "/src/assets/lofi-background-purple-blue.jpg" },
-  { name: "nature", url: "/src/assets/nature-background.jpg" },
-  { name: "ocean", url: "/src/assets/ocean-background.jpg" },
+  { name: "lofi", url: "/src/public/assets/lofi-background-purple-blue.jpg" },
+  { name: "nature", url: "/src/public/assets/nature-background.jpg" },
+  { name: "ocean", url: "/src/public/assets/ocean-background.jpg" },
 ];
 
 const Profile = () => {

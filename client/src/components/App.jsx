@@ -24,12 +24,12 @@ function App() {
     });
 
     // for our python api
-    flask_get("/api/flaskwhoami").then((user) => {
-      if (user._id) {
-        // they are registed in the database, and currently logged in.
-        setUserId(user._id);
-      }
-    });
+    // flask_get("/api/flaskwhoami").then((user) => {
+    //   if (user._id) {
+    //     // they are registed in the database, and currently logged in.
+    //     setUserId(user._id);
+    //   }
+    // });
   }, []);
 
   useEffect(() => {

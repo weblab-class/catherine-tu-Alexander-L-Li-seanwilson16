@@ -1,5 +1,5 @@
 import React, { useState, useRef, useContext } from "react";
-import backgroundMusic from "../../assets/chill-guy-remix.mp3";
+import backgroundMusic from "../../public/assets/chill-guy-remix.mp3";
 import { ThemeContext } from "../context/Context";
 
 import "./PlayPauseHome.css";
@@ -32,9 +32,9 @@ const PlayPauseHome = () => {
       <button
         onClick={togglePlay}
         className={
-          theme === "/src/assets/lofi-background-purple-blue.jpg"
+          theme === "/src/public/assets/lofi-background-purple-blue.jpg"
             ? "play-pause-button-lofi"
-            : theme === "/src/assets/nature-background.jpg"
+            : theme === "/src/public/assets/nature-background.jpg"
             ? "play-pause-button-nature"
             : "play-pause-button-ocean"
         }

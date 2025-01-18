@@ -28,7 +28,7 @@ function getOrCreateUser(user) {
       googleid: user.sub,
       theme: {
         theme_name: "lofi",
-        theme_picture_url: "/src/assets/lofi-background-purple-blue.jpg",
+        theme_picture_url: "/src/public/assets/lofi-background-purple-blue.jpg",
       },
     });
 
