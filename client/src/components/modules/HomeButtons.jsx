@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import { Link } from "react-router-dom";
 import { UserContext } from "../context/Context";
+import { Anchor } from "@mantine/core";
 import "./HomeButtons.css";
 
 const HomeButtons = () => {
@@ -25,7 +26,7 @@ const HomeButtons = () => {
           <Link to="/dj/tutorial" className="homepage-button">
             tutorial
           </Link>
-          <button
+          <Anchor
             className="homepage-button"
             onClick={() => {
               googleLogout();
@@ -33,7 +34,7 @@ const HomeButtons = () => {
             }}
           >
             logout
-          </button>
+          </Anchor>
         </>
       ) : (
         <>

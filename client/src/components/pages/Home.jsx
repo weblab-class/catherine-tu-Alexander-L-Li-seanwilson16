@@ -6,16 +6,6 @@ import React, { useContext, useEffect } from "react";
 import HomeButtons from "../modules/HomeButtons";
 
 const Home = () => {
-  const { theme } = useContext(ThemeContext);
-
-  // for changing theme
-  useEffect(() => {
-    document.body.style.backgroundImage = `url(${theme})`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundRepeat = "no-repeat";
-  }, [theme]);
-
   return (
     <>
       <PlayPauseHome />

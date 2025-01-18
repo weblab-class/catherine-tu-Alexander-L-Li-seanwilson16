@@ -20,9 +20,6 @@ function App() {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
-        // if (user.theme) {
-        //   setTheme(user.theme.url);
-        // }
       }
     });
 
@@ -35,6 +32,12 @@ function App() {
     });
   }, []);
 
+  useEffect(() => {
+    get("/api/user", { userid: userId }).then((user) => {
+      console.log("user", user);
+      setTheme(user.theme);
+    });
+  }, [userId]);
   const handleLogin = (credentialResponse) => {
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
@@ -56,14 +59,22 @@ function App() {
     handleLogout,
   };
 
+  useEffect(() => {
+    document.body.style.backgroundImage = `url(${theme})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+    console.log("theme", theme);
+  }, [theme]);
+
   return (
-    // <MantineProvider>
-    <UserContext.Provider value={authContextValue}>
-      <ThemeContext.Provider value={{ theme, setTheme }}>
-        <Outlet context={{ userId: userId }} />
-      </ThemeContext.Provider>
-    </UserContext.Provider>
-    // </MantineProvider>
+    <MantineProvider>
+      <UserContext.Provider value={authContextValue}>
+        <ThemeContext.Provider value={{ theme, setTheme }}>
+          <Outlet context={{ userId: userId }} />
+        </ThemeContext.Provider>
+      </UserContext.Provider>
+    </MantineProvider>
   );
 }
 

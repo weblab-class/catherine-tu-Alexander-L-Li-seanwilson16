@@ -30,6 +30,8 @@
 button,
 html,
 div,
-body {
+body,
+a,
+Link {
   all: unset;
 }

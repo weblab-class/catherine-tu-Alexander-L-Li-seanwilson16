@@ -21,7 +21,7 @@ const Profile = () => {
   // user changing the theme
   const updateTheme = (newTheme) => {
     // update theme in MongoDB and fetch it back for consistency
-    post("/api/theme", { userid: userId, theme: newTheme })
+    post("/api/theme", { userid: userId, theme: newTheme.url })
       .then(() => {
         setTheme(newTheme.url);
       })
@@ -37,8 +37,6 @@ const Profile = () => {
       // Fetch user data including theme
       get(`/api/user`, { userid: userId }).then((userObj) => {
         setUser(userObj);
-        // setTheme(userObj.theme.url);
-        // document.body.style.backgroundImage = `url(${userObj.theme.url})`;
       });
     }
   }, [userId, setTheme]); // changing user id is the dependency
@@ -58,9 +56,9 @@ const Profile = () => {
 
   return (
     <div>
-      <h1 class="profile-title">{user.name}'s' profile page</h1>
-      <div class="button-text-inline">
-        <h2 class="theme-title">Choose a Theme:</h2>
+      <h1 className="profile-title">{user.name}'s' profile page</h1>
+      <div className="button-text-inline">
+        <h2 className="theme-title">Choose a Theme:</h2>
         <div className="button-container-profile">
           {themeOptions.map((option) => (
             <button className="button-style" key={option.name} onClick={() => updateTheme(option)}>
