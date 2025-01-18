@@ -149,7 +149,7 @@ const DJ = () => {
     for (const stem of STEM_TYPES) {
       const audio = new Audio();
       const stemName = stem === "melody" ? "other" : stem;
-      audio.src = `/src/public/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
+      audio.src = `/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
       audio.volume = trackState.volume / 100;
       // Start with all stems unmuted
       audio.muted = false;
@@ -183,7 +183,7 @@ const DJ = () => {
 
     // Load the waveform
     if (waveform.current) {
-      waveform.current.load(`/src/public/assets/processed/${track.path}/${track.path}_bass.mp3`);
+      waveform.current.load(`/assets/processed/${track.path}/${track.path}_bass.mp3`);
     }
 
     // Start with all effects enabled

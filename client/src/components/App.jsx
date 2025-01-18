@@ -11,6 +11,8 @@ import { get, post, flask_get, flask_post } from "../utilities";
 import { MantineProvider } from "@mantine/core";
 import { UserContext, ThemeContext } from "./context/Context";
 
+import lofibackground from "/assets/lofi-background-purple-blue.jpg";
+
 function App() {
   const [userId, setUserId] = useState(undefined);
   const [theme, setTheme] = useState("");
@@ -35,9 +37,12 @@ function App() {
   useEffect(() => {
     if (userId) {
       get("/api/user", { userid: userId }).then((user) => {
-        console.log("user", user);
+        console.log("user get", user);
+        console.log("theme has been set!");
         setTheme(user.theme);
       });
+    } else {
+      setTheme(lofibackground);
     }
   }, [userId]);
   const handleLogin = (credentialResponse) => {
@@ -62,6 +67,7 @@ function App() {
   };
 
   useEffect(() => {
+    console.log("theme dependency");
     document.body.style.backgroundImage = `url(${theme})`;
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";

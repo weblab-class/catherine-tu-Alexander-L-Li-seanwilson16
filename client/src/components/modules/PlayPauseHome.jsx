@@ -1,6 +1,10 @@
 import React, { useState, useRef, useContext } from "react";
-import backgroundMusic from "../../public/assets/chill-guy-remix.mp3";
+import backgroundMusic from "/assets/chill-guy-remix.mp3";
 import { ThemeContext } from "../context/Context";
+
+import lofibackground from "/assets/lofi-background-purple-blue.jpg";
+import naturebackground from "/assets/nature-background.jpg";
+// import oceanbackground from "/assets/ocean-background.jpg";
 
 import "./PlayPauseHome.css";
 
@@ -32,9 +36,9 @@ const PlayPauseHome = () => {
       <button
         onClick={togglePlay}
         className={
-          theme === "/src/public/assets/lofi-background-purple-blue.jpg"
+          theme === lofibackground
             ? "play-pause-button-lofi"
-            : theme === "/src/public/assets/nature-background.jpg"
+            : theme === naturebackground
             ? "play-pause-button-nature"
             : "play-pause-button-ocean"
         }

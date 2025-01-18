@@ -1,0 +1,114 @@
+# Query: console.log
+# ContextLines: 1
+
+31 results - 14 files
+
+client/dist/assets/index-27e6f808.js:
+  73    ${e}[data-mantine-color-scheme="light"] { --mantine-color-scheme: light; }
+  74: ⟪ 16435 characters skipped ⟫le-blue.jpg";function SS(){const[e,t]=x.useState(void 0),[n,r]=x.useState("");x.useEffect(()=>{Ua("/api/whoami").then(l=>{l._id&&t(l._id)})},[]),x.useEffect(()=>{e?Ua("/api/user",{userid:e}).then(l=>{console.log("user",l),r(l.theme)}):(r(ys),console.log("line 45",ys))},[e]);const s={userId:e,handleLogin:l=>{const a=l.credential,u=Z0(a);console.log(`Logged in as ${u.name}`),mi("/api/login",{token:a}).then(c=>{t(c._id),mi("/api/initsocket",{socketid:Va.id})})},handleLogout:()=>{t(void 0),mi("/api/logout")}};return x.useEffect(()=>{document.body.style.backgroundImage=`url(${n})`,document.body.style.backgroundSize="cover",document.body.style.backgroundPosition="center",document.body.style.backgroundRepeat="no-repeat",console.log("theme",n)},[n]),T.jsx(vm,{children:T.jsx(Rm.Provider,{value:s,children:T.jsx(dc.Provider,{value:{theme:n,setTheme:r},children:T.jsx(b0,{context:{userId:e}})})})})}const ES="/assets/chill-guy-remix.mp3",Tm="/assets/nature-background.jpg";const kS=()=>{const[e,t]=x.useState(!1),n=x.useRef(null),{theme:r,_:i}=x.useContext(dc),o=()=>{e?n.current.pause():n.current.play(),t(!e)};return T.jsxs("div",{className:"play-pause-container",children:[T.jsx("audio",{ref:n,src:ES,loop:!0}),T.jsx("button",{onClick:o,className:r===ys?"play-pause-button-lofi":r===Tm?"play-pause-button-nature":"play-pause-button-ocean",children:e?"pause theme music":"ummute theme music"})]})};function xS(e={}){const{nonce:t,onScriptLoadSuccess:n,onScriptLoadError:r}=e,[i,o]=x.useState(!1),s=x.useRef(n);s.current=n;const l=x.useRef(r);return l.current=r,x.useEffect(()=>{const a=document.createElement("script");return a.src="https://accounts.google.com/gsi/client",a.async=!0,a.defer=!0,a.nonce=t,a.onload=()=>{va⟪ 2823 characters skipped ⟫al",className:"homepage-button",children:"tutorial"}),T.jsx(cc,{className:"homepage-button",onClick:()=>{bS(),i()},children:"logout"})]}):T.jsx(T.Fragment,{children:e?T.jsx(PS,{onSuccess:r,onError:s=>console.log(s)}):T.jsx("button",{onClick:o,className:"homepage-button",children:"log in to dj"})})})},LS=()=>T.jsxs(T.Fragment,{children:[T.jsx(kS,{}),T.jsx("div",{className:"body"}),T.jsxs("div",{className:"homepage-container",children:[T.jsxs("h1",{className:"homepage-title",children:["chilldeck",T.jsx("p",{className:"homepage-subtitle",children:"made by chill people for chill people"})]}),T.jsx(NS,{})]})]}),MS=()=>T.jsxs("div",{children:[T.jsx("h1",{children:"404 Not Found"}),T.jsx("p",{children:"The page you requested couldn't be found."})]});function Ue(e,t,n,r){return new(n||(n=Promise))(function(i,o){function s(u){try{a(r.next(u))}catch(c){o(c)}}function l(u){try{a(r.throw(u))}catch(c){o(c)}}function a(u){var c;u.done?i(u.value):(c=u.value,c instanceof n?c:new n(function(d){d(c)})).then(s,l)}a((r=r.apply(e,t||[])).next())})}class Qi{constructor(){this.listeners={}}on(t,n,r){if(this.listeners[t]||(this.listeners[t]=new Set),this.listeners[t].add(n),r==null?void 0:r.once){const i=
+  75        <style${r?` nonce="${r}"`:""}>
+
+client/src/utilities.js:
+  7   * These functions return promises, which means you should use ".then" on them.
+  8:  * e.g. get('/api/foo', { bar: 0 }).then(res => console.log(res))
+  9   */
+
+client/src/components/App.jsx:
+  39        get("/api/user", { userid: userId }).then((user) => {
+  40:         console.log("user get", user);
+  41:         console.log("theme has been set!");
+  42          setTheme(user.theme);
+
+  50      const decodedCredential = jwt_decode(userToken);
+  51:     console.log(`Logged in as ${decodedCredential.name}`);
+  52      post("/api/login", { token: userToken }).then((user) => {
+
+  73      document.body.style.backgroundRepeat = "no-repeat";
+  74:     console.log("theme", theme);
+  75    }, [theme]);
+
+client/src/components/modules/HomeButtons.jsx:
+  44            ) : (
+  45:             <GoogleLogin onSuccess={handleLogin} onError={(err) => console.log(err)} />
+  46            )}
+
+client/src/components/pages/Profile.jsx:
+  27      // update theme in MongoDB and fetch it back for consistency
+  29      post("/api/theme", { theme: newTheme.url })
+
+  38    // useEffect(() => {
+  39:   //   console.log("in here");
+  40    //   if (file) {
+
+flask-server/venv/lib/python3.12/site-packages/pip/_vendor/rich/console.py:
+   624          safe_box (bool, optional): Restrict box options that don't render on legacy Windows.
+   625:         get_datetime (Callable[[], datetime], optional): Callable that gets the current time as a datetime.datetime object (used by Console.log),
+   626              or None for datetime.now.
+
+  2582  
+  2583:     console.log(
+  2584          "JSONRPC [i]request[/i]",
+
+  2597  
+  2598:     console.log("Hello, World!", "{'a': 1}", repr(console))
+  2599  
+
+flask-server/venv/lib/python3.12/site-packages/pip/_vendor/rich/live.py:
+  352                  if random.randint(0, 10) < 1:
+  353:                     console.log(next(examples))
+  354                  exchange_rate_dict[(select_exchange, exchange)] = 200 / (
+
+flask-server/venv/lib/python3.12/site-packages/pip/_vendor/rich/progress.py:
+  1098          self.print = self.console.print
+  1099:         self.log = self.console.log
+  1100  
+
+flask-server/venv/lib/python3.12/site-packages/pip/_vendor/rich/status.py:
+  116          sleep(3)
+  117:         console.log("Importing advanced AI")
+  118          sleep(3)
+  119:         console.log("Advanced Covid AI Ready")
+  120          sleep(3)
+
+  122          sleep(3)
+  123:         console.log("Found 10,000,000,000 copies of Covid32.exe")
+  124          sleep(3)
+
+server/api.js:
+  66  router.all("*", (req, res) => {
+  67:   console.log(`API route not found: ${req.method} ${req.url}`);
+  68    res.status(404).send({ msg: "API route not found" });
+
+server/auth.js:
+  45      .catch((err) => {
+  46:       console.log(`Failed to log in: ${err}`);
+  47        res.status(401).send({ err });
+
+server/server-socket.js:
+  33      io.on("connection", (socket) => {
+  34:       console.log(`socket has connected ${socket.id}`);
+  35        socket.on("disconnect", (reason) => {
+
+server/server.js:
+   53    })
+   54:   .then(() => console.log("Connected to MongoDB"))
+   55:   .catch((err) => console.log(`Error connecting to MongoDB: ${err}`));
+   56  
+
+   87      if (err) {
+   88:       console.log("Error sending client/dist/index.html:", err.status || 500);
+   89        res
+
+  100      // 500 means Internal Server Error
+  101:     console.log("The server errored when processing a request!");
+  102:     console.log(err);
+  103    }
+
+  117  server.listen(port, () => {
+  118:   console.log(`Server running on port: ${port}`);
+  119  });
+
+server/validator.js:
+  45          if (active) {
+  46:           console.log(
+  47              "Warning: It looks like 'npm run dev' may be running. Are you sure you don't want\n" +

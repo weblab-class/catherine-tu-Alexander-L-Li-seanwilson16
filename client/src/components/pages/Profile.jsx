@@ -5,12 +5,15 @@ import { ThemeContext } from "../context/Context";
 import { FileButton, Button, Group, Text } from "@mantine/core";
 // import { Select } from "@mantine/core";
 import "./Profile.css";
+import lofibackground from "/assets/lofi-background-purple-blue.jpg";
+import naturebackground from "/assets/nature-background.jpg";
+import oceanbackground from "/assets/ocean-background.jpg";
 
 // theme options
 const themeOptions = [
-  { name: "lofi", url: "/src/public/assets/lofi-background-purple-blue.jpg" },
-  { name: "nature", url: "/src/public/assets/nature-background.jpg" },
-  { name: "ocean", url: "/src/public/assets/ocean-background.jpg" },
+  { name: "lofi", url: lofibackground },
+  { name: "nature", url: naturebackground },
+  { name: "ocean", url: oceanbackground },
 ];
 
 const Profile = () => {
@@ -22,9 +25,9 @@ const Profile = () => {
   // user changing the theme
   const updateTheme = (newTheme) => {
     // update theme in MongoDB and fetch it back for consistency
-    post("/api/theme", { userid: userId, theme: newTheme.url })
+    post("/api/theme", { theme: newTheme.url })
       .then(() => {
-        setTheme(newTheme.url);
+        setTheme(newTheme);
       })
       .catch((err) => {
         console.error("Failed to update theme:", err);

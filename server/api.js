@@ -55,9 +55,9 @@ router.get("/user", (req, res) => {
 
 // change the theme
 router.post("/theme", (req, res) => {
-  const { userid, theme } = req.body;
+  const { theme } = req.body;
 
-  User.findByIdAndUpdate(userid, { theme }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { theme: theme }, { new: true })
     .then((updatedUser) => res.send(updatedUser))
     .catch((err) => res.status(500).send("Failed to update theme."));
 });
