@@ -148,7 +148,7 @@ const DJ = () => {
     const loadedAudios = [];
     for (const stem of STEM_TYPES) {
       const audio = new Audio();
-      const stemName = stem === 'melody' ? 'other' : stem;
+      const stemName = stem === "melody" ? "other" : stem;
       audio.src = `/src/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
       audio.volume = trackState.volume / 100;
       // Start with all stems unmuted
@@ -157,7 +157,7 @@ const DJ = () => {
 
       // Create a promise for each audio load
       const loadPromise = new Promise((resolve) => {
-        audio.addEventListener('loadeddata', () => resolve());
+        audio.addEventListener("loadeddata", () => resolve());
       });
       loadedAudios.push(loadPromise);
     }
@@ -170,7 +170,7 @@ const DJ = () => {
     stems.forEach(([stem, audio], index) => {
       // Listen to timeupdate on the first stem (bass)
       if (index === 0) {
-        audio.addEventListener('timeupdate', () => {
+        audio.addEventListener("timeupdate", () => {
           // Sync all other stems to the bass stem's time
           stems.slice(1).forEach(([_, otherAudio]) => {
             if (Math.abs(otherAudio.currentTime - audio.currentTime) > 0.1) {
@@ -198,12 +198,12 @@ const DJ = () => {
         drums: true,
         melody: true,
         vocals: true,
-      }
+      },
     }));
 
     // If currently playing, start playing the new track immediately
     if (playing[deck]) {
-      Object.values(audioElements).forEach(audio => {
+      Object.values(audioElements).forEach((audio) => {
         audio.play();
       });
     }
@@ -222,7 +222,7 @@ const DJ = () => {
 
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
-      
+
       if (newPlaying) {
         // Start playing all stems at the same time
         Object.values(trackState.audioElements).forEach((audio) => {
