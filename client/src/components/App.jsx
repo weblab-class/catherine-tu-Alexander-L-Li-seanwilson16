@@ -33,10 +33,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    get("/api/user", { userid: userId }).then((user) => {
-      console.log("user", user);
-      setTheme(user.theme);
-    });
+    if (userId) {
+      get("/api/user", { userid: userId }).then((user) => {
+        console.log("user", user);
+        setTheme(user.theme);
+      });
+    }
   }, [userId]);
   const handleLogin = (credentialResponse) => {
     const userToken = credentialResponse.credential;
