@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext } from "react";
 import backgroundMusic from "/assets/chill-guy-remix.mp3";
 import { ThemeContext } from "../context/Context";
 
-import lofibackground from "/assets/lofi-background-purple-blue.jpg";
+import lofibackground from "/assets/lofi-bg.png";
 import naturebackground from "/assets/nature-background.jpeg";
 // import oceanbackground from "/assets/ocean-background.jpg";
 

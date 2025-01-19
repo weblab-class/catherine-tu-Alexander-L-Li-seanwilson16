@@ -11,11 +11,7 @@ import { get, post } from "../utilities";
 import { MantineProvider } from "@mantine/core";
 import { UserContext, ThemeContext } from "./context/Context";
 
-<<<<<<< HEAD
 import lofibackground from "/assets/lofi-bg.png";
-=======
-import lofibackground from "/assets/lofi-background.png";
->>>>>>> alex
 
 function App() {
   const [userId, setUserId] = useState(undefined);

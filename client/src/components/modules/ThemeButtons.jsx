@@ -5,7 +5,7 @@ import { post } from "../../utilities";
 import { FileButton, Button, Group, Text } from "@mantine/core";
 // import { Select } from "@mantine/core";
 
-import lofibackground from "/assets/lofi-background-purple-blue.jpg";
+import lofibackground from "/assets/lofi-bg.png";
 import naturebackground from "/assets/nature-background.jpeg";
 import oceanbackground from "/assets/ocean-background.jpg";
 
