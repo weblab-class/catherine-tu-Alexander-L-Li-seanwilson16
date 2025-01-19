@@ -3,7 +3,7 @@ import backgroundMusic from "/assets/chill-guy-remix.mp3";
 import { ThemeContext } from "../context/Context";
 
 import lofibackground from "/assets/lofi-background-purple-blue.jpg";
-import naturebackground from "/assets/nature-background.jpg";
+import naturebackground from "/assets/nature-background.jpeg";
 // import oceanbackground from "/assets/ocean-background.jpg";
 
 import "./PlayPauseHome.css";

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { get } from "../../utilities";
 import { ThemeContext } from "../context/Context";
-import ProfileButtons from "../modules/ProfileButtons";
+import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
 
@@ -28,17 +28,17 @@ const Profile = () => {
   return (
     <>
       <div className="profile-container">
-        <Avatar 
-          userId={user._id} 
-          currentAvatar={user.avatar} 
+        <Avatar
+          userId={user._id}
+          currentAvatar={user.avatar}
           onAvatarChange={(newAvatar) => {
             setUser({ ...user, avatar: newAvatar });
-          }} 
+          }}
         />
         <TimeOfDay name={user.name} />
         <div className="button-text-inline">
           <h2 className="theme-title">Choose a Theme:</h2>
-          <ProfileButtons />
+          <ThemeButtons />
         </div>
       </div>
     </>

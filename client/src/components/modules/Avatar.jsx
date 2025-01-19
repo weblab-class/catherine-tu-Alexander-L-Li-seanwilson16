@@ -3,7 +3,7 @@ import { post } from "../../utilities";
 import "./Avatar.css";
 
 // Import all avatar options
-import original from "/assets/profile/chill-guy-original.jpeg";
+import original from "/assets/profile/chill-guy-original.jpg";
 import paradise from "/assets/profile/chill-guy-paradise.jpg";
 import holiday from "/assets/profile/chill-guy-holidays.jpg";
 import taylor from "/assets/profile/chill-guy-taylor-swift.jpg";
@@ -17,7 +17,7 @@ const avatarOptions = [
   { id: "chill guy dj", url: dj, label: "dj" },
 ];
 
-const Avatar = ({ userId, currentAvatar, onAvatarChange }) => {
+const Avatar = ({ currentAvatar, onAvatarChange }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar || original);
 
   useEffect(() => {
@@ -57,6 +57,7 @@ const Avatar = ({ userId, currentAvatar, onAvatarChange }) => {
       <div className="avatar-content">
         <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
         <div className="avatar-selector">
+          <span className="avatar-label">my avatar:</span>
           <select
             value={currentOption.id}
             onChange={handleAvatarChange}

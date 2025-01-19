@@ -14,8 +14,8 @@
 }
 
 .avatar-image {
-  width: 150px !important;
-  height: 150px !important;
+  width: 175px !important;
+  height: 175px !important;
   object-fit: cover !important;
   border-radius: 50% !important;
   border: 2px solid var(--primary) !important;
@@ -26,8 +26,18 @@
 
 .avatar-selector {
   margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   position: relative;
   z-index: 100;
+}
+
+.avatar-label {
+  font-family: var(--josefin);
+  color: white;
+  font-size: 1.5rem;
+  padding-right: 0.25rem;
 }
 
 .avatar-dropdown {
