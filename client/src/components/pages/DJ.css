@@ -129,13 +129,15 @@
 .deck-row {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  align-items: flex-start;
-  padding: 15px;
+  gap: 25px;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .waveforms-section {
-  width: 101.75vw;
+  width: 101.1vw;
   height: 180px;
   background: rgba(255, 255, 255, 0.1);
   margin: 0 -20px 20px -20px;
@@ -252,18 +254,64 @@
 }
 
 .playback-section {
+  width: 100px;
   display: flex;
-  flex-direction: row;
-  gap: 20px;
-  margin-top: 20px;
+  flex-direction: column;
+  align-items: center;
 }
 
-.playback-section.left {
-  flex-direction: row-reverse; /* Puts playback controls on the left */
+.bpm-slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
 }
 
-.playback-section.right {
-  flex-direction: row; /* Puts playback controls on the right */
+.bpm-slider {
+  width: 4px;
+  height: 120px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  outline: none;
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  margin: 0;
+}
+
+.bpm-slider-left {
+  transform: translate(0px, 0px);
+}
+
+.bpm-slider-right {
+  transform: translate(0px, 0px);
+}
+
+.bpm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.bpm-display {
+  color: white;
+  font-size: 0.8em;
+  font-family: var(--josefin);
+  white-space: nowrap;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.bpm-display-left {
+  transform: translate(0px, 0px);
+}
+
+.bpm-display-right {
+  transform: translate(0px, 0px);
 }
 
 .playback-controls {
@@ -271,7 +319,6 @@
   flex-direction: column;
   gap: 10px;
   align-items: center;
-  padding-top: 15px; /* Match the effect-buttons padding */
 }
 
 /* Position left controls */
@@ -283,7 +330,7 @@
 /* Position right controls */
 .cue-btn-right,
 .play-btn-right {
-  transform: translate(30px, 0px);
+  transform: translate(0px, 0px);
 }
 
 .controls {
@@ -319,42 +366,6 @@
   align-items: center;
   justify-content: center;
   font-family: var(--josefin);
-}
-
-.slider-container {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.slider-container::before {
-  content: "BPM";
-  font-size: 0.8em;
-  color: rgba(255, 255, 255, 0.8);
-  font-family: var(--josefin);
-}
-
-.slider-container:last-of-type::before {
-  content: "VOLUME";
-  font-family: var(--josefin);
-}
-
-.slider {
-  -webkit-appearance: none;
-  width: 4px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.2);
-  outline: none;
-  border-radius: 2px;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 20px;
-  height: 8px;
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .deck-controls {
@@ -396,23 +407,21 @@
 .effect-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 50px;
-  padding: 15px;
-  max-width: 400px;
-  width: 100%;
-  margin: 0 auto;
+  gap: 10px;
+  width: 500px;
+  margin-top: 50px;
+  justify-items: center;
 }
 
 .effect-btn {
   aspect-ratio: 1;
-  min-width: 60px;
-  width: 150%;
+  width: 80px;
   padding: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   font-family: var(--josefin);
   cursor: pointer;

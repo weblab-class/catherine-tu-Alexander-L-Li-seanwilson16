@@ -67,10 +67,8 @@ const DJ = () => {
   const [tracks, setTracks] = useState(AVAILABLE_TRACKS);
   const [leftTrack, setLeftTrack] = useState({
     name: "",
-    bpm: 0,
     key: "",
-    volume: 100,
-    audioElements: {},
+    bpm: "",
     effectsEnabled: {
       bass: true,
       drums: true,
@@ -81,10 +79,8 @@ const DJ = () => {
 
   const [rightTrack, setRightTrack] = useState({
     name: "",
-    bpm: 0,
     key: "",
-    volume: 100,
-    audioElements: {},
+    bpm: "",
     effectsEnabled: {
       bass: true,
       drums: true,
@@ -219,7 +215,7 @@ const DJ = () => {
       const audio = new Audio();
       const stemName = stem === "melody" ? "other" : stem;
       audio.src = `/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
-      audio.volume = trackState.volume / 100;
+      audio.volume = 1;
       // Start with all stems unmuted
       audio.muted = false;
       audioElements[stem] = audio;
@@ -259,7 +255,6 @@ const DJ = () => {
     setTrackState((prev) => ({
       ...prev,
       name: track.name,
-      bpm: track.bpm,
       key: track.key,
       audioElements,
       effectsEnabled: {
@@ -300,7 +295,7 @@ const DJ = () => {
 
       if (newPlaying) {
         // Start playing all stems at the same time
-        Object.values(trackState.audioElements).forEach((audio) => {
+        Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
             audio.currentTime = waveform.current.getCurrentTime();
             if (!audio.muted) {
@@ -311,7 +306,7 @@ const DJ = () => {
         waveform.current.play();
       } else {
         // Pause all stems
-        Object.values(trackState.audioElements).forEach((audio) => {
+        Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
             audio.pause();
           }
@@ -329,7 +324,7 @@ const DJ = () => {
   const toggleEffect = (deck, effect) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const audio = trackState.audioElements[effect];
+    const audio = trackState.audioElements?.[effect];
 
     if (!audio) return;
 
@@ -339,7 +334,7 @@ const DJ = () => {
         [effect]: !prev.effectsEnabled[effect],
       };
 
-      // Just toggle mute state, keep playing
+      // Toggle mute state of the audio stem
       audio.muted = !newEffectsEnabled[effect];
 
       return {
@@ -349,17 +344,29 @@ const DJ = () => {
     });
   };
 
-  const handleVolumeChange = (deck, value) => {
+  const handleBPMChange = (deck, value) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
-    Object.values(trackState.audioElements).forEach((audio) => {
-      audio.volume = value / 100;
+    if (!waveform.current || !trackState.name) return;
+
+    // Calculate playback rate based on BPM change
+    const originalBPM = trackState.name
+      ? tracks.find((t) => t.name === trackState.name)?.bpm || 120
+      : 120;
+    const newRate = value / originalBPM;
+
+    waveform.current.setPlaybackRate(newRate);
+    Object.values(trackState.audioElements || {}).forEach((audio) => {
+      if (audio) {
+        audio.playbackRate = newRate;
+      }
     });
 
     setTrackState((prev) => ({
       ...prev,
-      volume: value,
+      bpm: value,
     }));
   };
 
@@ -409,9 +416,7 @@ const DJ = () => {
             {leftTrack.name ? (
               <>
                 <div className="track-name">{leftTrack.name}</div>
-                <div className="track-details">
-                  {leftTrack.bpm} BPM • {leftTrack.key}
-                </div>
+                <div className="track-details">{leftTrack.key}</div>
               </>
             ) : (
               <div className="no-track">NO TRACK LOADED</div>
@@ -456,9 +461,7 @@ const DJ = () => {
             {rightTrack.name ? (
               <>
                 <div className="track-name">{rightTrack.name}</div>
-                <div className="track-details">
-                  {rightTrack.bpm} BPM • {rightTrack.key}
-                </div>
+                <div className="track-details">{rightTrack.key}</div>
               </>
             ) : (
               <div className="no-track">NO TRACK LOADED</div>
@@ -479,33 +482,34 @@ const DJ = () => {
           </div>
 
           <div className="controls">
-            <div className="slider-container">
-              <input
-                type="range"
-                className="slider"
-                min="0"
-                max="100"
-                value={leftTrack.volume}
-                onChange={(e) => handleVolumeChange("left", parseInt(e.target.value))}
-                orientation="vertical"
-              />
-            </div>
-
             <div className="deck-row">
-              <div className="playback-controls">
-                <button className="cue-btn cue-btn-left">
-                  <span className="cue-symbol">CUE</span>
-                </button>
-                <button
-                  className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
-                  onClick={() => handlePlayPause("left")}
-                >
-                  {playing.left ? (
-                    <span className="pause-symbol">❚❚</span>
-                  ) : (
-                    <span className="play-symbol">▶</span>
-                  )}
-                </button>
+              <div className="playback-section">
+                <div className="bpm-slider-container">
+                  <input
+                    type="range"
+                    className="bpm-slider bpm-slider-left"
+                    min="60"
+                    max="180"
+                    value={leftTrack.bpm}
+                    onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+                  />
+                  <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+                </div>
+                <div className="playback-controls">
+                  <button className="cue-btn cue-btn-left">
+                    <span className="cue-symbol">CUE</span>
+                  </button>
+                  <button
+                    className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
+                    onClick={() => handlePlayPause("left")}
+                  >
+                    {playing.left ? (
+                      <span className="pause-symbol">❚❚</span>
+                    ) : (
+                      <span className="play-symbol">▶</span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="effect-buttons">
@@ -549,18 +553,6 @@ const DJ = () => {
           </div>
 
           <div className="controls">
-            <div className="slider-container">
-              <input
-                type="range"
-                className="slider"
-                min="0"
-                max="100"
-                value={rightTrack.volume}
-                onChange={(e) => handleVolumeChange("right", parseInt(e.target.value))}
-                orientation="vertical"
-              />
-            </div>
-
             <div className="deck-row">
               <div className="effect-buttons">
                 <button
@@ -589,20 +581,33 @@ const DJ = () => {
                 </button>
               </div>
 
-              <div className="playback-controls">
-                <button className="cue-btn cue-btn-right">
-                  <span className="cue-symbol">CUE</span>
-                </button>
-                <button
-                  className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
-                  onClick={() => handlePlayPause("right")}
-                >
-                  {playing.right ? (
-                    <span className="pause-symbol">❚❚</span>
-                  ) : (
-                    <span className="play-symbol">▶</span>
-                  )}
-                </button>
+              <div className="playback-section">
+                <div className="bpm-slider-container">
+                  <input
+                    type="range"
+                    className="bpm-slider bpm-slider-right"
+                    min="60"
+                    max="180"
+                    value={rightTrack.bpm}
+                    onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+                  />
+                  <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+                </div>
+                <div className="playback-controls">
+                  <button className="cue-btn cue-btn-right">
+                    <span className="cue-symbol">CUE</span>
+                  </button>
+                  <button
+                    className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
+                    onClick={() => handlePlayPause("right")}
+                  >
+                    {playing.right ? (
+                      <span className="pause-symbol">❚❚</span>
+                    ) : (
+                      <span className="play-symbol">▶</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
