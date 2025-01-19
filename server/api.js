@@ -63,16 +63,34 @@ router.post("/theme", (req, res) => {
 });
 
 // change profile pic
-router.post("/avatar", (req, res) => {
-  const { profile } = req.body; // The new profile image URL
+router.post("/avatar", auth.ensureLoggedIn, (req, res) => {
+  if (!req.user._id) {
+    return res.status(400).send({ error: "Not logged in" });
+  }
 
-  // Find the user and update their profile picture
-  User.findByIdAndUpdate(req.user._id, { profile: profile }, { new: true })
-    .then((updatedUser) => res.send(updatedUser))
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new Error("User not found");
+      }
+      user.avatar = req.body.avatar;
+      return user.save();
+    })
+    .then((updatedUser) => {
+      res.send(updatedUser);
+    })
     .catch((err) => {
-      console.error(err);
-      res.status(500).send("failed to update profile picture.");
+      console.error("Failed to update avatar:", err);
+      res.status(500).send({ error: "Failed to update avatar" });
     });
+});
+
+// update whoami to include avatar
+router.get("/whoami", (req, res) => {
+  if (!req.user) {
+    return res.send({});
+  }
+  res.send(req.user);
 });
 
 // anything else falls to this "not found" case

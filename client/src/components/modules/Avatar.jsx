@@ -1,44 +1,75 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { post } from "../../utilities";
-
-import original from "/assets/profile/chill-guy-original.jpeg";
-
 import "./Avatar.css";
 
-const Avatar = () => {
-  const [selectedAvatar, setSelectedAvatar] = useState(original);
+// Import all avatar options
+import original from "/assets/profile/chill-guy-original.jpeg";
+import paradise from "/assets/profile/chill-guy-paradise.jpg";
+import holiday from "/assets/profile/chill-guy-holidays.jpg";
+import taylor from "/assets/profile/chill-guy-taylor-swift.jpg";
+import dj from "/assets/profile/chill-guy-dj.png";
 
-  // avatar options
-  const avatarOptions = [{ id: "chill guy original", url: original }];
+const avatarOptions = [
+  { id: "chill guy original", url: original, label: "original" },
+  { id: "chill guy paradise", url: paradise, label: "paradise" },
+  { id: "chill guy taylor swift", url: taylor, label: "taylor swift" },
+  { id: "chill guy holiday", url: holiday, label: "holiday" },
+  { id: "chill guy dj", url: dj, label: "dj" },
+];
 
-  const updateProfilePicture = (newAvatar) => {
-    post("/api/avatar", { profile: newAvatar })
-      .then((updatedUser) => {
-        setSelectedAvatar(updatedUser.avatar);
-      })
-      .catch((err) => {
-        console.error("Failed to update profile picture:", err);
-      });
+const Avatar = ({ userId, currentAvatar, onAvatarChange }) => {
+  const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar || original);
+
+  useEffect(() => {
+    if (currentAvatar) {
+      const avatarOption = avatarOptions.find((option) => option.url === currentAvatar);
+      if (avatarOption) {
+        setSelectedAvatar(currentAvatar);
+      }
+    }
+  }, [currentAvatar]);
+
+  const handleAvatarChange = (event) => {
+    const selectedOption = avatarOptions.find((option) => option.id === event.target.value);
+    if (selectedOption) {
+      const newAvatar = selectedOption.url;
+      setSelectedAvatar(newAvatar);
+
+      // Send update to server
+      post("/api/avatar", { avatar: newAvatar })
+        .then((updatedUser) => {
+          if (onAvatarChange) {
+            onAvatarChange(newAvatar);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to update profile picture:", err);
+        });
+    }
   };
 
-  console.log("Selected Avatar URL:", selectedAvatar);
+  // Find the current avatar option
+  const currentOption =
+    avatarOptions.find((option) => option.url === selectedAvatar) || avatarOptions[0];
 
   return (
-    <div className="profile-container">
-      <h2>Your Avatar</h2>
-      <img src={selectedAvatar} alt="Current Avatar" className="selected-avatar" />
-      {/* <h3>Choose Your Avatar:</h3>
-      <div className="avatar-selection">
-        {avatarOptions.map((option) => (
-          <img
-            key={option.id}
-            src={option.url}
-            alt={`Avatar ${option.id}`}
-            className={`avatar-option ${selectedAvatar === option.url ? "active-avatar" : ""}`}
-            onClick={() => updateProfilePicture(option.url)}
-          />
-        ))} */}
-      {/* </div> */}
+    <div className="avatar-container">
+      <div className="avatar-content">
+        <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
+        <div className="avatar-selector">
+          <select
+            value={currentOption.id}
+            onChange={handleAvatarChange}
+            className="avatar-dropdown"
+          >
+            {avatarOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
     </div>
   );
 };
