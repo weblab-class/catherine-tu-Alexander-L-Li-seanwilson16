@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import WaveSurfer from "wavesurfer.js";
+import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import "./DJ.css";
 
 const AVAILABLE_TRACKS = [
@@ -7,40 +8,58 @@ const AVAILABLE_TRACKS = [
     id: 1,
     name: "Fall to Light",
     path: "NCS_Fall_to_Light",
-    bpm: 128,
-    key: "Am",
+    bpm: 87,
+    key: "1B",
   },
   {
     id: 2,
     name: "On & On",
     path: "NCS_On&On",
-    bpm: 120,
-    key: "C",
+    bpm: 86,
+    key: "1B",
   },
   {
     id: 3,
     name: "Chill Guy Remix",
     path: "chill-guy-remix",
-    bpm: 95,
-    key: "Dm",
+    bpm: 80,
+    key: "4B",
   },
 ];
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
 const createWaveSurfer = (container) => {
+  const timeline = TimelinePlugin.create({
+    height: 20,
+    timeInterval: 0.1,
+    primaryLabelInterval: 1,
+    style: {
+      fontSize: "10px",
+      color: "#ffffff",
+    },
+  });
+
   return WaveSurfer.create({
     container,
-    waveColor: "#4a9eff",
+    waveColor: {
+      progressive: "#4a9eff",
+      gradient: ["#4a9eff", "#1e4976"],
+    },
     progressColor: "#1e4976",
     cursorColor: "#ffffff",
     barWidth: 2,
     barRadius: 3,
     barGap: 3,
-    height: 80,
+    height: 70,
     responsive: true,
     normalize: true,
-    partialRender: true,
+    minPxPerSec: 100,
+    fillParent: false,
+    scrollParent: true,
+    autoCenter: true,
+    hideScrollbar: true,
+    plugins: [timeline],
   });
 };
 
@@ -104,14 +123,62 @@ const DJ = () => {
   const rightWavesurfer = useRef(null);
 
   useEffect(() => {
-    // Initialize WaveSurfer instances
-    if (leftContainerRef.current && !leftWavesurfer.current) {
-      leftWavesurfer.current = createWaveSurfer(leftContainerRef.current);
-    }
+    const initializeWaveSurfer = (containerRef, wavesurferRef) => {
+      if (containerRef.current && !wavesurferRef.current) {
+        wavesurferRef.current = createWaveSurfer(containerRef.current);
 
-    if (rightContainerRef.current && !rightWavesurfer.current) {
-      rightWavesurfer.current = createWaveSurfer(rightContainerRef.current);
-    }
+        // Center waveform on load
+        wavesurferRef.current.on("ready", () => {
+          const wrapper = wavesurferRef.current.getWrapper();
+          wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
+        });
+
+        // Add scroll handling
+        let isScrolling = false;
+        let startX = 0;
+
+        const handleMouseDown = (e) => {
+          isScrolling = true;
+          startX = e.clientX;
+          e.preventDefault();
+          e.stopPropagation();
+        };
+
+        const handleMouseMove = (e) => {
+          if (!isScrolling) return;
+
+          const dx = startX - e.clientX;
+          startX = e.clientX;
+
+          if (wavesurferRef.current) {
+            const wrapper = wavesurferRef.current.getWrapper();
+            wrapper.scrollLeft += dx;
+          }
+
+          e.preventDefault();
+          e.stopPropagation();
+        };
+
+        const handleMouseUp = () => {
+          isScrolling = false;
+        };
+
+        containerRef.current.addEventListener("mousedown", handleMouseDown);
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+
+        return () => {
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+          if (containerRef.current) {
+            containerRef.current.removeEventListener("mousedown", handleMouseDown);
+          }
+        };
+      }
+    };
+
+    const cleanupLeft = initializeWaveSurfer(leftContainerRef, leftWavesurfer);
+    const cleanupRight = initializeWaveSurfer(rightContainerRef, rightWavesurfer);
 
     return () => {
       if (leftWavesurfer.current) {
@@ -120,6 +187,8 @@ const DJ = () => {
       if (rightWavesurfer.current) {
         rightWavesurfer.current.destroy();
       }
+      cleanupLeft?.();
+      cleanupRight?.();
     };
   }, []);
 
@@ -214,11 +283,11 @@ const DJ = () => {
     }));
   };
 
-  const togglePlay = (deck) => {
+  const handlePlayPause = (deck) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
-    if (!trackState.audioElements.bass) return;
+    if (!trackState.name || !waveform.current) return;
 
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
@@ -226,17 +295,22 @@ const DJ = () => {
       if (newPlaying) {
         // Start playing all stems at the same time
         Object.values(trackState.audioElements).forEach((audio) => {
-          audio.currentTime = 0; // Reset all to start
-          // Small delay to ensure synchronized start
-          setTimeout(() => audio.play(), 50);
+          if (audio) {
+            audio.currentTime = waveform.current.getCurrentTime();
+            if (!audio.muted) {
+              audio.play();
+            }
+          }
         });
-        waveform.current?.play();
+        waveform.current.play();
       } else {
         // Pause all stems
         Object.values(trackState.audioElements).forEach((audio) => {
-          audio.pause();
+          if (audio) {
+            audio.pause();
+          }
         });
-        waveform.current?.pause();
+        waveform.current.pause();
       }
 
       return {
@@ -249,7 +323,6 @@ const DJ = () => {
   const toggleEffect = (deck, effect) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
     const audio = trackState.audioElements[effect];
 
     if (!audio) return;
@@ -262,18 +335,6 @@ const DJ = () => {
 
       // Just toggle mute state, keep playing
       audio.muted = !newEffectsEnabled[effect];
-
-      // Check if all stems are now disabled
-      const allStemsMuted = Object.values(newEffectsEnabled).every((enabled) => !enabled);
-
-      // Pause/play waveform based on whether any stems are enabled
-      if (playing[deck]) {
-        if (allStemsMuted) {
-          waveform.current?.pause();
-        } else {
-          waveform.current?.play();
-        }
-      }
 
       return {
         ...prev,
@@ -298,7 +359,6 @@ const DJ = () => {
 
   return (
     <div
-      className="dj-container"
       onClick={(e) => {
         if (!e.target.closest(".import-container")) {
           setDropdownOpen({ left: false, right: false });
@@ -306,7 +366,7 @@ const DJ = () => {
       }}
     >
       <div className="top-bar">
-        <div className="track-info left">
+        <div className="deck-controls">
           <div className="import-container">
             <button
               className="import-btn"
@@ -315,40 +375,45 @@ const DJ = () => {
                 handleImportSong("left");
               }}
             >
-              Import Song From Library ▼
+              Import Song
             </button>
             {dropdownOpen.left && (
-              <div className="track-dropdown">
-                {tracks && tracks.length > 0 ? (
-                  tracks.map((track) => (
-                    <button
-                      key={track.id}
-                      className="track-option"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectTrack("left", track);
-                      }}
-                    >
-                      {track.name}
-                    </button>
-                  ))
-                ) : (
-                  <div className="track-option">No tracks available</div>
-                )}
+              <div className="import-dropdown">
+                {tracks.map((track) => (
+                  <button
+                    key={track.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectTrack("left", track);
+                      setDropdownOpen((prev) => ({ ...prev, left: false }));
+                    }}
+                  >
+                    <div className="song-info">
+                      <span className="song-name">{track.name}</span>
+                      <span className="song-details">
+                        {track.bpm} BPM • {track.key}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
-          <div>
-            BPM: {leftTrack.bpm} | Key: {leftTrack.key}
-            {leftTrack.name && <div>now playing: "{leftTrack.name}"</div>}
+          <div className="track-info">
+            {leftTrack.name ? (
+              <>
+                <div className="track-name">{leftTrack.name}</div>
+                <div className="track-details">
+                  {leftTrack.bpm} BPM • {leftTrack.key}
+                </div>
+              </>
+            ) : (
+              <div className="no-track">No track loaded</div>
+            )}
           </div>
         </div>
 
-        <div className="track-info right">
-          <div>
-            BPM: {rightTrack.bpm} | Key: {rightTrack.key}
-            {rightTrack.name && <div>now playing: "{rightTrack.name}"</div>}
-          </div>
+        <div className="deck-controls">
           <div className="import-container">
             <button
               className="import-btn"
@@ -357,38 +422,52 @@ const DJ = () => {
                 handleImportSong("right");
               }}
             >
-              Import Song From Library ▼
+              Import Song
             </button>
             {dropdownOpen.right && (
-              <div className="track-dropdown">
-                {tracks && tracks.length > 0 ? (
-                  tracks.map((track) => (
-                    <button
-                      key={track.id}
-                      className="track-option"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectTrack("right", track);
-                      }}
-                    >
-                      {track.name}
-                    </button>
-                  ))
-                ) : (
-                  <div className="track-option">No tracks available</div>
-                )}
+              <div className="import-dropdown">
+                {tracks.map((track) => (
+                  <button
+                    key={track.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectTrack("right", track);
+                      setDropdownOpen((prev) => ({ ...prev, right: false }));
+                    }}
+                  >
+                    <div className="song-info">
+                      <span className="song-name">{track.name}</span>
+                      <span className="song-details">
+                        {track.bpm} BPM • {track.key}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
+            )}
+          </div>
+          <div className="track-info">
+            {rightTrack.name ? (
+              <>
+                <div className="track-name">{rightTrack.name}</div>
+                <div className="track-details">
+                  {rightTrack.bpm} BPM • {rightTrack.key}
+                </div>
+              </>
+            ) : (
+              <div className="no-track">No track loaded</div>
             )}
           </div>
         </div>
       </div>
 
+      <div className="waveforms-section">
+        <div ref={leftContainerRef}></div>
+        <div ref={rightContainerRef}></div>
+      </div>
+
       <div className="decks-container">
         <div className="deck">
-          <div className="waveform-container">
-            <div ref={leftContainerRef}></div>
-          </div>
-
           <div className="turntable"></div>
 
           <div className="controls">
@@ -435,7 +514,7 @@ const DJ = () => {
               <button className="cue-btn">CUE</button>
               <button
                 className={`play-btn ${playing.left ? "playing" : ""}`}
-                onClick={() => togglePlay("left")}
+                onClick={() => handlePlayPause("left")}
               >
                 {playing.left ? "❚❚" : "▶"}
               </button>
@@ -449,10 +528,6 @@ const DJ = () => {
         </div>
 
         <div className="deck">
-          <div className="waveform-container">
-            <div ref={rightContainerRef}></div>
-          </div>
-
           <div className="turntable"></div>
 
           <div className="controls">
@@ -499,7 +574,7 @@ const DJ = () => {
               <button className="cue-btn">CUE</button>
               <button
                 className={`play-btn ${playing.right ? "playing" : ""}`}
-                onClick={() => togglePlay("right")}
+                onClick={() => handlePlayPause("right")}
               >
                 {playing.right ? "❚❚" : "▶"}
               </button>
