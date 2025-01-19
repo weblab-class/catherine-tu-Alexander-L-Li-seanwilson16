@@ -491,41 +491,49 @@ const DJ = () => {
               />
             </div>
 
-            <div className="effect-buttons">
-              <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "bass")}
-              >
-                BASS
-              </button>
-              <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "drums")}
-              >
-                DRUMS
-              </button>
-              <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "melody")}
-              >
-                MELODY
-              </button>
-              <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "vocals")}
-              >
-                VOCALS
-              </button>
-            </div>
+            <div className="deck-row">
+              <div className="playback-controls">
+                <button className="cue-btn cue-btn-left">
+                  <span className="cue-symbol">CUE</span>
+                </button>
+                <button
+                  className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
+                  onClick={() => handlePlayPause("left")}
+                >
+                  {playing.left ? (
+                    <span className="pause-symbol">❚❚</span>
+                  ) : (
+                    <span className="play-symbol">▶</span>
+                  )}
+                </button>
+              </div>
 
-            <div className="playback-controls">
-              <button className="cue-btn">CUE</button>
-              <button
-                className={`play-btn ${playing.left ? "playing" : ""}`}
-                onClick={() => handlePlayPause("left")}
-              >
-                {playing.left ? "❚❚" : "▶"}
-              </button>
+              <div className="effect-buttons">
+                <button
+                  className={`effect-btn ${!leftTrack.effectsEnabled.bass ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("left", "bass")}
+                >
+                  BASS
+                </button>
+                <button
+                  className={`effect-btn ${!leftTrack.effectsEnabled.drums ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("left", "drums")}
+                >
+                  DRUMS
+                </button>
+                <button
+                  className={`effect-btn ${!leftTrack.effectsEnabled.melody ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("left", "melody")}
+                >
+                  MELODY
+                </button>
+                <button
+                  className={`effect-btn ${!leftTrack.effectsEnabled.vocals ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("left", "vocals")}
+                >
+                  VOCALS
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -553,41 +561,49 @@ const DJ = () => {
               />
             </div>
 
-            <div className="effect-buttons">
-              <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "bass")}
-              >
-                BASS
-              </button>
-              <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "drums")}
-              >
-                DRUMS
-              </button>
-              <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "melody")}
-              >
-                MELODY
-              </button>
-              <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "vocals")}
-              >
-                VOCALS
-              </button>
-            </div>
+            <div className="deck-row">
+              <div className="effect-buttons">
+                <button
+                  className={`effect-btn ${!rightTrack.effectsEnabled.bass ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("right", "bass")}
+                >
+                  BASS
+                </button>
+                <button
+                  className={`effect-btn ${!rightTrack.effectsEnabled.drums ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("right", "drums")}
+                >
+                  DRUMS
+                </button>
+                <button
+                  className={`effect-btn ${!rightTrack.effectsEnabled.melody ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("right", "melody")}
+                >
+                  MELODY
+                </button>
+                <button
+                  className={`effect-btn ${!rightTrack.effectsEnabled.vocals ? "disabled" : ""}`}
+                  onClick={() => toggleEffect("right", "vocals")}
+                >
+                  VOCALS
+                </button>
+              </div>
 
-            <div className="playback-controls">
-              <button className="cue-btn">CUE</button>
-              <button
-                className={`play-btn ${playing.right ? "playing" : ""}`}
-                onClick={() => handlePlayPause("right")}
-              >
-                {playing.right ? "❚❚" : "▶"}
-              </button>
+              <div className="playback-controls">
+                <button className="cue-btn cue-btn-right">
+                  <span className="cue-symbol">CUE</span>
+                </button>
+                <button
+                  className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
+                  onClick={() => handlePlayPause("right")}
+                >
+                  {playing.right ? (
+                    <span className="pause-symbol">❚❚</span>
+                  ) : (
+                    <span className="play-symbol">▶</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
