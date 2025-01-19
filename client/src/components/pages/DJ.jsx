@@ -292,6 +292,12 @@ const DJ = () => {
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
 
+      // Toggle the turntable animation
+      const turntable = document.querySelector(`.${deck}-deck .turntable`);
+      if (turntable) {
+        turntable.classList.toggle("playing", newPlaying);
+      }
+
       if (newPlaying) {
         // Start playing all stems at the same time
         Object.values(trackState.audioElements).forEach((audio) => {
@@ -375,7 +381,7 @@ const DJ = () => {
                 handleImportSong("left");
               }}
             >
-              Import Song
+              IMPORT SONG ▼
             </button>
             {dropdownOpen.left && (
               <div className="import-dropdown">
@@ -408,7 +414,7 @@ const DJ = () => {
                 </div>
               </>
             ) : (
-              <div className="no-track">No track loaded</div>
+              <div className="no-track">NO TRACK LOADED</div>
             )}
           </div>
         </div>
@@ -422,7 +428,7 @@ const DJ = () => {
                 handleImportSong("right");
               }}
             >
-              Import Song
+              IMPORT SONG ▼
             </button>
             {dropdownOpen.right && (
               <div className="import-dropdown">
@@ -455,7 +461,7 @@ const DJ = () => {
                 </div>
               </>
             ) : (
-              <div className="no-track">No track loaded</div>
+              <div className="no-track">NO TRACK LOADED</div>
             )}
           </div>
         </div>
@@ -467,7 +473,7 @@ const DJ = () => {
       </div>
 
       <div className="decks-container">
-        <div className="deck">
+        <div className="deck left-deck">
           <div className="turntable"></div>
 
           <div className="controls">
@@ -527,7 +533,7 @@ const DJ = () => {
           <button className="reset-btn">RESET</button>
         </div>
 
-        <div className="deck">
+        <div className="deck right-deck">
           <div className="turntable"></div>
 
           <div className="controls">

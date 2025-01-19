@@ -9,18 +9,11 @@
   backdrop-filter: blur(10px);
 }
 
-.track-info {
-  display: flex;
+.no-track {
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--josefin);
+  font-size: 1.1em;
   align-items: center;
-  gap: 20px;
-}
-
-.track-info.left {
-  margin-right: auto;
-}
-
-.track-info.right {
-  margin-left: auto;
 }
 
 .import-container {
@@ -38,9 +31,10 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9em;
+  font-family: var(--josefin);
   transition: all 0.2s ease;
   min-width: 180px;
-  text-align: left;
+  text-align: center;
 }
 
 .import-btn:hover {
@@ -70,6 +64,7 @@
   color: white;
   cursor: pointer;
   font-size: 14px;
+  font-family: var(--josefin);
 }
 
 .import-dropdown button:hover {
@@ -84,89 +79,35 @@
 
 .import-dropdown .song-name {
   font-weight: bold;
+  font-family: var(--josefin);
 }
 
 .import-dropdown .song-details {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
-}
-
-.track-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 8px;
-  margin-top: 4px;
-  z-index: 1000; /* Ensure dropdown is above everything */
-}
-
-.track-dropdown::-webkit-scrollbar {
-  width: 6px;
-}
-
-.track-dropdown::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.track-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-}
-
-.track-info.right .track-dropdown {
-  left: auto;
-  right: 0;
-}
-
-.track-option {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  background: none;
-  border: none;
-  color: white;
-  text-align: left;
-  cursor: pointer;
-  font-size: 0.9em;
-  border-radius: 2px;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.track-option:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.track-details {
-  margin-top: 10px;
+  font-family: var(--josefin);
 }
 
 .track-name {
   font-size: 1.2em;
   font-weight: bold;
   margin-bottom: 5px;
+  font-family: var(--josefin);
+  color: rgba(255, 255, 255, 0.7);
 }
 
-.track-metadata {
-  font-size: 0.9em;
-  color: rgba(255, 255, 255, 0.8);
+.track-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.time-display {
-  font-family: monospace;
-  font-size: 1.1em;
-  color: #ffffff;
-  background-color: #1e4976;
-  padding: 4px 8px;
-  border-radius: 4px;
-  text-align: center;
-  margin-top: 8px;
+.track-details {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--josefin);
+  margin-bottom: 5px;
+  vertical-align: middle;
+  font-size: 1em;
 }
 
 .decks-container {
@@ -247,8 +188,8 @@
 }
 
 .turntable {
-  width: 200px;
-  height: 200px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   position: relative;
@@ -256,6 +197,35 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+.turntable::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.turntable::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 50%;
+  background: white;
+  transform-origin: bottom;
+  animation: rotate 2s linear infinite;
+  animation-play-state: paused;
+}
+
+.turntable.playing::after {
+  animation-play-state: running;
 }
 
 .controls {
@@ -274,10 +244,12 @@
   content: "BPM";
   font-size: 0.8em;
   color: rgba(255, 255, 255, 0.8);
+  font-family: var(--josefin);
 }
 
 .slider-container:last-of-type::before {
   content: "VOLUME";
+  font-family: var(--josefin);
 }
 
 .slider {
@@ -301,7 +273,7 @@
 .effect-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 50px;
   padding: 15px;
   max-width: 400px;
   width: 100%;
@@ -311,7 +283,7 @@
 .effect-btn {
   aspect-ratio: 1;
   min-width: 60px;
-  width: 100%;
+  width: 150%;
   padding: 0;
   border: none;
   border-radius: 8px;
@@ -319,6 +291,7 @@
   color: white;
   font-size: 14px;
   font-weight: 600;
+  font-family: var(--josefin);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -380,9 +353,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--josefin);
 }
 
 .cue-btn {
+  font-family: var(--josefin);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -408,30 +383,7 @@
   color: white;
   cursor: pointer;
   font-size: 0.9em;
-}
-
-.turntable::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  background: white;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.turntable::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 50%;
-  background: white;
-  transform-origin: bottom;
-  animation: rotate 2s linear infinite paused;
+  font-family: var(--josefin);
 }
 
 @keyframes rotate {
