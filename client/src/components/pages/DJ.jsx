@@ -474,7 +474,9 @@ const DJ = () => {
 
       <div className="decks-container">
         <div className="deck left-deck">
-          <div className="turntable"></div>
+          <div className="turntable">
+            <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
+          </div>
 
           <div className="controls">
             <div className="slider-container">
@@ -534,7 +536,9 @@ const DJ = () => {
         </div>
 
         <div className="deck right-deck">
-          <div className="turntable"></div>
+          <div className="turntable">
+            <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
+          </div>
 
           <div className="controls">
             <div className="slider-container">
