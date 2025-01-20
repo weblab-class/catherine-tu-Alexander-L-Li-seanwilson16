@@ -133,12 +133,25 @@ const DJ = () => {
         containerRef.current.innerHTML = "";
 
         const stemColors = {
-          bass: { waveColor: "rgba(255, 0, 0, 0.5)", progressColor: "rgba(255, 0, 0, 1)" },
-          drums: { waveColor: "rgba(0, 255, 0, 0.5)", progressColor: "rgba(0, 255, 0, 1)" },
-          melody: { waveColor: "rgba(0, 0, 255, 0.5)", progressColor: "rgba(0, 0, 255, 1)" },
+          bass: {
+            waveColor: "rgba(0, 0, 0, 0.9)",
+            progressColor: "rgba(0, 0, 0, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          drums: {
+            waveColor: "rgba(255, 202, 58, 0.9)",
+            progressColor: "rgba(255, 202, 58, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          melody: {
+            waveColor: "rgba(138, 201, 38, 0.9)",
+            progressColor: "rgba(138, 201, 38, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
           vocals: {
-            waveColor: "rgba(255, 255, 0, 0.5)",
-            progressColor: "rgba(255, 255, 0, 1)",
+            waveColor: "rgba(255, 89, 94, 0.9)",
+            progressColor: "rgba(255, 89, 94, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
           },
         };
 
@@ -410,7 +423,7 @@ const DJ = () => {
         Object.entries(trackState.audioElements || {}).forEach(([stem, audio]) => {
           if (audio) {
             audio.currentTime = currentTime;
-            audio.muted = !trackState.effectsEnabled[stem];
+            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
             audio.play().catch((e) => console.error("Error playing audio:", e));
           }
         });
@@ -441,6 +454,7 @@ const DJ = () => {
   };
 
   const handleEffectToggle = (deck, effect) => {
+    console.log(`Toggling ${effect} effect for ${deck} deck`);
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
@@ -457,10 +471,35 @@ const DJ = () => {
         trackState.audioElements[effect].muted = !newEffectsEnabled[effect];
       }
 
+      // Update waveform color instead of hiding
       if (wavesurfers.current && wavesurfers.current[effect]) {
-        const container = wavesurfers.current[effect].getWrapper().parentElement;
-        container.style.opacity = newEffectsEnabled[effect] ? "1" : "0";
-        container.style.transition = "opacity 0.2s ease-in-out";
+        const isEnabled = newEffectsEnabled[effect];
+        const colors = {
+          bass: {
+            waveColor: "rgba(0, 0, 0, 0.5)",
+            progressColor: "rgba(0, 0, 0, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          drums: {
+            waveColor: "rgba(255, 202, 58, 0.5)",
+            progressColor: "rgba(255, 202, 58, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          melody: {
+            waveColor: "rgba(138, 201, 38, 0.5)",
+            progressColor: "rgba(138, 201, 38, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          vocals: {
+            waveColor: "rgba(255, 89, 94, 0.5)",
+            progressColor: "rgba(255, 89, 94, 1)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+        };
+        wavesurfers.current[effect].setOptions({
+          waveColor: isEnabled ? colors[effect].waveColor : colors[effect].disabledColor,
+          progressColor: isEnabled ? colors[effect].progressColor : colors[effect].disabledColor,
+        });
       }
 
       return {
