@@ -413,8 +413,10 @@ const DJ = () => {
           <div className="track-info">
             {leftTrack.name ? (
               <>
-                <div className="track-name">{leftTrack.name}</div>
-                <div className="track-details">{leftTrack.key}</div>
+                <div className="track-name-left">{leftTrack.name}</div>
+                <div className="track-details-left">
+                  {leftTrack.bpm + " BPM • " + leftTrack.key}
+                </div>
               </>
             ) : (
               <div className="no-track">NO TRACK LOADED</div>
@@ -457,8 +459,10 @@ const DJ = () => {
           <div className="track-info">
             {rightTrack.name ? (
               <>
-                <div className="track-name">{rightTrack.name}</div>
-                <div className="track-details">{rightTrack.key}</div>
+                <div className="track-name-right">{rightTrack.name}</div>
+                <div className="track-details-right">
+                  {rightTrack.bpm + " BPM • " + rightTrack.key}
+                </div>
               </>
             ) : (
               <div className="no-track">NO TRACK LOADED</div>
@@ -525,8 +529,12 @@ const DJ = () => {
         </div>
 
         <div className="deck-controls">
-          <button className="sync-btn">SYNC</button>
-          <button className="reset-btn">RESET</button>
+          <button className="sync-btn">
+            <span className="sync-text">SYNC</span>
+          </button>
+          <button className="reset-btn">
+            <span className="reset-text">RESET</span>
+          </button>
         </div>
 
         <div className="deck right-deck">
