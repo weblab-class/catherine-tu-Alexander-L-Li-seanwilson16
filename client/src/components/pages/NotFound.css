@@ -1,0 +1,29 @@
+.body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  flex-direction: column;
+}
+
+.not-found-text {
+  font-size: 3rem;
+  margin-bottom: 0rem;
+  color: white;
+}
+
+.subtitle-text {
+  font-size: 1.2rem;
+  font-family: var(--josefin);
+  margin-bottom: 2rem;
+  line-height: 1.6; /* Improves readability */
+  color: white;
+}
+
+.not-found-img {
+  width: 150px;
+  height: auto;
+  margin-top: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Add a subtle shadow */
+}
