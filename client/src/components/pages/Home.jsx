@@ -2,6 +2,7 @@ import "../../utilities.css";
 import "./Home.css";
 import PlayPauseHome from "../modules/PlayPauseHome";
 import HomeButtons from "../modules/HomeButtons";
+import Loading from "../modules/Loading";
 
 const Home = () => {
   return (

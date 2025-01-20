@@ -7,22 +7,26 @@ import "../utilities.css";
 
 import { socket } from "../client-socket";
 
-import { get, post } from "../utilities";
+import { get, post, sleep } from "../utilities";
 import { MantineProvider } from "@mantine/core";
 import { UserContext, ThemeContext } from "./context/Context";
 
 import lofibackground from "/assets/lofi-bg.png";
+import Loading from "./modules/Loading";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
   const [theme, setTheme] = useState(lofibackground);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    get("/api/whoami").then((user) => {
+    get("/api/whoami").then(async (user) => {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
       }
+      await sleep(500); // 0.5 second delay
+      setIsLoading(false);
     });
   }, []);
 
@@ -37,19 +41,27 @@ function App() {
       setTheme(lofibackground);
     }
   }, [userId]);
+
   const handleLogin = (credentialResponse) => {
+    setIsLoading(true);
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
     console.log(`Logged in as ${decodedCredential.name}`);
-    post("/api/login", { token: userToken }).then((user) => {
+    post("/api/login", { token: userToken }).then(async (user) => {
       setUserId(user._id);
       post("/api/initsocket", { socketid: socket.id });
+      await sleep(1000); // 1 second delay upon logging in
+      setIsLoading(false);
     });
   };
 
   const handleLogout = () => {
-    setUserId(undefined);
-    post("/api/logout");
+    setIsLoading(true);
+    post("/api/logout").then(async () => {
+      setUserId(undefined);
+      await sleep(1000); // 1 second delay
+      setIsLoading(false);
+    });
   };
 
   const authContextValue = {
@@ -67,6 +79,10 @@ function App() {
     document.body.style.backgroundRepeat = "no-repeat";
     console.log("theme", theme);
   }, [theme]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <MantineProvider>

@@ -90,3 +90,6 @@ export const flask_post = async (endpoint, body) => {
   });
   return response.json();
 };
+
+// sleep utility function
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

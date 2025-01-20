@@ -1,12 +1,13 @@
 import React from "react";
 import "./Loading.css";
+import loadingGif from "/assets/loading-icon.gif";
 
 const Loading = () => {
   return (
     <div className="loading-container">
       <div className="loading-content">
-        <div className="loading-spinner"></div>
-        <div className="loading-text">Loading your vibe...</div>
+        <img src={loadingGif} alt="Loading..." className="loading-gif" />
+        <p className="loading-text">Loading your vibe...</p>
       </div>
     </div>
   );
