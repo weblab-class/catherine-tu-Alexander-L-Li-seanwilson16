@@ -6,7 +6,7 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   overflow-y: hidden; /* no scrolling */
-  /* cursor: url("/assets/music-cursor-test.png"), auto !important; */
+  /* cursor: url("/assets/music-clicker.png"), auto !important; */
   /* cursor: pointer; */
 }
 
@@ -21,6 +21,12 @@ body::before {
   background-color: rgba(0, 0, 0, 0.3); /* black overlay with opacity */
   z-index: -1; /* overlay is behind the content */
   pointer-events: none;
+}
+
+button,
+a, /* Add any other interactive elements, like links */
+.interactive-element {
+  cursor: url("/assets/disc-clicker.png"), auto !important;
 }
 
 /* container to center content */
