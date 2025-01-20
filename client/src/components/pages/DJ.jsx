@@ -695,60 +695,56 @@ const DJ = () => {
           <div className="turntable">
             <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
           </div>
+          <div className="bpm-slider-container-left">
+            <input
+              type="range"
+              className="bpm-slider bpm-slider-left"
+              min="60"
+              max="180"
+              value={leftTrack.bpm}
+              onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+            />
+            <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+          </div>
 
-          <div className="controls">
-            <div className="deck-row left-deck-row">
-              <div className="playback-section">
-                <div className="bpm-slider-container">
-                  <input
-                    type="range"
-                    className="bpm-slider bpm-slider-left"
-                    min="60"
-                    max="180"
-                    value={leftTrack.bpm}
-                    onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
-                  />
-                  <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
-                </div>
-                <div className="playback-controls">
-                  <button className="cue-btn cue-btn-left">
-                    <span className="cue-symbol">CUE</span>
-                  </button>
-                  <button
-                    className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("left")}
-                  >
-                    {playing.left ? (
-                      <span className="pause-symbol">❚❚</span>
-                    ) : (
-                      <span className="play-symbol">▶</span>
-                    )}
-                  </button>
-                </div>
+          <div className="deck-row left-deck-row">
+            <div className="playback-section">
+              <div className="playback-controls">
+                <button className="cue-btn cue-btn-left">
+                  <span className="cue-symbol">CUE</span>
+                </button>
+                <button
+                  className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
+                  onClick={() => handlePlayPause("left")}
+                >
+                  {playing.left ? (
+                    <span className="pause-symbol">❚❚</span>
+                  ) : (
+                    <span className="play-symbol">▶</span>
+                  )}
+                </button>
               </div>
+            </div>
 
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator hotkey">
-                        <span className="hotkey-text">{hotkey.left[effect]}</span>
-                      </div>
-                      <button
-                        className={`effect-btn ${
-                          leftTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => handleEffectToggle("left", effect)}
-                      />
-                      <span className="effect-label">{effect}</span>
+            <div className="effect-buttons">
+              {STEM_TYPES.map((effect, index) => {
+                const hotkey = {
+                  left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                  right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                };
+                return (
+                  <div key={effect} className="effect-button-container">
+                    <div className="hotkey-indicator hotkey">
+                      <span className="hotkey-text">{hotkey.left[effect]}</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <button
+                      className={`effect-btn ${leftTrack.effectsEnabled?.[effect] ? "active" : ""}`}
+                      onClick={() => handleEffectToggle("left", effect)}
+                    />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -766,59 +762,57 @@ const DJ = () => {
           <div className="turntable">
             <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
           </div>
+          <div className="bpm-slider-container-right">
+            <input
+              type="range"
+              className="bpm-slider bpm-slider-right"
+              min="60"
+              max="180"
+              value={rightTrack.bpm}
+              onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+            />
+            <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+          </div>
 
-          <div className="controls">
-            <div className="deck-row right-deck-row">
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator">
-                        <span className="hotkey-text">{hotkey.right[effect]}</span>
-                      </div>
-                      <button
-                        className={`effect-btn ${
-                          rightTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => handleEffectToggle("right", effect)}
-                      />
-                      <span className="effect-label">{effect}</span>
+          <div className="deck-row right-deck-row">
+            <div className="effect-buttons">
+              {STEM_TYPES.map((effect, index) => {
+                const hotkey = {
+                  left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                  right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                };
+                return (
+                  <div key={effect} className="effect-button-container">
+                    <div className="hotkey-indicator">
+                      <span className="hotkey-text">{hotkey.right[effect]}</span>
                     </div>
-                  );
-                })}
-              </div>
+                    <button
+                      className={`effect-btn ${
+                        rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                      }`}
+                      onClick={() => handleEffectToggle("right", effect)}
+                    />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                );
+              })}
+            </div>
 
-              <div className="playback-section">
-                <div className="bpm-slider-container">
-                  <input
-                    type="range"
-                    className="bpm-slider bpm-slider-right"
-                    min="60"
-                    max="180"
-                    value={rightTrack.bpm}
-                    onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-                  />
-                  <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
-                </div>
-                <div className="playback-controls">
-                  <button className="cue-btn cue-btn-right">
-                    <span className="cue-symbol">CUE</span>
-                  </button>
-                  <button
-                    className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("right")}
-                  >
-                    {playing.right ? (
-                      <span className="pause-symbol">❚❚</span>
-                    ) : (
-                      <span className="play-symbol">▶</span>
-                    )}
-                  </button>
-                </div>
+            <div className="playback-section">
+              <div className="playback-controls">
+                <button className="cue-btn cue-btn-right">
+                  <span className="cue-symbol">CUE</span>
+                </button>
+                <button
+                  className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
+                  onClick={() => handlePlayPause("right")}
+                >
+                  {playing.right ? (
+                    <span className="pause-symbol">❚❚</span>
+                  ) : (
+                    <span className="play-symbol">▶</span>
+                  )}
+                </button>
               </div>
             </div>
           </div>
