@@ -119,7 +119,7 @@ const DJ = () => {
   const rightWavesurfer = useRef(null);
 
   useEffect(() => {
-    const initializeWaveSurfer = (containerRef, wavesurferRef) => {
+    const initializeWaveSurfer = async (containerRef, wavesurferRef) => {
       if (containerRef.current && !wavesurferRef.current) {
         wavesurferRef.current = createWaveSurfer(containerRef.current);
 
@@ -164,11 +164,11 @@ const DJ = () => {
         document.addEventListener("mouseup", handleMouseUp);
 
         return () => {
-          document.removeEventListener("mousemove", handleMouseMove);
-          document.removeEventListener("mouseup", handleMouseUp);
           if (containerRef.current) {
             containerRef.current.removeEventListener("mousedown", handleMouseDown);
           }
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
         };
       }
     };
@@ -177,14 +177,18 @@ const DJ = () => {
     const cleanupRight = initializeWaveSurfer(rightContainerRef, rightWavesurfer);
 
     return () => {
+      if (cleanupLeft) cleanupLeft();
+      if (cleanupRight) cleanupRight();
+
+      // Cleanup wavesurfer instances
       if (leftWavesurfer.current) {
         leftWavesurfer.current.destroy();
+        leftWavesurfer.current = null;
       }
       if (rightWavesurfer.current) {
         rightWavesurfer.current.destroy();
+        rightWavesurfer.current = null;
       }
-      cleanupLeft?.();
-      cleanupRight?.();
     };
   }, []);
 
@@ -195,11 +199,11 @@ const DJ = () => {
     }));
   };
 
-  const handleSelectTrack = async (deck, track) => {
+  const handleTrackSelect = async (deck, track) => {
     const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
+    const wavesurfer = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
     // Stop and clean up any existing audio elements
     if (trackState.audioElements) {
@@ -233,10 +237,8 @@ const DJ = () => {
     // Set up synchronization between all stems
     const stems = Object.entries(audioElements);
     stems.forEach(([stem, audio], index) => {
-      // Listen to timeupdate on the first stem (bass)
       if (index === 0) {
         audio.addEventListener("timeupdate", () => {
-          // Sync all other stems to the bass stem's time
           stems.slice(1).forEach(([_, otherAudio]) => {
             if (Math.abs(otherAudio.currentTime - audio.currentTime) > 0.1) {
               otherAudio.currentTime = audio.currentTime;
@@ -247,8 +249,12 @@ const DJ = () => {
     });
 
     // Load the waveform
-    if (waveform.current) {
-      waveform.current.load(`/assets/processed/${track.path}/${track.path}_bass.mp3`);
+    try {
+      if (wavesurfer.current) {
+        await wavesurfer.current.load(`/assets/processed/${track.path}/${track.path}_bass.mp3`);
+      }
+    } catch (error) {
+      console.error("Error loading waveform:", error);
     }
 
     // Start with all effects enabled
@@ -256,6 +262,7 @@ const DJ = () => {
       ...prev,
       name: track.name,
       key: track.key,
+      bpm: track.bpm,
       audioElements,
       effectsEnabled: {
         bass: true,
@@ -265,24 +272,15 @@ const DJ = () => {
       },
     }));
 
-    // If currently playing, start playing the new track immediately
-    if (playing[deck]) {
-      Object.values(audioElements).forEach((audio) => {
-        audio.play();
-      });
-    }
-
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [deck]: false,
-    }));
+    // Close the dropdown
+    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
 
   const handlePlayPause = (deck) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
-    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
+    const wavesurfer = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
-    if (!trackState.name || !waveform.current) return;
+    if (!trackState.name || !wavesurfer.current) return;
 
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
@@ -297,13 +295,13 @@ const DJ = () => {
         // Start playing all stems at the same time
         Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
-            audio.currentTime = waveform.current.getCurrentTime();
+            audio.currentTime = wavesurfer.current.getCurrentTime();
             if (!audio.muted) {
               audio.play();
             }
           }
         });
-        waveform.current.play();
+        wavesurfer.current.play();
       } else {
         // Pause all stems
         Object.values(trackState.audioElements || {}).forEach((audio) => {
@@ -311,7 +309,7 @@ const DJ = () => {
             audio.pause();
           }
         });
-        waveform.current.pause();
+        wavesurfer.current.pause();
       }
 
       return {
@@ -372,6 +370,7 @@ const DJ = () => {
 
   return (
     <div
+      className="dj-page"
       onClick={(e) => {
         if (!e.target.closest(".import-container")) {
           setDropdownOpen({ left: false, right: false });
@@ -397,8 +396,7 @@ const DJ = () => {
                     key={track.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSelectTrack("left", track);
-                      setDropdownOpen((prev) => ({ ...prev, left: false }));
+                      handleTrackSelect("left", track);
                     }}
                   >
                     <div className="song-info">
@@ -442,8 +440,7 @@ const DJ = () => {
                     key={track.id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSelectTrack("right", track);
-                      setDropdownOpen((prev) => ({ ...prev, right: false }));
+                      handleTrackSelect("right", track);
                     }}
                   >
                     <div className="song-info">
@@ -482,7 +479,7 @@ const DJ = () => {
           </div>
 
           <div className="controls">
-            <div className="deck-row">
+            <div className="deck-row left-deck-row">
               <div className="playback-section">
                 <div className="bpm-slider-container">
                   <input
@@ -513,30 +510,15 @@ const DJ = () => {
               </div>
 
               <div className="effect-buttons">
-                <button
-                  className={`effect-btn ${!leftTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("left", "bass")}
-                >
-                  BASS
-                </button>
-                <button
-                  className={`effect-btn ${!leftTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("left", "drums")}
-                >
-                  DRUMS
-                </button>
-                <button
-                  className={`effect-btn ${!leftTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("left", "melody")}
-                >
-                  MELODY
-                </button>
-                <button
-                  className={`effect-btn ${!leftTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("left", "vocals")}
-                >
-                  VOCALS
-                </button>
+                {STEM_TYPES.map((effect) => (
+                  <div key={effect} className="effect-button-container">
+                    <button
+                      className={`effect-btn ${leftTrack.effectsEnabled?.[effect] ? "active" : ""}`}
+                      onClick={() => toggleEffect("left", effect)}
+                    />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -553,32 +535,19 @@ const DJ = () => {
           </div>
 
           <div className="controls">
-            <div className="deck-row">
+            <div className="deck-row right-deck-row">
               <div className="effect-buttons">
-                <button
-                  className={`effect-btn ${!rightTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("right", "bass")}
-                >
-                  BASS
-                </button>
-                <button
-                  className={`effect-btn ${!rightTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("right", "drums")}
-                >
-                  DRUMS
-                </button>
-                <button
-                  className={`effect-btn ${!rightTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("right", "melody")}
-                >
-                  MELODY
-                </button>
-                <button
-                  className={`effect-btn ${!rightTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                  onClick={() => toggleEffect("right", "vocals")}
-                >
-                  VOCALS
-                </button>
+                {STEM_TYPES.map((effect) => (
+                  <div key={effect} className="effect-button-container">
+                    <button
+                      className={`effect-btn ${
+                        rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                      }`}
+                      onClick={() => toggleEffect("right", effect)}
+                    />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="playback-section">
