@@ -4,7 +4,7 @@ import App from "./components/App";
 import Home from "./components/pages/Home";
 import NotFound from "./components/pages/NotFound";
 import DJ from "./components/pages/DJ";
-import Tutorial from "./components/modules/Tutorial";
+import Tutorial from "./components/pages/Tutorial";
 import Profile from "./components/pages/Profile";
 
 import {
@@ -23,8 +23,10 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route errorElement={<NotFound />} element={<App />}>
       <Route path="/" element={<Home />} />
-      <Route path="/dj" element={<DJ />} />
-      <Route path="/dj/tutorial" element={<Tutorial />} />
+      <Route path="/dj">
+        <Route index element={<DJ />} />
+        <Route path="tutorial" element={<Tutorial />} />
+      </Route>
       <Route path="/profile/:userId" element={<Profile />} />
     </Route>
   )

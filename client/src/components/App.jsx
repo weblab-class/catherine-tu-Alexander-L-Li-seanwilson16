@@ -17,6 +17,12 @@ function App() {
   const [userId, setUserId] = useState(undefined);
   const [theme, setTheme] = useState(lofibackground);
 
+  // Add lofi class to body when app loads
+  useEffect(() => {
+    document.body.classList.add("lofi");
+    return () => document.body.classList.remove("lofi");
+  }, []);
+
   useEffect(() => {
     get("/api/whoami").then((user) => {
       if (user._id) {

@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import "./DJ.css";
+import NavBar from "../modules/NavBar";
 
 const AVAILABLE_TRACKS = [
   {
@@ -10,6 +12,12 @@ const AVAILABLE_TRACKS = [
     path: "NCS_Fall_to_Light",
     bpm: 87,
     key: "1B",
+    stems: {
+      bass: "/assets/processed/NCS_Fall_to_Light/NCS_Fall_to_Light_bass.mp3",
+      drums: "/assets/processed/NCS_Fall_to_Light/NCS_Fall_to_Light_drums.mp3",
+      melody: "/assets/processed/NCS_Fall_to_Light/NCS_Fall_to_Light_melody.mp3",
+      vocals: "/assets/processed/NCS_Fall_to_Light/NCS_Fall_to_Light_vocals.mp3",
+    },
   },
   {
     id: 2,
@@ -17,6 +25,12 @@ const AVAILABLE_TRACKS = [
     path: "NCS_On&On",
     bpm: 86,
     key: "1B",
+    stems: {
+      bass: "/assets/processed/NCS_On&On/NCS_On&On_bass.mp3",
+      drums: "/assets/processed/NCS_On&On/NCS_On&On_drums.mp3",
+      melody: "/assets/processed/NCS_On&On/NCS_On&On_melody.mp3",
+      vocals: "/assets/processed/NCS_On&On/NCS_On&On_vocals.mp3",
+    },
   },
   {
     id: 3,
@@ -24,6 +38,12 @@ const AVAILABLE_TRACKS = [
     path: "chill-guy-remix",
     bpm: 80,
     key: "4B",
+    stems: {
+      bass: "/assets/processed/chill-guy-remix/chill-guy-remix_bass.mp3",
+      drums: "/assets/processed/chill-guy-remix/chill-guy-remix_drums.mp3",
+      melody: "/assets/processed/chill-guy-remix/chill-guy-remix_melody.mp3",
+      vocals: "/assets/processed/chill-guy-remix/chill-guy-remix_vocals.mp3",
+    },
   },
 ];
 
@@ -64,6 +84,8 @@ const createWaveSurfer = (container) => {
 };
 
 const DJ = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [tracks, setTracks] = useState(AVAILABLE_TRACKS);
   const [leftTrack, setLeftTrack] = useState({
     name: "",
@@ -119,160 +141,156 @@ const DJ = () => {
   const rightWavesurfer = useRef(null);
 
   useEffect(() => {
-    const initializeWaveSurfer = async (containerRef, wavesurferRef) => {
-      if (containerRef.current && !wavesurferRef.current) {
-        wavesurferRef.current = createWaveSurfer(containerRef.current);
-
-        // Center waveform on load
-        wavesurferRef.current.on("ready", () => {
-          const wrapper = wavesurferRef.current.getWrapper();
-          wrapper.scrollLeft = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
-        });
-
-        // Add scroll handling
-        let isScrolling = false;
-        let startX = 0;
-
-        const handleMouseDown = (e) => {
-          isScrolling = true;
-          startX = e.clientX;
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleMouseMove = (e) => {
-          if (!isScrolling) return;
-
-          const dx = startX - e.clientX;
-          startX = e.clientX;
-
-          if (wavesurferRef.current) {
-            const wrapper = wavesurferRef.current.getWrapper();
-            wrapper.scrollLeft += dx;
-          }
-
-          e.preventDefault();
-          e.stopPropagation();
-        };
-
-        const handleMouseUp = () => {
-          isScrolling = false;
-        };
-
-        containerRef.current.addEventListener("mousedown", handleMouseDown);
-        document.addEventListener("mousemove", handleMouseMove);
-        document.addEventListener("mouseup", handleMouseUp);
-
-        return () => {
-          if (containerRef.current) {
-            containerRef.current.removeEventListener("mousedown", handleMouseDown);
-          }
-          document.removeEventListener("mousemove", handleMouseMove);
-          document.removeEventListener("mouseup", handleMouseUp);
-        };
-      }
-    };
-
-    const cleanupLeft = initializeWaveSurfer(leftContainerRef, leftWavesurfer);
-    const cleanupRight = initializeWaveSurfer(rightContainerRef, rightWavesurfer);
-
-    return () => {
-      if (cleanupLeft) cleanupLeft();
-      if (cleanupRight) cleanupRight();
-
-      // Cleanup wavesurfer instances
-      if (leftWavesurfer.current) {
-        leftWavesurfer.current.destroy();
-        leftWavesurfer.current = null;
-      }
-      if (rightWavesurfer.current) {
-        rightWavesurfer.current.destroy();
-        rightWavesurfer.current = null;
-      }
-    };
+    if (!leftWavesurfer.current && leftContainerRef.current) {
+      leftWavesurfer.current = createWaveSurfer(leftContainerRef.current);
+    }
+    if (!rightWavesurfer.current && rightContainerRef.current) {
+      rightWavesurfer.current = createWaveSurfer(rightContainerRef.current);
+    }
   }, []);
 
-  const handleImportSong = (deck) => {
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [deck]: !prev[deck],
-    }));
+  const handleKeyPress = (event) => {
+    const key = event.key.toLowerCase();
+
+    if (key === "q" && leftTrack.name) {
+      event.preventDefault();
+      toggleEffect("left", "bass");
+    }
+    if (key === "w" && leftTrack.name) {
+      event.preventDefault();
+      toggleEffect("left", "drums");
+    }
+    if (key === "e" && leftTrack.name) {
+      event.preventDefault();
+      toggleEffect("left", "melody");
+    }
+    if (key === "r" && leftTrack.name) {
+      event.preventDefault();
+      toggleEffect("left", "vocals");
+    }
+
+    if (key === "u" && rightTrack.name) {
+      event.preventDefault();
+      toggleEffect("right", "bass");
+    }
+    if (key === "i" && rightTrack.name) {
+      event.preventDefault();
+      toggleEffect("right", "drums");
+    }
+    if (key === "o" && rightTrack.name) {
+      event.preventDefault();
+      toggleEffect("right", "melody");
+    }
+    if (key === "p" && rightTrack.name) {
+      event.preventDefault();
+      toggleEffect("right", "vocals");
+    }
   };
 
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [leftTrack.name, rightTrack.name]);
+
+  const toggleEffect = useCallback((deck, effect) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const audio = trackState.audioElements?.[effect];
+
+    if (!audio) return;
+
+    setTrackState((prev) => {
+      const newEffectsEnabled = {
+        ...prev.effectsEnabled,
+        [effect]: !prev.effectsEnabled[effect],
+      };
+
+      audio.muted = !newEffectsEnabled[effect];
+
+      return {
+        ...prev,
+        effectsEnabled: newEffectsEnabled,
+      };
+    });
+  }, [leftTrack, rightTrack]);
+
   const handleTrackSelect = async (deck, track) => {
-    const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfer = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
-    // Stop and clean up any existing audio elements
     if (trackState.audioElements) {
       Object.values(trackState.audioElements).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
+        if (audio) {
+          audio.pause();
+        }
       });
     }
 
-    // Create new audio elements for each stem
-    const loadedAudios = [];
-    for (const stem of STEM_TYPES) {
-      const audio = new Audio();
-      const stemName = stem === "melody" ? "other" : stem;
-      audio.src = `/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
-      audio.volume = 1;
-      // Start with all stems unmuted
-      audio.muted = false;
-      audioElements[stem] = audio;
-
-      // Create a promise for each audio load
-      const loadPromise = new Promise((resolve) => {
-        audio.addEventListener("loadeddata", () => resolve());
-      });
-      loadedAudios.push(loadPromise);
+    if (wavesurfer.current) {
+      wavesurfer.current.pause();
+      wavesurfer.current.empty();
     }
 
-    // Wait for all audio elements to load
-    await Promise.all(loadedAudios);
+    const audioElements = {};
 
-    // Set up synchronization between all stems
-    const stems = Object.entries(audioElements);
-    stems.forEach(([stem, audio], index) => {
-      if (index === 0) {
-        audio.addEventListener("timeupdate", () => {
-          stems.slice(1).forEach(([_, otherAudio]) => {
-            if (Math.abs(otherAudio.currentTime - audio.currentTime) > 0.1) {
-              otherAudio.currentTime = audio.currentTime;
-            }
-          });
+    try {
+      for (const stem of STEM_TYPES) {
+        const audio = new Audio();
+        const stemName = stem === "melody" ? "other" : stem;
+        audio.src = `/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
+        audio.volume = 1;
+        audio.muted = false;
+        audioElements[stem] = audio;
+
+        await new Promise((resolve, reject) => {
+          audio.addEventListener("loadeddata", resolve, { once: true });
+          audio.addEventListener("error", reject, { once: true });
         });
       }
-    });
 
-    // Load the waveform
-    try {
+      const stems = Object.entries(audioElements);
+      const mainAudio = stems[0][1];
+
+      const syncAudio = () => {
+        const mainTime = mainAudio.currentTime;
+        stems.slice(1).forEach(([_, audio]) => {
+          if (Math.abs(audio.currentTime - mainTime) > 0.1) {
+            audio.currentTime = mainTime;
+          }
+        });
+      };
+
+      mainAudio.addEventListener("timeupdate", syncAudio);
+
       if (wavesurfer.current) {
         await wavesurfer.current.load(`/assets/processed/${track.path}/${track.path}_bass.mp3`);
       }
+
+      setTrackState({
+        name: track.name,
+        key: track.key,
+        bpm: track.bpm,
+        audioElements,
+        effectsEnabled: {
+          bass: true,
+          drums: true,
+          melody: true,
+          vocals: true,
+        },
+      });
+
     } catch (error) {
-      console.error("Error loading waveform:", error);
+      console.error("Error setting up track:", error);
+      Object.values(audioElements).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+        }
+      });
     }
 
-    // Start with all effects enabled
-    setTrackState((prev) => ({
-      ...prev,
-      name: track.name,
-      key: track.key,
-      bpm: track.bpm,
-      audioElements,
-      effectsEnabled: {
-        bass: true,
-        drums: true,
-        melody: true,
-        vocals: true,
-      },
-    }));
-
-    // Close the dropdown
     setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
 
@@ -285,14 +303,12 @@ const DJ = () => {
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
 
-      // Toggle the turntable animation
       const turntable = document.querySelector(`.${deck}-deck .turntable`);
       if (turntable) {
         turntable.classList.toggle("playing", newPlaying);
       }
 
       if (newPlaying) {
-        // Start playing all stems at the same time
         Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
             audio.currentTime = wavesurfer.current.getCurrentTime();
@@ -303,7 +319,6 @@ const DJ = () => {
         });
         wavesurfer.current.play();
       } else {
-        // Pause all stems
         Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
             audio.pause();
@@ -319,82 +334,6 @@ const DJ = () => {
     });
   };
 
-  const toggleEffect = useCallback(
-    (deck, effect) => {
-      const trackState = deck === "left" ? leftTrack : rightTrack;
-      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-      const audio = trackState.audioElements?.[effect];
-
-      if (!audio) return;
-
-      setTrackState((prev) => {
-        const newEffectsEnabled = {
-          ...prev.effectsEnabled,
-          [effect]: !prev.effectsEnabled[effect],
-        };
-
-        // Toggle mute state of the audio stem
-        audio.muted = !newEffectsEnabled[effect];
-
-        return {
-          ...prev,
-          effectsEnabled: newEffectsEnabled,
-        };
-      });
-    },
-    [leftTrack, rightTrack]
-  );
-
-  useEffect(() => {
-    const handleKeyPress = (event) => {
-      const key = event.key.toLowerCase();
-
-      // Left deck keyboard mappings
-      if (key === "q" && leftTrack.name) {
-        event.preventDefault();
-        toggleEffect("left", "bass");
-      }
-      if (key === "w" && leftTrack.name) {
-        event.preventDefault();
-        toggleEffect("left", "drums");
-      }
-      if (key === "e" && leftTrack.name) {
-        event.preventDefault();
-        toggleEffect("left", "melody");
-      }
-      if (key === "r" && leftTrack.name) {
-        event.preventDefault();
-        toggleEffect("left", "vocals");
-      }
-
-      // Right deck keyboard mappings
-      if (key === "u" && rightTrack.name) {
-        event.preventDefault();
-        toggleEffect("right", "bass");
-      }
-      if (key === "i" && rightTrack.name) {
-        event.preventDefault();
-        toggleEffect("right", "drums");
-      }
-      if (key === "o" && rightTrack.name) {
-        event.preventDefault();
-        toggleEffect("right", "melody");
-      }
-      if (key === "p" && rightTrack.name) {
-        event.preventDefault();
-        toggleEffect("right", "vocals");
-      }
-    };
-
-    // Add event listener
-    document.addEventListener("keydown", handleKeyPress);
-
-    // Cleanup
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [toggleEffect, leftTrack.name, rightTrack.name]);
-
   const handleBPMChange = (deck, value) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -402,7 +341,6 @@ const DJ = () => {
 
     if (!waveform.current || !trackState.name) return;
 
-    // Calculate playback rate based on BPM change
     const originalBPM = trackState.name
       ? tracks.find((t) => t.name === trackState.name)?.bpm || 120
       : 120;
@@ -422,248 +360,257 @@ const DJ = () => {
   };
 
   return (
-    <div
-      className="dj-page"
-      onClick={(e) => {
-        if (!e.target.closest(".import-container")) {
-          setDropdownOpen({ left: false, right: false });
-        }
-      }}
-    >
-      <div className="top-bar">
-        <div className="deck-controls">
-          <div className="import-container">
-            <button
-              className="import-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImportSong("left");
-              }}
-            >
-              IMPORT SONG ▼
-            </button>
-            {dropdownOpen.left && (
-              <div className="import-dropdown">
-                {tracks.map((track) => (
-                  <button
-                    key={track.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTrackSelect("left", track);
-                    }}
-                  >
-                    <div className="song-info">
-                      <span className="song-name">{track.name}</span>
-                      <span className="song-details">
-                        {track.bpm} BPM • {track.key}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="track-info">
-            {leftTrack.name ? (
-              <>
-                <div className="track-name-left">{leftTrack.name}</div>
-                <div className="track-details-left">
-                  {leftTrack.bpm + " BPM • " + leftTrack.key}
-                </div>
-              </>
-            ) : (
-              <div className="no-track">NO TRACK LOADED</div>
-            )}
-          </div>
-        </div>
-
-        <div className="deck-controls">
-          <div className="import-container">
-            <button
-              className="import-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImportSong("right");
-              }}
-            >
-              IMPORT SONG ▼
-            </button>
-            {dropdownOpen.right && (
-              <div className="import-dropdown">
-                {tracks.map((track) => (
-                  <button
-                    key={track.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleTrackSelect("right", track);
-                    }}
-                  >
-                    <div className="song-info">
-                      <span className="song-name">{track.name}</span>
-                      <span className="song-details">
-                        {track.bpm} BPM • {track.key}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="track-info">
-            {rightTrack.name ? (
-              <>
-                <div className="track-name-right">{rightTrack.name}</div>
-                <div className="track-details-right">
-                  {rightTrack.bpm + " BPM • " + rightTrack.key}
-                </div>
-              </>
-            ) : (
-              <div className="no-track">NO TRACK LOADED</div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="waveforms-section">
-        <div ref={leftContainerRef}></div>
-        <div ref={rightContainerRef}></div>
-      </div>
-
-      <div className="decks-container">
-        <div className="deck left-deck">
-          <div className="turntable">
-            <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
-          </div>
-
-          <div className="controls">
-            <div className="deck-row left-deck-row">
-              <div className="playback-section">
-                <div className="bpm-slider-container">
-                  <input
-                    type="range"
-                    className="bpm-slider bpm-slider-left"
-                    min="60"
-                    max="180"
-                    value={leftTrack.bpm}
-                    onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
-                  />
-                  <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
-                </div>
-                <div className="playback-controls">
-                  <button className="cue-btn cue-btn-left">
-                    <span className="cue-symbol">CUE</span>
-                  </button>
-                  <button
-                    className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("left")}
-                  >
-                    {playing.left ? (
-                      <span className="pause-symbol">❚❚</span>
-                    ) : (
-                      <span className="play-symbol">▶</span>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator hotkey">
-                        <span className="hotkey-text">{hotkey.left[effect]}</span>
+    <>
+      <NavBar />
+      <div className="dj-page">
+        <div
+          className="top-bar"
+          onClick={(e) => {
+            if (!e.target.closest(".import-container")) {
+              setDropdownOpen({ left: false, right: false });
+            }
+          }}
+        >
+          <div className="deck-controls">
+            <div className="import-container">
+              <button
+                className="import-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen((prev) => ({
+                    ...prev,
+                    left: !prev.left,
+                  }));
+                }}
+              >
+                IMPORT SONG ▼
+              </button>
+              {dropdownOpen.left && (
+                <div className="import-dropdown">
+                  {tracks.map((track) => (
+                    <button
+                      key={track.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTrackSelect("left", track);
+                      }}
+                    >
+                      <div className="song-info">
+                        <span className="song-name">{track.name}</span>
+                        <span className="song-details">
+                          {track.bpm} BPM • {track.key}
+                        </span>
                       </div>
-                      <button
-                        className={`effect-btn ${
-                          leftTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => toggleEffect("left", effect)}
-                      />
-                      <span className="effect-label">{effect}</span>
-                    </div>
-                  );
-                })}
-              </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="track-info">
+              {leftTrack.name ? (
+                <>
+                  <div className="track-name-left">{leftTrack.name}</div>
+                  <div className="track-details-left">
+                    {leftTrack.bpm + " BPM • " + leftTrack.key}
+                  </div>
+                </>
+              ) : (
+                <div className="no-track">NO TRACK LOADED</div>
+              )}
+            </div>
+          </div>
+
+          <div className="deck-controls">
+            <div className="import-container">
+              <button
+                className="import-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownOpen((prev) => ({
+                    ...prev,
+                    right: !prev.right,
+                  }));
+                }}
+              >
+                IMPORT SONG ▼
+              </button>
+              {dropdownOpen.right && (
+                <div className="import-dropdown">
+                  {tracks.map((track) => (
+                    <button
+                      key={track.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTrackSelect("right", track);
+                      }}
+                    >
+                      <div className="song-info">
+                        <span className="song-name">{track.name}</span>
+                        <span className="song-details">
+                          {track.bpm} BPM • {track.key}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="track-info">
+              {rightTrack.name ? (
+                <>
+                  <div className="track-name-right">{rightTrack.name}</div>
+                  <div className="track-details-right">
+                    {rightTrack.bpm + " BPM • " + rightTrack.key}
+                  </div>
+                </>
+              ) : (
+                <div className="no-track">NO TRACK LOADED</div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="deck-controls">
-          <button className="sync-btn">
-            <span className="sync-text">SYNC</span>
-          </button>
-          <button className="reset-btn">
-            <span className="reset-text">RESET</span>
-          </button>
+        <div className="waveforms-section">
+          <div ref={leftContainerRef}></div>
+          <div ref={rightContainerRef}></div>
         </div>
 
-        <div className="deck right-deck">
-          <div className="turntable">
-            <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
+        <div className="decks-container">
+          <div className="deck left-deck">
+            <div className="turntable">
+              <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
+            </div>
+
+            <div className="controls">
+              <div className="deck-row left-deck-row">
+                <div className="playback-section">
+                  <div className="bpm-slider-container">
+                    <input
+                      type="range"
+                      className="bpm-slider bpm-slider-left"
+                      min="60"
+                      max="180"
+                      value={leftTrack.bpm}
+                      onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+                    />
+                    <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+                  </div>
+                  <div className="playback-controls">
+                    <button className="cue-btn cue-btn-left">
+                      <span className="cue-symbol">CUE</span>
+                    </button>
+                    <button
+                      className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
+                      onClick={() => handlePlayPause("left")}
+                    >
+                      {playing.left ? (
+                        <span className="pause-symbol">❚❚</span>
+                      ) : (
+                        <span className="play-symbol">▶</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="effect-buttons">
+                  {STEM_TYPES.map((effect, index) => {
+                    const hotkey = {
+                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                    };
+                    return (
+                      <div key={effect} className="effect-button-container">
+                        <div className="hotkey-indicator hotkey">
+                          <span className="hotkey-text">{hotkey.left[effect]}</span>
+                        </div>
+                        <button
+                          className={`effect-btn ${
+                            leftTrack.effectsEnabled?.[effect] ? "active" : ""
+                          }`}
+                          onClick={() => toggleEffect("left", effect)}
+                        />
+                        <span className="effect-label">{effect}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="controls">
-            <div className="deck-row right-deck-row">
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator">
-                        <span className="hotkey-text">{hotkey.right[effect]}</span>
-                      </div>
-                      <button
-                        className={`effect-btn ${
-                          rightTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => toggleEffect("right", effect)}
-                      />
-                      <span className="effect-label">{effect}</span>
-                    </div>
-                  );
-                })}
-              </div>
+          <div className="deck-controls">
+            <button className="sync-btn">
+              <span className="sync-text">SYNC</span>
+            </button>
+            <button className="reset-btn">
+              <span className="reset-text">RESET</span>
+            </button>
+          </div>
 
-              <div className="playback-section">
-                <div className="bpm-slider-container">
-                  <input
-                    type="range"
-                    className="bpm-slider bpm-slider-right"
-                    min="60"
-                    max="180"
-                    value={rightTrack.bpm}
-                    onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-                  />
-                  <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+          <div className="deck right-deck">
+            <div className="turntable">
+              <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
+            </div>
+
+            <div className="controls">
+              <div className="deck-row right-deck-row">
+                <div className="effect-buttons">
+                  {STEM_TYPES.map((effect, index) => {
+                    const hotkey = {
+                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                    };
+                    return (
+                      <div key={effect} className="effect-button-container">
+                        <div className="hotkey-indicator">
+                          <span className="hotkey-text">{hotkey.right[effect]}</span>
+                        </div>
+                        <button
+                          className={`effect-btn ${
+                            rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                          }`}
+                          onClick={() => toggleEffect("right", effect)}
+                        />
+                        <span className="effect-label">{effect}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className="playback-controls">
-                  <button className="cue-btn cue-btn-right">
-                    <span className="cue-symbol">CUE</span>
-                  </button>
-                  <button
-                    className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("right")}
-                  >
-                    {playing.right ? (
-                      <span className="pause-symbol">❚❚</span>
-                    ) : (
-                      <span className="play-symbol">▶</span>
-                    )}
-                  </button>
+
+                <div className="playback-section">
+                  <div className="bpm-slider-container">
+                    <input
+                      type="range"
+                      className="bpm-slider bpm-slider-right"
+                      min="60"
+                      max="180"
+                      value={rightTrack.bpm}
+                      onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+                    />
+                    <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+                  </div>
+                  <div className="playback-controls">
+                    <button className="cue-btn cue-btn-right">
+                      <span className="cue-symbol">CUE</span>
+                    </button>
+                    <button
+                      className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
+                      onClick={() => handlePlayPause("right")}
+                    >
+                      {playing.right ? (
+                        <span className="pause-symbol">❚❚</span>
+                      ) : (
+                        <span className="play-symbol">▶</span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
