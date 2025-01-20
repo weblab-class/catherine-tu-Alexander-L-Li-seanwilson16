@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import WaveSurfer from "wavesurfer.js";
 import "./DJ.css";
 
@@ -34,29 +34,31 @@ const createWaveSurfer = (container) => {
     waveColor: "#4a9eff",
     progressColor: "#1e4976",
     cursorColor: "#ffffff",
+    cursorWidth: 2,
     barWidth: 2,
     barRadius: 3,
     barGap: 3,
-    height: 80,
+    height: 100,
     responsive: true,
     normalize: true,
     partialRender: true,
+    interact: true,
   });
 };
 
 const DJ = () => {
-  const [tracks, setTracks] = useState(AVAILABLE_TRACKS);
+  const [tracks] = useState(AVAILABLE_TRACKS);
   const [leftTrack, setLeftTrack] = useState({
     name: "",
     bpm: 0,
     key: "",
     volume: 100,
     audioElements: {},
-    effectsEnabled: {
-      bass: true,
-      drums: true,
-      melody: true,
-      vocals: true,
+    stemMuted: {
+      bass: false,
+      drums: false,
+      melody: false,
+      vocals: false,
     },
   });
 
@@ -66,11 +68,11 @@ const DJ = () => {
     key: "",
     volume: 100,
     audioElements: {},
-    effectsEnabled: {
-      bass: true,
-      drums: true,
-      melody: true,
-      vocals: true,
+    stemMuted: {
+      bass: false,
+      drums: false,
+      melody: false,
+      vocals: false,
     },
   });
 
@@ -84,27 +86,23 @@ const DJ = () => {
     right: false,
   });
 
-  const [timeInfo, setTimeInfo] = useState({
-    left: { current: 0, total: 0 },
-    right: { current: 0, total: 0 },
-  });
+  const [selectedElement, setSelectedElement] = useState(null);
 
-  const formatTime = (seconds) => {
-    if (isNaN(seconds)) return "0:00";
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
+  const [syncLocked, setSyncLocked] = useState(false);
 
+  const containerRef = useRef(null);
   const leftContainerRef = useRef(null);
   const rightContainerRef = useRef(null);
-  const leftWaveformRef = useRef(null);
-  const rightWaveformRef = useRef(null);
   const leftWavesurfer = useRef(null);
   const rightWavesurfer = useRef(null);
 
   useEffect(() => {
-    // Initialize WaveSurfer instances
+    if (containerRef.current) {
+      containerRef.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
     if (leftContainerRef.current && !leftWavesurfer.current) {
       leftWavesurfer.current = createWaveSurfer(leftContainerRef.current);
     }
@@ -123,116 +121,21 @@ const DJ = () => {
     };
   }, []);
 
-  const handleImportSong = (deck) => {
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [deck]: !prev[deck],
-    }));
-  };
-
-  const handleSelectTrack = async (deck, track) => {
-    const audioElements = {};
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
-
-    // Stop and clean up any existing audio elements
-    if (trackState.audioElements) {
-      Object.values(trackState.audioElements).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    }
-
-    // Create new audio elements for each stem
-    const loadedAudios = [];
-    for (const stem of STEM_TYPES) {
-      const audio = new Audio();
-      const stemName = stem === "melody" ? "other" : stem;
-      audio.src = `/src/public/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
-      audio.volume = trackState.volume / 100;
-      // Start with all stems unmuted
-      audio.muted = false;
-      audioElements[stem] = audio;
-
-      // Create a promise for each audio load
-      const loadPromise = new Promise((resolve) => {
-        audio.addEventListener("loadeddata", () => resolve());
-      });
-      loadedAudios.push(loadPromise);
-    }
-
-    // Wait for all audio elements to load
-    await Promise.all(loadedAudios);
-
-    // Set up synchronization between all stems
-    const stems = Object.entries(audioElements);
-    stems.forEach(([stem, audio], index) => {
-      // Listen to timeupdate on the first stem (bass)
-      if (index === 0) {
-        audio.addEventListener("timeupdate", () => {
-          // Sync all other stems to the bass stem's time
-          stems.slice(1).forEach(([_, otherAudio]) => {
-            if (Math.abs(otherAudio.currentTime - audio.currentTime) > 0.1) {
-              otherAudio.currentTime = audio.currentTime;
-            }
-          });
-        });
-      }
-    });
-
-    // Load the waveform
-    if (waveform.current) {
-      waveform.current.load(`/src/public/assets/processed/${track.path}/${track.path}_bass.mp3`);
-    }
-
-    // Start with all effects enabled
-    setTrackState((prev) => ({
-      ...prev,
-      name: track.name,
-      bpm: track.bpm,
-      key: track.key,
-      audioElements,
-      effectsEnabled: {
-        bass: true,
-        drums: true,
-        melody: true,
-        vocals: true,
-      },
-    }));
-
-    // If currently playing, start playing the new track immediately
-    if (playing[deck]) {
-      Object.values(audioElements).forEach((audio) => {
-        audio.play();
-      });
-    }
-
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [deck]: false,
-    }));
-  };
-
   const togglePlay = (deck) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
 
-    if (!trackState.audioElements.bass) return;
+    if (!trackState.audioElements?.bass) return;
 
     setPlaying((prev) => {
       const newPlaying = !prev[deck];
 
       if (newPlaying) {
-        // Start playing all stems at the same time
         Object.values(trackState.audioElements).forEach((audio) => {
-          audio.currentTime = 0; // Reset all to start
-          // Small delay to ensure synchronized start
           setTimeout(() => audio.play(), 50);
         });
         waveform.current?.play();
       } else {
-        // Pause all stems
         Object.values(trackState.audioElements).forEach((audio) => {
           audio.pause();
         });
@@ -246,39 +149,121 @@ const DJ = () => {
     });
   };
 
-  const toggleEffect = (deck, effect) => {
+  const handleImportSong = (deck) => {
+    setDropdownOpen((prev) => ({
+      ...prev,
+      [deck]: !prev[deck],
+    }));
+  };
+
+  const handleSelectTrack = async (deck, track) => {
+    // Reset sync lock when new track is selected
+    setSyncLocked(false);
+
+    const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
-    const audio = trackState.audioElements[effect];
+    const container = deck === "left" ? leftContainerRef.current : rightContainerRef.current;
 
-    if (!audio) return;
+    if (trackState.audioElements) {
+      Object.values(trackState.audioElements).forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+
+    const loadedAudios = [];
+    for (const stem of STEM_TYPES) {
+      const audio = new Audio();
+      const stemName = stem === "melody" ? "other" : stem;
+      audio.src = `/src/public/assets/processed/${track.path}/${track.path}_${stemName}.mp3`;
+      audio.volume = trackState.volume / 100;
+      audio.muted = false;
+      audioElements[stem] = audio;
+
+      const loadPromise = new Promise((resolve) => {
+        audio.addEventListener("canplaythrough", resolve, { once: true });
+      });
+      loadedAudios.push(loadPromise);
+    }
+
+    await Promise.all(loadedAudios);
+
+    setDropdownOpen((prev) => ({
+      ...prev,
+      [deck]: false,
+    }));
+
+    setTrackState({
+      ...track,
+      originalBPM: track.bpm,
+      volume: trackState.volume,
+      audioElements,
+      stemMuted: {
+        bass: false,
+        drums: false,
+        melody: false,
+        vocals: false,
+      },
+    });
+
+    if (waveform.current) {
+      try {
+        waveform.current.destroy();
+        waveform.current = createWaveSurfer(container);
+        await waveform.current.load(`/src/public/assets/processed/${track.path}/${track.path}_bass.mp3`);
+
+        const clickHandler = async (e) => {
+          if (!audioElements || !waveform.current) return;
+
+          if (playing[deck]) {
+            Object.values(audioElements).forEach((audio) => audio.pause());
+          }
+
+          const rect = container.getBoundingClientRect();
+          const relativeX = e.clientX - rect.left;
+          const seekPercentage = relativeX / rect.width;
+
+          waveform.current.seekTo(seekPercentage);
+
+          const duration = waveform.current.getDuration();
+          const seekTime = duration * seekPercentage;
+
+          Object.values(audioElements).forEach((audio) => {
+            audio.currentTime = seekTime;
+            if (playing[deck]) {
+              audio.play();
+            }
+          });
+        };
+
+        container.removeEventListener("click", clickHandler);
+        container.addEventListener("click", clickHandler);
+      } catch (error) {
+        console.error("Error loading waveform:", error);
+      }
+    }
+  };
+
+  const toggleEffect = (deck, effect) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
 
     setTrackState((prev) => {
-      const newEffectsEnabled = {
-        ...prev.effectsEnabled,
-        [effect]: !prev.effectsEnabled[effect],
+      const newState = {
+        ...prev,
+        stemMuted: {
+          ...prev.stemMuted,
+          [effect]: !prev.stemMuted[effect],
+        },
       };
 
-      // Just toggle mute state, keep playing
-      audio.muted = !newEffectsEnabled[effect];
-
-      // Check if all stems are now disabled
-      const allStemsMuted = Object.values(newEffectsEnabled).every((enabled) => !enabled);
-
-      // Pause/play waveform based on whether any stems are enabled
-      if (playing[deck]) {
-        if (allStemsMuted) {
-          waveform.current?.pause();
-        } else {
-          waveform.current?.play();
-        }
+      if (prev.audioElements && prev.audioElements[effect]) {
+        prev.audioElements[effect].muted = newState.stemMuted[effect];
       }
 
-      return {
-        ...prev,
-        effectsEnabled: newEffectsEnabled,
-      };
+      return newState;
     });
   };
 
@@ -296,12 +281,315 @@ const DJ = () => {
     }));
   };
 
+  const handleBPMChange = (deck, newBpm) => {
+    // Adjust playback rate for the specified deck
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const waveform = deck === "left" ? leftWavesurfer : rightWavesurfer;
+
+    const originalBPM = trackState.originalBPM || trackState.bpm;
+    const rate = newBpm / originalBPM;
+
+    Object.values(trackState.audioElements).forEach((audio) => {
+      audio.playbackRate = rate;
+    });
+
+    if (waveform.current) {
+      waveform.current.setPlaybackRate(rate);
+    }
+
+    // Update BPM state for the changed deck
+    if (deck === "left") {
+      setLeftTrack((prev) => ({
+        ...prev,
+        bpm: newBpm,
+      }));
+      
+      // If sync is locked, update right deck BPM too
+      if (syncLocked && rightTrack.name) {
+        const rightRate = newBpm / (rightTrack.originalBPM || rightTrack.bpm);
+        Object.values(rightTrack.audioElements).forEach((audio) => {
+          audio.playbackRate = rightRate;
+        });
+        if (rightWavesurfer.current) {
+          rightWavesurfer.current.setPlaybackRate(rightRate);
+        }
+        setRightTrack((prev) => ({
+          ...prev,
+          bpm: newBpm,
+        }));
+      }
+    } else {
+      setRightTrack((prev) => ({
+        ...prev,
+        bpm: newBpm,
+      }));
+      
+      // If sync is locked, update left deck BPM too
+      if (syncLocked && leftTrack.name) {
+        const leftRate = newBpm / (leftTrack.originalBPM || leftTrack.bpm);
+        Object.values(leftTrack.audioElements).forEach((audio) => {
+          audio.playbackRate = leftRate;
+        });
+        if (leftWavesurfer.current) {
+          leftWavesurfer.current.setPlaybackRate(leftRate);
+        }
+        setLeftTrack((prev) => ({
+          ...prev,
+          bpm: newBpm,
+        }));
+      }
+    }
+  };
+
+  const handleSync = () => {
+    // Check if decks are playing and their effective volume (muted or volume = 0)
+    const isLeftPlaying = playing.left && leftTrack.name;
+    const isRightPlaying = playing.right && rightTrack.name;
+    const isLeftMuted = Object.values(leftTrack.stemMuted).every(muted => muted) || leftTrack.volume === 0;
+    const isRightMuted = Object.values(rightTrack.stemMuted).every(muted => muted) || rightTrack.volume === 0;
+
+    // If left is playing and audible, and right is silent, sync right to left
+    if (isLeftPlaying && !isLeftMuted && (isRightMuted || !isRightPlaying)) {
+      handleBPMChange("right", leftTrack.bpm || leftTrack.originalBPM);
+      setSyncLocked(true);
+    }
+    // If right is playing and audible, and left is silent, sync left to right
+    else if (isRightPlaying && !isRightMuted && (isLeftMuted || !isLeftPlaying)) {
+      handleBPMChange("left", rightTrack.bpm || rightTrack.originalBPM);
+      setSyncLocked(true);
+    }
+  };
+
+  const handleFileUpload = async (deck, file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const track = data.track;
+        handleSelectTrack(deck, track);
+      } else {
+        console.error("Error uploading file:", data.error);
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  const resetBoard = useCallback(() => {
+    // Reset sync lock when board is reset
+    setSyncLocked(false);
+    
+    if (leftTrack.audioElements) {
+      Object.values(leftTrack.audioElements).forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+    if (rightTrack.audioElements) {
+      Object.values(rightTrack.audioElements).forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+
+    if (leftWavesurfer.current) {
+      leftWavesurfer.current.destroy();
+      leftWavesurfer.current = createWaveSurfer(leftContainerRef.current);
+    }
+    if (rightWavesurfer.current) {
+      rightWavesurfer.current.destroy();
+      rightWavesurfer.current = createWaveSurfer(rightContainerRef.current);
+    }
+
+    setLeftTrack({
+      name: "",
+      bpm: 0,
+      key: "",
+      volume: 100,
+      audioElements: {},
+      stemMuted: {
+        bass: false,
+        drums: false,
+        melody: false,
+        vocals: false,
+      },
+    });
+
+    setRightTrack({
+      name: "",
+      bpm: 0,
+      key: "",
+      volume: 100,
+      audioElements: {},
+      stemMuted: {
+        bass: false,
+        drums: false,
+        melody: false,
+        vocals: false,
+      },
+    });
+
+    setPlaying({
+      left: false,
+      right: false,
+    });
+
+    setDropdownOpen({
+      left: false,
+      right: false,
+    });
+
+    setSelectedElement(null);
+  }, [leftTrack.audioElements, rightTrack.audioElements]);
+
+  const handleKeyPress = useCallback((e) => {
+    switch (e.key.toLowerCase()) {
+      case "q":
+        toggleEffect("left", "bass");
+        setSelectedElement({ type: "effect", effect: "bass", deck: "left" });
+        break;
+      case "w":
+        toggleEffect("left", "drums");
+        setSelectedElement({ type: "effect", effect: "drums", deck: "left" });
+        break;
+      case "e":
+        toggleEffect("left", "melody");
+        setSelectedElement({ type: "effect", effect: "melody", deck: "left" });
+        break;
+      case "r":
+        toggleEffect("left", "vocals");
+        setSelectedElement({ type: "effect", effect: "vocals", deck: "left" });
+        break;
+      case "u":
+        toggleEffect("right", "bass");
+        setSelectedElement({ type: "effect", effect: "bass", deck: "right" });
+        break;
+      case "i":
+        toggleEffect("right", "drums");
+        setSelectedElement({ type: "effect", effect: "drums", deck: "right" });
+        break;
+      case "o":
+        toggleEffect("right", "melody");
+        setSelectedElement({ type: "effect", effect: "melody", deck: "right" });
+        break;
+      case "p":
+        toggleEffect("right", "vocals");
+        setSelectedElement({ type: "effect", effect: "vocals", deck: "right" });
+        break;
+      case "a":
+        togglePlay("left");
+        break;
+      case "j":
+        togglePlay("right");
+        break;
+      case "z":
+        setSelectedElement((prev) =>
+          prev?.type === "bpm" && prev?.deck === "left"
+            ? null
+            : { type: "bpm", deck: "left" }
+        );
+        break;
+      case "m":
+        setSelectedElement((prev) =>
+          prev?.type === "bpm" && prev?.deck === "right"
+            ? null
+            : { type: "bpm", deck: "right" }
+        );
+        break;
+      case "x":
+        setSelectedElement((prev) =>
+          prev?.type === "volume" && prev?.deck === "left"
+            ? null
+            : { type: "volume", deck: "left" }
+        );
+        break;
+      case "n":
+        setSelectedElement((prev) =>
+          prev?.type === "volume" && prev?.deck === "right"
+            ? null
+            : { type: "volume", deck: "right" }
+        );
+        break;
+      case "h":
+        handleSync();
+        break;
+      case "g":
+        resetBoard();
+        break;
+      default:
+        break;
+    }
+  }, [toggleEffect, togglePlay, leftTrack.bpm, rightTrack.bpm, playing, leftTrack.stemMuted, rightTrack.stemMuted, resetBoard]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (!selectedElement) return;
+
+    const deck = selectedElement.deck;
+    
+    if (selectedElement.type === "bpm") {
+      const currentBPM = deck === "left" ? leftTrack.bpm : rightTrack.bpm;
+      switch (e.key.toLowerCase()) {
+        case "arrowup":
+          e.preventDefault();
+          handleBPMChange(deck, Math.min(200, (currentBPM || 120) + 1));
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          handleBPMChange(deck, Math.max(60, (currentBPM || 120) - 1));
+          break;
+        default:
+          break;
+      }
+    } else if (selectedElement.type === "volume") {
+      const currentVolume = deck === "left" ? leftTrack.volume : rightTrack.volume;
+      switch (e.key.toLowerCase()) {
+        case "arrowup":
+          e.preventDefault();
+          handleVolumeChange(deck, Math.min(100, currentVolume + 5));
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          handleVolumeChange(deck, Math.max(0, currentVolume - 5));
+          break;
+        default:
+          break;
+      }
+    }
+  }, [leftTrack.bpm, rightTrack.bpm, leftTrack.volume, rightTrack.volume, selectedElement]);
+
+  useEffect(() => {
+    window.addEventListener("keypress", handleKeyPress);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keypress", handleKeyPress);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyPress, handleKeyDown]);
+
   return (
     <div
+      ref={containerRef}
       className="dj-container"
+      tabIndex="0"
+      onBlur={(e) => {
+        if (e.currentTarget.contains(e.relatedTarget)) {
+          e.currentTarget.focus();
+        }
+      }}
       onClick={(e) => {
         if (!e.target.closest(".import-container")) {
           setDropdownOpen({ left: false, right: false });
+        }
+        if (containerRef.current) {
+          containerRef.current.focus();
         }
       }}
     >
@@ -391,61 +679,105 @@ const DJ = () => {
 
           <div className="turntable"></div>
 
-          <div className="controls">
-            <div className="slider-container">
-              <input
-                type="range"
-                className="slider"
-                min="0"
-                max="100"
-                value={leftTrack.volume}
-                onChange={(e) => handleVolumeChange("left", parseInt(e.target.value))}
-                orientation="vertical"
-              />
+          <div className="slider-controls">
+            <div className="slider-group">
+              <div
+                className={`slider-container bpm ${selectedElement?.type === "bpm" && selectedElement?.deck === "left" ? "selected" : ""}`}
+              >
+                <div className="slider-label">BPM (Z)</div>
+                <input
+                  type="range"
+                  className="slider"
+                  min="60"
+                  max="200"
+                  value={leftTrack.bpm || (leftTrack.originalBPM || 120)}
+                  onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+                  orientation="vertical"
+                />
+              </div>
             </div>
 
+            <div className="slider-group">
+              <div
+                className={`slider-container volume ${selectedElement?.type === "volume" && selectedElement?.deck === "left" ? "selected" : ""}`}
+              >
+                <div className="slider-label">VOL (X)</div>
+                <input
+                  type="range"
+                  className="slider"
+                  min="0"
+                  max="100"
+                  value={leftTrack.volume}
+                  onChange={(e) => handleVolumeChange("left", parseInt(e.target.value))}
+                  orientation="vertical"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="controls">
             <div className="effect-buttons">
               <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "bass")}
+                className={`effect-btn ${leftTrack.stemMuted.bass ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'bass' && selectedElement?.deck === 'left' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("left", "bass");
+                  setSelectedElement({ type: 'effect', effect: 'bass', deck: 'left' });
+                }}
               >
-                BASS
+                BASS (Q)
               </button>
               <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "drums")}
+                className={`effect-btn ${leftTrack.stemMuted.drums ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'drums' && selectedElement?.deck === 'left' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("left", "drums");
+                  setSelectedElement({ type: 'effect', effect: 'drums', deck: 'left' });
+                }}
               >
-                DRUMS
+                DRUMS (W)
               </button>
               <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "melody")}
+                className={`effect-btn ${leftTrack.stemMuted.melody ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'melody' && selectedElement?.deck === 'left' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("left", "melody");
+                  setSelectedElement({ type: 'effect', effect: 'melody', deck: 'left' });
+                }}
               >
-                MELODY
+                MELODY (E)
               </button>
               <button
-                className={`effect-btn ${!leftTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                onClick={() => toggleEffect("left", "vocals")}
+                className={`effect-btn ${leftTrack.stemMuted.vocals ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'vocals' && selectedElement?.deck === 'left' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("left", "vocals");
+                  setSelectedElement({ type: 'effect', effect: 'vocals', deck: 'left' });
+                }}
               >
-                VOCALS
+                VOCALS (R)
               </button>
             </div>
 
             <div className="playback-controls">
               <button className="cue-btn">CUE</button>
               <button
-                className={`play-btn ${playing.left ? "playing" : ""}`}
-                onClick={() => togglePlay("left")}
+                className={`play-btn ${playing.left ? "playing" : ""} ${selectedElement?.type === 'play' && selectedElement?.deck === 'left' ? 'selected' : ''}`}
+                onClick={() => {
+                  togglePlay("left");
+                  setSelectedElement({ type: 'play', deck: 'left' });
+                }}
               >
-                {playing.left ? "❚❚" : "▶"}
+                {playing.left ? "❚❚" : "▶"} (A)
               </button>
             </div>
           </div>
         </div>
 
         <div className="deck-controls">
-          <button className="sync-btn">SYNC</button>
-          <button className="reset-btn">RESET</button>
+          <button 
+            className={`sync-btn ${syncLocked ? "active" : ""}`} 
+            onClick={handleSync}
+          >
+            SYNC (H)
+          </button>
+          <button className="reset-btn" onClick={resetBoard}>RESET (G)</button>
         </div>
 
         <div className="deck">
@@ -455,53 +787,92 @@ const DJ = () => {
 
           <div className="turntable"></div>
 
-          <div className="controls">
-            <div className="slider-container">
-              <input
-                type="range"
-                className="slider"
-                min="0"
-                max="100"
-                value={rightTrack.volume}
-                onChange={(e) => handleVolumeChange("right", parseInt(e.target.value))}
-                orientation="vertical"
-              />
+          <div className="slider-controls">
+            <div className="slider-group">
+              <div
+                className={`slider-container volume ${selectedElement?.type === "volume" && selectedElement?.deck === "right" ? "selected" : ""}`}
+              >
+                <div className="slider-label">VOL (N)</div>
+                <input
+                  type="range"
+                  className="slider"
+                  min="0"
+                  max="100"
+                  value={rightTrack.volume}
+                  onChange={(e) => handleVolumeChange("right", parseInt(e.target.value))}
+                  orientation="vertical"
+                />
+              </div>
             </div>
 
+            <div className="slider-group">
+              <div
+                className={`slider-container bpm ${selectedElement?.type === "bpm" && selectedElement?.deck === "right" ? "selected" : ""}`}
+              >
+                <div className="slider-label">BPM (M)</div>
+                <input
+                  type="range"
+                  className="slider"
+                  min="60"
+                  max="200"
+                  value={rightTrack.bpm || (rightTrack.originalBPM || 120)}
+                  onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+                  orientation="vertical"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="controls">
             <div className="effect-buttons">
               <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.bass ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "bass")}
+                className={`effect-btn ${rightTrack.stemMuted.bass ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'bass' && selectedElement?.deck === 'right' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("right", "bass");
+                  setSelectedElement({ type: 'effect', effect: 'bass', deck: 'right' });
+                }}
               >
-                BASS
+                BASS (U)
               </button>
               <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.drums ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "drums")}
+                className={`effect-btn ${rightTrack.stemMuted.drums ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'drums' && selectedElement?.deck === 'right' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("right", "drums");
+                  setSelectedElement({ type: 'effect', effect: 'drums', deck: 'right' });
+                }}
               >
-                DRUMS
+                DRUMS (I)
               </button>
               <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.melody ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "melody")}
+                className={`effect-btn ${rightTrack.stemMuted.melody ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'melody' && selectedElement?.deck === 'right' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("right", "melody");
+                  setSelectedElement({ type: 'effect', effect: 'melody', deck: 'right' });
+                }}
               >
-                MELODY
+                MELODY (O)
               </button>
               <button
-                className={`effect-btn ${!rightTrack.effectsEnabled.vocals ? "disabled" : ""}`}
-                onClick={() => toggleEffect("right", "vocals")}
+                className={`effect-btn ${rightTrack.stemMuted.vocals ? "disabled" : ""} ${selectedElement?.type === 'effect' && selectedElement?.effect === 'vocals' && selectedElement?.deck === 'right' ? 'selected' : ''}`}
+                onClick={() => {
+                  toggleEffect("right", "vocals");
+                  setSelectedElement({ type: 'effect', effect: 'vocals', deck: 'right' });
+                }}
               >
-                VOCALS
+                VOCALS (P)
               </button>
             </div>
 
             <div className="playback-controls">
               <button className="cue-btn">CUE</button>
               <button
-                className={`play-btn ${playing.right ? "playing" : ""}`}
-                onClick={() => togglePlay("right")}
+                className={`play-btn ${playing.right ? "playing" : ""} ${selectedElement?.type === 'play' && selectedElement?.deck === 'right' ? 'selected' : ''}`}
+                onClick={() => {
+                  togglePlay("right");
+                  setSelectedElement({ type: 'play', deck: 'right' });
+                }}
               >
-                {playing.right ? "❚❚" : "▶"}
+                {playing.right ? "❚❚" : "▶"} (J)
               </button>
             </div>
           </div>

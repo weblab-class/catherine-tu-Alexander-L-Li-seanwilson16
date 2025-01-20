@@ -51,8 +51,10 @@ const Profile = () => {
 
     if (userId) {
       // Fetch user data including theme
-      get(`/api/user`, { userid: userId }).then((userObj) => {
+      get("/api/user", { userid: userId }).then((userObj) => {
         setUser(userObj);
+      }).catch((error) => {
+        console.error("Failed to fetch user:", error);
       });
     }
   }, [userId, setTheme]); // changing user id is the dependency
