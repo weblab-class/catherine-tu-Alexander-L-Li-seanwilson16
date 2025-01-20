@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { get } from "../../utilities";
-import { ThemeContext } from "../context/Context";
 import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
@@ -22,7 +21,7 @@ const Profile = () => {
   }, [userId]); // changing user id is the dependency
 
   if (!user) {
-    return <div> Loading!</div>;
+    return <div> </div>;
   }
 
   return (
@@ -37,7 +36,7 @@ const Profile = () => {
         />
         <TimeOfDay name={user.name} />
         <div className="button-text-inline">
-          <h2 className="theme-title">Choose a Theme:</h2>
+          <h2 className="theme-title">choose a theme:</h2>
           <ThemeButtons />
         </div>
       </div>

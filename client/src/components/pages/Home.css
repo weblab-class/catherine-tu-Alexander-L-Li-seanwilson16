@@ -1,7 +1,7 @@
 /* styling for the background */
 body {
   margin: 0;
-  background-size: cover; /* Makes the image cover the entire background */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -18,6 +18,13 @@ body::before {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.3); /* black overlay with opacity */
   z-index: -1; /* overlay is behind the content */
+  pointer-events: none;
+}
+
+button,
+a, /* Add any other interactive elements, like links */
+.interactive-element {
+  cursor: url("/assets/disc-clicker.png") 13 13, auto !important;
 }
 
 /* container to center content */
