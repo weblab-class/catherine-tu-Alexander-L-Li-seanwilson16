@@ -37,7 +37,7 @@ const Profile = () => {
         />
         <TimeOfDay name={user.name} />
         <div className="button-text-inline">
-          <h2 className="theme-title">Choose a Theme:</h2>
+          <h2 className="theme-title">choose a theme:</h2>
           <ThemeButtons />
         </div>
       </div>

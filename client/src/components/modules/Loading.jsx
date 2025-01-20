@@ -7,7 +7,7 @@ const Loading = () => {
     <div className="loading-container">
       <div className="loading-content">
         <img src={loadingGif} alt="Loading..." className="loading-gif" />
-        <p className="loading-text">Loading your vibe...</p>
+        <p className="loading-text">loading your vibe...</p>
       </div>
     </div>
   );
