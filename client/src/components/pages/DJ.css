@@ -1,7 +1,16 @@
+body {
+  overflow: hidden;
+}
+
 .dj-page {
   padding: 0px;
-  min-height: 100vh;
+  height: 100vh;
   color: white;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
 }
 
 /* Top Bar Styles */
