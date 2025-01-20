@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { get } from "../../utilities";
-import { ThemeContext } from "../context/Context";
 import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";

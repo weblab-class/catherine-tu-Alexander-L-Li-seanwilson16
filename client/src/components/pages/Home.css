@@ -1,13 +1,11 @@
 /* styling for the background */
 body {
   margin: 0;
-  background-size: cover; /* Makes the image cover the entire background */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   overflow-y: hidden; /* no scrolling */
-  /* cursor: url("/assets/music-clicker.png"), auto !important; */
-  /* cursor: pointer; */
 }
 
 body::before {
