@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import WaveSurfer from "wavesurfer.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import "./DJ.css";
@@ -319,7 +319,7 @@ const DJ = () => {
     });
   };
 
-  const toggleEffect = (deck, effect) => {
+  const toggleEffect = useCallback((deck, effect) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const audio = trackState.audioElements?.[effect];
@@ -340,7 +340,57 @@ const DJ = () => {
         effectsEnabled: newEffectsEnabled,
       };
     });
-  };
+  }, [leftTrack, rightTrack]);
+
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      const key = event.key.toLowerCase();
+      
+      // Left deck keyboard mappings
+      if (key === 'q' && leftTrack.name) {
+        event.preventDefault();
+        toggleEffect('left', 'bass');
+      }
+      if (key === 'w' && leftTrack.name) {
+        event.preventDefault();
+        toggleEffect('left', 'drums');
+      }
+      if (key === 'e' && leftTrack.name) {
+        event.preventDefault();
+        toggleEffect('left', 'melody');
+      }
+      if (key === 'r' && leftTrack.name) {
+        event.preventDefault();
+        toggleEffect('left', 'vocals');
+      }
+      
+      // Right deck keyboard mappings
+      if (key === 'u' && rightTrack.name) {
+        event.preventDefault();
+        toggleEffect('right', 'bass');
+      }
+      if (key === 'i' && rightTrack.name) {
+        event.preventDefault();
+        toggleEffect('right', 'drums');
+      }
+      if (key === 'o' && rightTrack.name) {
+        event.preventDefault();
+        toggleEffect('right', 'melody');
+      }
+      if (key === 'p' && rightTrack.name) {
+        event.preventDefault();
+        toggleEffect('right', 'vocals');
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('keydown', handleKeyPress);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [toggleEffect, leftTrack.name, rightTrack.name]);
 
   const handleBPMChange = (deck, value) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
@@ -514,15 +564,26 @@ const DJ = () => {
               </div>
 
               <div className="effect-buttons">
-                {STEM_TYPES.map((effect) => (
-                  <div key={effect} className="effect-button-container">
-                    <button
-                      className={`effect-btn ${leftTrack.effectsEnabled?.[effect] ? "active" : ""}`}
-                      onClick={() => toggleEffect("left", effect)}
-                    />
-                    <span className="effect-label">{effect}</span>
-                  </div>
-                ))}
+                {STEM_TYPES.map((effect, index) => {
+                  const hotkey = {
+                    left: { bass: 'Q', drums: 'W', melody: 'E', vocals: 'R' },
+                    right: { bass: 'U', drums: 'I', melody: 'O', vocals: 'P' }
+                  };
+                  return (
+                    <div key={effect} className="effect-button-container">
+                      <div className="hotkey-indicator">
+                        {hotkey.left[effect]}
+                      </div>
+                      <button
+                        className={`effect-btn ${
+                          leftTrack.effectsEnabled?.[effect] ? "active" : ""
+                        }`}
+                        onClick={() => toggleEffect("left", effect)}
+                      />
+                      <span className="effect-label">{effect}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -545,17 +606,26 @@ const DJ = () => {
           <div className="controls">
             <div className="deck-row right-deck-row">
               <div className="effect-buttons">
-                {STEM_TYPES.map((effect) => (
-                  <div key={effect} className="effect-button-container">
-                    <button
-                      className={`effect-btn ${
-                        rightTrack.effectsEnabled?.[effect] ? "active" : ""
-                      }`}
-                      onClick={() => toggleEffect("right", effect)}
-                    />
-                    <span className="effect-label">{effect}</span>
-                  </div>
-                ))}
+                {STEM_TYPES.map((effect, index) => {
+                  const hotkey = {
+                    left: { bass: 'Q', drums: 'W', melody: 'E', vocals: 'R' },
+                    right: { bass: 'U', drums: 'I', melody: 'O', vocals: 'P' }
+                  };
+                  return (
+                    <div key={effect} className="effect-button-container">
+                      <div className="hotkey-indicator">
+                        {hotkey.right[effect]}
+                      </div>
+                      <button
+                        className={`effect-btn ${
+                          rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                        }`}
+                        onClick={() => toggleEffect("right", effect)}
+                      />
+                      <span className="effect-label">{effect}</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="playback-section">
