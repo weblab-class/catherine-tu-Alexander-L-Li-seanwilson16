@@ -7,7 +7,8 @@ body {
   height: 100vh;
   color: white;
   overflow: hidden;
-  position: fixed;
+  position: relative;
+  z-index: 0;
   width: 100%;
   top: 0;
   left: 0;
@@ -23,6 +24,8 @@ body {
   padding: 10px 20px;
   border-radius: 8px;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 2000;
 }
 
 .no-track {
@@ -38,7 +41,7 @@ body {
   position: relative;
   display: inline-block;
   margin-bottom: 10px;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .import-btn {
@@ -53,8 +56,9 @@ body {
   transition: all 0.2s ease;
   min-width: 180px;
   text-align: center;
-  z-index: 100;
+  z-index: 2000;
   position: relative;
+  pointer-events: auto;
 }
 
 .import-btn:hover {
@@ -71,7 +75,7 @@ body {
   border-radius: 4px;
   padding: 8px 0;
   min-width: 200px;
-  z-index: 10;
+  z-index: 2001;
   overflow: hidden;
 }
 
@@ -223,6 +227,8 @@ body {
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .waveforms-section > div:active {
@@ -445,6 +451,8 @@ body {
   flex-direction: column;
   gap: 10px;
   align-self: center;
+  position: relative;
+  z-index: 2000;
 }
 
 .sync-btn,
@@ -634,4 +642,10 @@ body {
   .effect-btn {
     min-width: 40px;
   }
+}
+
+.waveform-container {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
 }
