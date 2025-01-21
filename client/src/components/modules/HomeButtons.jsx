@@ -22,7 +22,7 @@ const HomeButtons = () => {
           <Link to={`/profile/${userId}`} className="homepage-button">
             my profile
           </Link>
-          <Link to="/dj/tutorial" className="homepage-button">
+          <Link to="/tutorial" className="homepage-button">
             tutorial
           </Link>
           <Anchor

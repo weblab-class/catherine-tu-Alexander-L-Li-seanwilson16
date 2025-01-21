@@ -55,7 +55,7 @@ const NavBar = (props) => {
           DJ
         </NavLink>
         <NavLink
-          to="/dj/tutorial"
+          to="/tutorial"
           className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
           onClick={handleNavClick}
         >
