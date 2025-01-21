@@ -444,11 +444,24 @@ const DJ = () => {
       }
 
       if (newPlaying) {
+        // Get current time from bass waveform
         const currentTime = wavesurfers.current.bass.getCurrentTime();
 
-        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
+        // First sync all waveforms to the exact same position
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          wavesurfer.setTime(currentTime);
+        });
+
+        // Then sync all audio elements to the same position
+        Object.entries(trackState.audioElements || {}).forEach(([stem, audio]) => {
           if (audio) {
             audio.currentTime = currentTime;
+          }
+        });
+
+        // Now play everything together
+        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
+          if (audio) {
             audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
             return audio.play();
           }
@@ -464,19 +477,24 @@ const DJ = () => {
                 mediaElement.volume = 0;
                 mediaElement.muted = true;
               }
-              wavesurfer.play(currentTime);
+              wavesurfer.play();
             });
           })
           .catch((e) => console.error("Error playing audio:", e));
       } else {
+        // When pausing, make sure everything stops at the exact same position
+        const currentTime = wavesurfers.current.bass.getCurrentTime();
+
         Object.values(trackState.audioElements || {}).forEach((audio) => {
           if (audio) {
             audio.pause();
+            audio.currentTime = currentTime;
           }
         });
 
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
           wavesurfer.pause();
+          wavesurfer.setTime(currentTime);
         });
       }
 
