@@ -27,6 +27,7 @@ const Profile = () => {
 
   return (
     <>
+      <NavBar />
       <div className="profile-container">
         <Avatar
           userId={user._id}
