@@ -4,6 +4,7 @@ import { get } from "../../utilities";
 import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
+import NavBar from "../modules/NavBar";
 
 import "./Profile.css";
 

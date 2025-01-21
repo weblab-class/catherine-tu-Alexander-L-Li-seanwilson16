@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import NavBar from "../modules/NavBar";
 
 const Tutorial = () => {
   return (
