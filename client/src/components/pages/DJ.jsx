@@ -341,10 +341,10 @@ const DJ = () => {
       setPlaying({ left: false, right: false });
 
       // Reset turntable animations
-      const leftTurntable = document.querySelector('.left-deck .turntable');
-      const rightTurntable = document.querySelector('.right-deck .turntable');
-      if (leftTurntable) leftTurntable.classList.remove('playing');
-      if (rightTurntable) rightTurntable.classList.remove('playing');
+      const leftTurntable = document.querySelector(".left-deck .turntable");
+      const rightTurntable = document.querySelector(".right-deck .turntable");
+      if (leftTurntable) leftTurntable.classList.remove("playing");
+      if (rightTurntable) rightTurntable.classList.remove("playing");
     };
   }, [location.pathname, leftTrack.audioElements, rightTrack.audioElements]);
 
