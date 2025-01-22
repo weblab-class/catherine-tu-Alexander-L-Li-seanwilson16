@@ -695,7 +695,9 @@ const DJ = () => {
                           leftTrack.effectsEnabled?.[effect] ? "active" : ""
                         }`}
                         onClick={() => handleEffectToggle("left", effect)}
-                      />
+                      >
+                        <div className="effect-content"></div>
+                      </button>
                       <span className="effect-label">{effect}</span>
                     </div>
                   );
@@ -750,7 +752,9 @@ const DJ = () => {
                           rightTrack.effectsEnabled?.[effect] ? "active" : ""
                         }`}
                         onClick={() => handleEffectToggle("right", effect)}
-                      />
+                      >
+                        <div className="effect-content"></div>
+                      </button>
                       <span className="effect-label">{effect}</span>
                     </div>
                   );
