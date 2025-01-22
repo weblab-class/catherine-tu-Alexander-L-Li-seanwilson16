@@ -28,8 +28,8 @@ const Profile = () => {
 
   return (
     <>
-      <NavBar />
       <div className="profile-container">
+      <NavBar />
         <Avatar
           userId={user._id}
           currentAvatar={user.avatar}

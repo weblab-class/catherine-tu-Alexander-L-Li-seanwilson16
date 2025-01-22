@@ -638,7 +638,6 @@ const DJ = () => {
 
   return (
     <>
-      <NavBar />
       <div
         className="dj-page"
         onClick={(e) => {
@@ -647,6 +646,7 @@ const DJ = () => {
           }
         }}
       >
+        <NavBar />
         <div className="top-bar">
           <div className="deck-controls">
             <div className="import-container">

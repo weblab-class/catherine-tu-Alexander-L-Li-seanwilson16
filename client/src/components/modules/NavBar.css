@@ -1,10 +1,18 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensure the body spans the full viewport */
+  box-sizing: border-box; /* Consistent sizing */
+  overflow: hidden;
+}
+
 .navbar-notch-container {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40%;
-  height: 60px;
+  margin: 0;
+  display: flex;
+  justify-content: center; /* Horizontally center */
+  align-items: flex-start; /* Align to the top */
+  height: 10vh; /* Full screen height */
+  width: 33.33%; /* 1/3 of the screen */
   background-color: rgba(10, 9, 9, 0.8);
   backdrop-filter: blur(5px);
   border-radius: 0 0 15px 15px;
@@ -12,6 +20,34 @@
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   z-index: 9999;
+}
+
+ /* For small screens (e.g., phones) */
+ @media (orientation: portrait) {
+  .navbar-notch-container {
+      align-items: flex-start;
+      width: 100%; /* Full screen width */
+      left: 0; /* Align to the left */
+      top: 0;
+      height: 8vh;
+      transform: none; /* No horizontal translation needed */
+      border-radius: 0; /* Remove border radius for a flush look */
+  }
+}
+
+/* Landscape Mode (Reapply half the width explicitly) */
+@media (orientation: landscape) {
+  .navbar-notch-container {
+      width: 50%; /* Half the screen width */
+      height: 14vh;
+      left: 50%; /* Center horizontally */
+      transform: translateX(50%);
+      border-radius: 0 0 15px 15px; /* Rounded bottom corners */
+  }
+}
+.dj-page .navbar-notch-container {
+    top: 0;
+    left: 50%; /* Keep horizontally centered */
 }
 
 .lofi .navbar-notch-container {

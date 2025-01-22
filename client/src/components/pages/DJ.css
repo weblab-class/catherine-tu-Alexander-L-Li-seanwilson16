@@ -1,9 +1,13 @@
-body {
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensure the body spans the full viewport */
+  box-sizing: border-box; /* Consistent sizing */
   overflow: hidden;
 }
 
 .dj-page {
-  padding: 0px;
+
   height: 100vh;
   color: white;
   overflow: hidden;
