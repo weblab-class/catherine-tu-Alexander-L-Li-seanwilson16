@@ -20,16 +20,19 @@ html, body {
 
 /* Top Bar Styles */
 .top-bar {
+  border-radius: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.1);
   padding: 10px 20px;
-  border-radius: 8px;
   backdrop-filter: blur(10px);
+  z-index: -1;
   position: relative;
-  z-index: 2000;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .no-track {
