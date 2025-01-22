@@ -43,15 +43,9 @@ const createWaveSurfer = (container, options = {}) => {
 
   return WaveSurfer.create({
     container,
-    waveColor: options.waveColor || {
-      progressive: "#4a9eff",
-      gradient: ["#4a9eff", "#1e4976"],
-    },
-    progressColor: options.progressColor || "#1e4976",
+    waveColor: options.waveColor || "rgba(255, 255, 255, 0.5)",
+    progressColor: options.progressColor || "#fff",
     cursorColor: "#ffffff",
-    barWidth: 2,
-    barRadius: 3,
-    barGap: 3,
     height: 70,
     responsive: true,
     normalize: true,
@@ -112,6 +106,9 @@ const DJ = () => {
     right: { current: 0, total: 0 },
   });
 
+  const [cuePoints, setCuePoints] = useState({ left: 0, right: 0 });
+  const [isCueing, setIsCueing] = useState({ left: false, right: false });
+
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return "0:00";
     const minutes = Math.floor(seconds / 60);
@@ -126,68 +123,104 @@ const DJ = () => {
   const leftWavesurfers = useRef({});
   const rightWavesurfers = useRef({});
 
-  const handleEffectToggle = useCallback(
-    (deck, effect) => {
-      const trackState = deck === "left" ? leftTrack : rightTrack;
-      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+  const handlePlayPause = (deck) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
-      if (!trackState.name) return;
+    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
 
-      setTrackState((prev) => {
-        const newEffectsEnabled = {
-          ...prev.effectsEnabled,
-          [effect]: !prev.effectsEnabled[effect],
-        };
+    setPlaying((prev) => {
+      const newPlaying = !prev[deck];
 
-        if (trackState.audioElements && trackState.audioElements[effect]) {
-          trackState.audioElements[effect].muted = !newEffectsEnabled[effect];
-        }
+      const turntable = document.querySelector(`.${deck}-deck .turntable`);
+      if (turntable) {
+        turntable.classList.toggle("playing", newPlaying);
+      }
 
-        if (wavesurfers.current && wavesurfers.current[effect]) {
-          const isEnabled = newEffectsEnabled[effect];
-          const colors = {
-            bass: {
-              waveColor: "rgba(0, 0, 0, 0.9)",
-              progressColor: "rgba(0, 0, 0, 1)",
-              disabledColor: "rgba(128, 128, 128, 0.2)",
-            },
-            drums: {
-              waveColor: "rgba(255, 202, 58, 0.9)",
-              progressColor: "rgba(255, 202, 58, 1)",
-              disabledColor: "rgba(128, 128, 128, 0.2)",
-            },
-            melody: {
-              waveColor: "rgba(138, 201, 38, 0.9)",
-              progressColor: "rgba(138, 201, 38, 1)",
-              disabledColor: "rgba(128, 128, 128, 0.2)",
-            },
-            vocals: {
-              waveColor: "rgba(255, 89, 94, 0.9)",
-              progressColor: "rgba(255, 89, 94, 1)",
-              disabledColor: "rgba(128, 128, 128, 0.2)",
-            },
-          };
+      if (newPlaying) {
+        // Get current time from bass waveform
+        const currentTime = wavesurfers.current.bass.getCurrentTime();
 
-          wavesurfers.current[effect].setOptions({
-            waveColor: isEnabled ? colors[effect].waveColor : colors[effect].disabledColor,
-            progressColor: isEnabled ? colors[effect].progressColor : colors[effect].disabledColor,
-          });
-        }
+        // First sync all waveforms to the exact same position
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          wavesurfer.setTime(currentTime);
+        });
 
-        return {
-          ...prev,
-          effectsEnabled: newEffectsEnabled,
-        };
-      });
-    },
-    [leftTrack, rightTrack]
-  );
+        // Then sync all audio elements to the same position
+        Object.entries(trackState.audioElements || {}).forEach(([stem, audio]) => {
+          if (audio) {
+            audio.currentTime = currentTime;
+          }
+        });
+
+        // Now play everything together
+        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
+          if (audio) {
+            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+            return audio.play();
+          }
+        });
+
+        Promise.all(playPromises).catch((error) => {
+          console.error("Error playing audio:", error);
+        });
+
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          wavesurfer.play();
+        });
+      } else {
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          wavesurfer.pause();
+        });
+
+        Object.values(trackState.audioElements || {}).forEach((audio) => {
+          if (audio) {
+            audio.pause();
+          }
+        });
+      }
+
+      return { ...prev, [deck]: newPlaying };
+    });
+  };
+
+  const handleEffectToggle = (deck, effect) => {
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+
+    if (!trackState.name) return;
+
+    setTrackState((prev) => {
+      const newEffectsEnabled = {
+        ...prev.effectsEnabled,
+        [effect]: !prev.effectsEnabled[effect],
+      };
+
+      if (prev.audioElements && prev.audioElements[effect]) {
+        prev.audioElements[effect].muted = !newEffectsEnabled[effect];
+      }
+
+      return {
+        ...prev,
+        effectsEnabled: newEffectsEnabled,
+      };
+    });
+  };
 
   const handleKeyPress = useCallback(
     (event) => {
+      if (event.target.tagName === "INPUT") return; // Ignore if user is typing in an input field
+
       const key = event.key.toLowerCase();
 
+      // Play/Pause controls
+      if (key === "g") {
+        handlePlayPause("left");
+      } else if (key === "h") {
+        handlePlayPause("right");
+      }
+
+      // Left deck effect toggles
       if (key === "q" && leftTrack.name) {
         event.preventDefault();
         handleEffectToggle("left", "bass");
@@ -205,6 +238,7 @@ const DJ = () => {
         handleEffectToggle("left", "vocals");
       }
 
+      // Right deck effect toggles
       if (key === "u" && rightTrack.name) {
         event.preventDefault();
         handleEffectToggle("right", "bass");
@@ -222,8 +256,94 @@ const DJ = () => {
         handleEffectToggle("right", "vocals");
       }
     },
-    [handleEffectToggle, leftTrack.name, rightTrack.name]
+    [handleEffectToggle, handlePlayPause, leftTrack.name, rightTrack.name]
   );
+
+  const handleCueDown = (deck) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+
+    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
+
+    setIsCueing((prev) => ({ ...prev, [deck]: true }));
+
+    // Store current position as cue point if not already cueing
+    if (!isCueing[deck]) {
+      setCuePoints((prev) => ({ ...prev, [deck]: wavesurfers.current.bass.getCurrentTime() }));
+    }
+
+    // Pause playback and jump to cue point
+    Object.values(wavesurfers.current).forEach((wavesurfer) => {
+      wavesurfer.pause();
+      wavesurfer.setTime(cuePoints[deck]);
+    });
+
+    Object.values(trackState.audioElements).forEach((audio) => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = cuePoints[deck];
+        audio.play();
+      }
+    });
+
+    setPlaying((prev) => ({ ...prev, [deck]: false }));
+  };
+
+  const handleCueUp = (deck) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+
+    if (!trackState.name) return;
+
+    setIsCueing((prev) => ({ ...prev, [deck]: false }));
+
+    // Stop playback when releasing cue
+    Object.values(trackState.audioElements).forEach((audio) => {
+      if (audio) {
+        audio.pause();
+      }
+    });
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.target.tagName === "INPUT") return;
+
+      const key = event.key.toLowerCase();
+      if (key === "t") {
+        event.preventDefault();
+        handleCueDown("left");
+      } else if (key === "y") {
+        event.preventDefault();
+        handleCueDown("right");
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (event.target.tagName === "INPUT") return;
+
+      const key = event.key.toLowerCase();
+      if (key === "t") {
+        event.preventDefault();
+        handleCueUp("left");
+      } else if (key === "y") {
+        event.preventDefault();
+        handleCueUp("right");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [leftTrack, rightTrack, cuePoints, isCueing]);
 
   useEffect(() => {
     const initializeWaveSurfers = async (containerRef, wavesurfersRef) => {
@@ -233,23 +353,23 @@ const DJ = () => {
 
       const stemColors = {
         bass: {
-          waveColor: "rgba(0, 0, 0, 0.9)",
-          progressColor: "rgba(0, 0, 0, 1)",
+          waveColor: "rgba(255, 49, 140, 0.35)", // Hot Pink
+          progressColor: "rgba(255, 49, 140, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         drums: {
-          waveColor: "rgba(255, 202, 58, 0.9)",
-          progressColor: "rgba(255, 202, 58, 1)",
+          waveColor: "rgba(56, 255, 130, 0.35)", // Neon Green
+          progressColor: "rgba(56, 255, 130, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         melody: {
-          waveColor: "rgba(138, 201, 38, 0.9)",
-          progressColor: "rgba(138, 201, 38, 1)",
+          waveColor: "rgba(255, 247, 32, 0.35)", // Neon Yellow
+          progressColor: "rgba(255, 247, 32, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         vocals: {
-          waveColor: "rgba(255, 89, 94, 0.9)",
-          progressColor: "rgba(255, 89, 94, 1)",
+          waveColor: "rgba(70, 237, 255, 0.35)", // Cyan
+          progressColor: "rgba(70, 237, 255, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
       };
@@ -298,13 +418,6 @@ const DJ = () => {
   }, []);
 
   useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress);
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
-  useEffect(() => {
     return () => {
       if (leftTrack.audioElements) {
         Object.values(leftTrack.audioElements).forEach((audio) => {
@@ -340,13 +453,11 @@ const DJ = () => {
     }));
   };
 
-  const handleTrackSelect = async (deck, track) => {
-    const audioElements = {};
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+  const handleTrackSelect = async (track, deck) => {
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const trackState = deck === "left" ? leftTrack : rightTrack;
 
-    setPlaying((prev) => ({ ...prev, [deck]: false }));
     const turntable = document.querySelector(`.${deck}-deck .turntable`);
     if (turntable) turntable.classList.remove("playing");
 
@@ -364,14 +475,15 @@ const DJ = () => {
       }
     });
 
-    const currentBPM = trackState.bpm || track.bpm;
-    const newRate = currentBPM / track.bpm;
+    // Always use the new track's original BPM
+    const newRate = 1.0; // Reset playback rate to original speed
+    const audioElements = {};
 
     for (const stem of STEM_TYPES) {
       const audio = new Audio();
       audio.src = `/assets/processed/${track.path}/${track.path}_${stem}.mp3`;
       audio.volume = 1;
-      audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+      audio.muted = false;
       audio.playbackRate = newRate;
       audioElements[stem] = audio;
       await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
@@ -416,7 +528,7 @@ const DJ = () => {
       ...prev,
       name: track.name,
       key: track.key,
-      bpm: currentBPM,
+      bpm: track.bpm, // Use the original BPM from the track
       audioElements,
       effectsEnabled: {
         bass: true,
@@ -427,79 +539,6 @@ const DJ = () => {
     }));
 
     setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
-  };
-
-  const handlePlayPause = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
-
-    setPlaying((prev) => {
-      const newPlaying = !prev[deck];
-
-      const turntable = document.querySelector(`.${deck}-deck .turntable`);
-      if (turntable) {
-        turntable.classList.toggle("playing", newPlaying);
-      }
-
-      if (newPlaying) {
-        // Get current time from bass waveform
-        const currentTime = wavesurfers.current.bass.getCurrentTime();
-
-        // First sync all waveforms to the exact same position
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
-          wavesurfer.setTime(currentTime);
-        });
-
-        // Then sync all audio elements to the same position
-        Object.entries(trackState.audioElements || {}).forEach(([stem, audio]) => {
-          if (audio) {
-            audio.currentTime = currentTime;
-          }
-        });
-
-        // Now play everything together
-        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
-          if (audio) {
-            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-            return audio.play();
-          }
-          return Promise.resolve();
-        });
-
-        Promise.all(playPromises)
-          .then(() => {
-            Object.values(wavesurfers.current).forEach((wavesurfer) => {
-              wavesurfer.setVolume(0);
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.volume = 0;
-                mediaElement.muted = true;
-              }
-              wavesurfer.play();
-            });
-          })
-          .catch((e) => console.error("Error playing audio:", e));
-      } else {
-        // When pausing, make sure everything stops at the exact same position
-        const currentTime = wavesurfers.current.bass.getCurrentTime();
-
-        Object.values(trackState.audioElements || {}).forEach((audio) => {
-          if (audio) {
-            audio.pause();
-            audio.currentTime = currentTime;
-          }
-        });
-
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
-          wavesurfer.pause();
-          wavesurfer.setTime(currentTime);
-        });
-      }
-
-      return { ...prev, [deck]: newPlaying };
-    });
   };
 
   const handleBPMChange = (deck, value) => {
@@ -559,7 +598,7 @@ const DJ = () => {
                       key={track.id}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleTrackSelect("left", track);
+                        handleTrackSelect(track, "left");
                       }}
                     >
                       <div className="song-info">
@@ -605,7 +644,7 @@ const DJ = () => {
                       key={track.id}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleTrackSelect("right", track);
+                        handleTrackSelect(track, "right");
                       }}
                     >
                       <div className="song-info">
@@ -663,7 +702,12 @@ const DJ = () => {
             <div className="deck-row left-deck-row">
               <div className="playback-section">
                 <div className="playback-controls">
-                  <button className="cue-btn cue-btn-left">
+                  <button
+                    className={`cue-btn cue-btn-left ${isCueing.left ? "active" : ""}`}
+                    onMouseDown={() => handleCueDown("left")}
+                    onMouseUp={() => handleCueUp("left")}
+                    onMouseLeave={() => isCueing.left && handleCueUp("left")}
+                  >
                     <span className="cue-symbol">CUE</span>
                   </button>
                   <button
@@ -763,7 +807,12 @@ const DJ = () => {
 
               <div className="playback-section">
                 <div className="playback-controls">
-                  <button className="cue-btn cue-btn-right">
+                  <button
+                    className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""}`}
+                    onMouseDown={() => handleCueDown("right")}
+                    onMouseUp={() => handleCueUp("right")}
+                    onMouseLeave={() => isCueing.right && handleCueUp("right")}
+                  >
                     <span className="cue-symbol">CUE</span>
                   </button>
                   <button
