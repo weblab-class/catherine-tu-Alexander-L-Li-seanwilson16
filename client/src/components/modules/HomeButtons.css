@@ -33,3 +33,62 @@
   border: 2px solid white;
   color: white;
 }
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 1200px) {
+  .homepage-button {
+    width: 20rem;
+    font-size: 1.2rem;
+  }
+  .button-container-home {
+    gap: 1.2rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .homepage-button {
+    width: 16rem;
+    font-size: 1.1rem;
+    height: 1.8rem;
+  }
+  .button-container-home {
+    gap: 1rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .homepage-button {
+    width: 12rem;
+    font-size: 1rem;
+    height: 1.6rem;
+    padding: 4px 8px;
+  }
+  .button-container-home {
+    gap: 0.8rem;
+  }
+}
+
+/* Height-based media queries for landscape orientation */
+@media screen and (max-height: 600px) {
+  .button-container-home {
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  
+  .homepage-button {
+    height: 1.6rem;
+    padding: 4px 8px;
+  }
+}
+
+@media screen and (max-height: 400px) {
+  .button-container-home {
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+  }
+  
+  .homepage-button {
+    height: 1.4rem;
+    padding: 2px 6px;
+  }
+}
