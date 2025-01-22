@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import WaveSurfer from "wavesurfer.js";
+import WaveSurfer from "wavesurfer.js/dist/wavesurfer.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import NavBar from "../modules/NavBar";
 import "./DJ.css";
