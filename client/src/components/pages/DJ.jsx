@@ -748,23 +748,26 @@ const DJ = () => {
 
         <div className="decks-container">
           <div className="deck left-deck">
-            <div className="turntable">
-              <img
-                className="turntable-image"
-                src="/assets/chill-guy-head.webp"
-                alt="Chill Guy DJ"
-              />
-            </div>
+            <div className="deck-top">
             <div className="bpm-slider-container-left">
-              <input
-                type="range"
-                className="bpm-slider bpm-slider-left"
-                min="60"
-                max="180"
-                value={leftTrack.bpm}
-                onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
-              />
-              <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+                <input
+                  type="range"
+                  className="bpm-slider bpm-slider-left"
+                  min="60"
+                  max="180"
+                  value={leftTrack.bpm}
+                  onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+                />
+                <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+              </div>
+              <div className="turntable">
+                <img
+                  className="turntable-image"
+                  src="/assets/chill-guy-head.webp"
+                  alt="Chill Guy DJ"
+                />
+              </div>
+              
             </div>
 
             <div className="deck-row left-deck-row">
@@ -808,6 +811,7 @@ const DJ = () => {
                           leftTrack.effectsEnabled?.[effect] ? "active" : ""
                         }`}
                         onClick={() => handleEffectToggle("left", effect)}
+                        data-effect={effect}
                       >
                         <div className="effect-content"></div>
                       </button>
@@ -829,23 +833,25 @@ const DJ = () => {
           </div>
 
           <div className="deck right-deck">
-            <div className="turntable">
-              <img
-                className="turntable-image"
-                src="/assets/chill-guy-head.webp"
-                alt="Chill Guy DJ"
-              />
-            </div>
-            <div className="bpm-slider-container-right">
-              <input
-                type="range"
-                className="bpm-slider bpm-slider-right"
-                min="60"
-                max="180"
-                value={rightTrack.bpm}
-                onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-              />
-              <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+            <div className="deck-top">
+              <div className="turntable">
+                <img
+                  className="turntable-image"
+                  src="/assets/chill-guy-head.webp"
+                  alt="Chill Guy DJ"
+                />
+              </div>
+              <div className="bpm-slider-container-right">
+                <input
+                  type="range"
+                  className="bpm-slider bpm-slider-right"
+                  min="60"
+                  max="180"
+                  value={rightTrack.bpm}
+                  onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+                />
+                <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+              </div>
             </div>
 
             <div className="deck-row right-deck-row">
@@ -865,6 +871,7 @@ const DJ = () => {
                           rightTrack.effectsEnabled?.[effect] ? "active" : ""
                         }`}
                         onClick={() => handleEffectToggle("right", effect)}
+                        data-effect={effect}
                       >
                         <div className="effect-content"></div>
                       </button>
