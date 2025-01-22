@@ -187,6 +187,7 @@ const DJ = () => {
   const handleEffectToggle = (deck, effect) => {
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const trackState = deck === "left" ? leftTrack : rightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
     if (!trackState.name) return;
 
@@ -196,8 +197,41 @@ const DJ = () => {
         [effect]: !prev.effectsEnabled[effect],
       };
 
+      // Update audio element mute state
       if (prev.audioElements && prev.audioElements[effect]) {
         prev.audioElements[effect].muted = !newEffectsEnabled[effect];
+      }
+
+      // Update waveform colors
+      if (wavesurfers.current && wavesurfers.current[effect]) {
+        const isEnabled = newEffectsEnabled[effect];
+        const colors = {
+          bass: {
+            waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
+            progressColor: "rgba(255, 49, 140, 0.4)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          drums: {
+            waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
+            progressColor: "rgba(56, 255, 130, 0.4)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          melody: {
+            waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
+            progressColor: "rgba(255, 247, 32, 0.4)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+          vocals: {
+            waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
+            progressColor: "rgba(70, 237, 255, 0.4)",
+            disabledColor: "rgba(128, 128, 128, 0.2)",
+          },
+        };
+
+        wavesurfers.current[effect].setOptions({
+          waveColor: isEnabled ? colors[effect].waveColor : colors[effect].disabledColor,
+          progressColor: isEnabled ? colors[effect].progressColor : colors[effect].disabledColor,
+        });
       }
 
       return {
@@ -353,22 +387,22 @@ const DJ = () => {
 
       const stemColors = {
         bass: {
-          waveColor: "rgba(255, 49, 140, 0.35)", // Hot Pink
+          waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
           progressColor: "rgba(255, 49, 140, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         drums: {
-          waveColor: "rgba(56, 255, 130, 0.35)", // Neon Green
+          waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
           progressColor: "rgba(56, 255, 130, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         melody: {
-          waveColor: "rgba(255, 247, 32, 0.35)", // Neon Yellow
+          waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
           progressColor: "rgba(255, 247, 32, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
         vocals: {
-          waveColor: "rgba(70, 237, 255, 0.35)", // Cyan
+          waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
           progressColor: "rgba(70, 237, 255, 0.5)",
           disabledColor: "rgba(128, 128, 128, 0.2)",
         },
