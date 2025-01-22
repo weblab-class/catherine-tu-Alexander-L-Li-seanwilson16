@@ -108,6 +108,9 @@ const DJ = () => {
 
   const [cuePoints, setCuePoints] = useState({ left: 0, right: 0 });
   const [isCueing, setIsCueing] = useState({ left: false, right: false });
+  const [cueActive, setCueActive] = useState({ left: false, right: false });
+  const [playButtonPressed, setPlayButtonPressed] = useState({ left: false, right: false });
+  const [cueKeyPressed, setCueKeyPressed] = useState({ left: false, right: false });
 
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return "0:00";
@@ -123,66 +126,136 @@ const DJ = () => {
   const leftWavesurfers = useRef({});
   const rightWavesurfers = useRef({});
 
-  const handlePlayPause = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+  const handlePlayPause = useCallback(
+    (deck) => {
+      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+      const trackState = deck === "left" ? leftTrack : rightTrack;
+      const isCueing = deck === "left" ? cueActive.left : cueActive.right;
 
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
+      if (!trackState.name || !wavesurfers.current) return;
 
-    setPlaying((prev) => {
-      const newPlaying = !prev[deck];
+      setPlaying((prev) => {
+        const newPlaying = { ...prev, [deck]: !prev[deck] };
+        const currentTime = Object.values(wavesurfers.current)[0].getCurrentTime();
 
-      const turntable = document.querySelector(`.${deck}-deck .turntable`);
-      if (turntable) {
-        turntable.classList.toggle("playing", newPlaying);
-      }
+        if (newPlaying[deck]) {
+          // Ensure all wavesurfers are at the same position before playing
+          Object.values(wavesurfers.current).forEach((wavesurfer) => {
+            wavesurfer.setTime(currentTime);
+            wavesurfer.play();
+          });
+          // Sync audio elements
+          Object.values(trackState.audioElements).forEach((audio) => {
+            if (audio) {
+              audio.currentTime = currentTime;
+              audio.play();
+            }
+          });
+        } else {
+          Object.values(wavesurfers.current).forEach((wavesurfer) => {
+            wavesurfer.pause();
+          });
+          Object.values(trackState.audioElements).forEach((audio) => {
+            if (audio) {
+              audio.pause();
+            }
+          });
+        }
 
-      if (newPlaying) {
-        // Get current time from bass waveform
-        const currentTime = wavesurfers.current.bass.getCurrentTime();
+        if (isCueing) {
+          setCueActive((prev) => ({ ...prev, [deck]: false }));
+        }
 
-        // First sync all waveforms to the exact same position
+        return newPlaying;
+      });
+    },
+    [leftTrack, rightTrack, cueActive, leftWavesurfers, rightWavesurfers]
+  );
+
+  const handlePlayDown = useCallback(
+    (deck) => {
+      if (playButtonPressed[deck]) return; // Prevent repeated toggles while holding
+      setPlayButtonPressed((prev) => ({ ...prev, [deck]: true }));
+      handlePlayPause(deck);
+    },
+    [playButtonPressed, handlePlayPause]
+  );
+
+  const handlePlayUp = useCallback((deck) => {
+    setPlayButtonPressed((prev) => ({ ...prev, [deck]: false }));
+  }, []);
+
+  const handleCueDown = useCallback(
+    (deck) => {
+      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+      const trackState = deck === "left" ? leftTrack : rightTrack;
+      const isPlaying = deck === "left" ? playing.left : playing.right;
+
+      if (!trackState.name || !wavesurfers.current) return;
+
+      // Store current position as cue point
+      const currentTime = Object.values(wavesurfers.current)[0].getCurrentTime();
+      setCuePoints((prev) => ({ ...prev, [deck]: currentTime }));
+
+      // If not already playing, start playing from current position
+      if (!isPlaying) {
+        // Ensure all wavesurfers are at the same position
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
           wavesurfer.setTime(currentTime);
-        });
-
-        // Then sync all audio elements to the same position
-        Object.entries(trackState.audioElements || {}).forEach(([stem, audio]) => {
-          if (audio) {
-            audio.currentTime = currentTime;
-          }
-        });
-
-        // Now play everything together
-        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
-          if (audio) {
-            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-            return audio.play();
-          }
-        });
-
-        Promise.all(playPromises).catch((error) => {
-          console.error("Error playing audio:", error);
-        });
-
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
           wavesurfer.play();
         });
-      } else {
+        // Sync audio elements
+        Object.values(trackState.audioElements).forEach((audio) => {
+          if (audio) {
+            audio.currentTime = currentTime;
+            audio.play();
+          }
+        });
+      }
+
+      setIsCueing((prev) => ({ ...prev, [deck]: true }));
+      setCueActive((prev) => ({ ...prev, [deck]: true }));
+    },
+    [leftTrack, rightTrack, playing, leftWavesurfers, rightWavesurfers]
+  );
+
+  const handleCueUp = useCallback(
+    (deck) => {
+      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+      const trackState = deck === "left" ? leftTrack : rightTrack;
+      const isPlaying = deck === "left" ? playing.left : playing.right;
+
+      if (!trackState.name || !wavesurfers.current) return;
+
+      setIsCueing((prev) => ({ ...prev, [deck]: false }));
+
+      // Only pause and seek if we're not in regular playback mode
+      if (!isPlaying) {
+        const storedCuePoint = cuePoints[deck];
+        // First pause everything
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
           wavesurfer.pause();
         });
-
-        Object.values(trackState.audioElements || {}).forEach((audio) => {
+        Object.values(trackState.audioElements).forEach((audio) => {
           if (audio) {
             audio.pause();
           }
         });
-      }
 
-      return { ...prev, [deck]: newPlaying };
-    });
-  };
+        // Then set all times to the stored cue point
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          wavesurfer.setTime(storedCuePoint);
+        });
+        Object.values(trackState.audioElements).forEach((audio) => {
+          if (audio) {
+            audio.currentTime = storedCuePoint;
+          }
+        });
+        setCueActive((prev) => ({ ...prev, [deck]: false }));
+      }
+    },
+    [leftTrack, rightTrack, playing, leftWavesurfers, rightWavesurfers, cuePoints]
+  );
 
   const handleEffectToggle = (deck, effect) => {
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -241,20 +314,30 @@ const DJ = () => {
     });
   };
 
-  const handleKeyPress = useCallback(
-    (event) => {
-      if (event.target.tagName === "INPUT") return; // Ignore if user is typing in an input field
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.target.tagName === "INPUT") return;
+      if (event.repeat) return; // Prevent key repeat
 
       const key = event.key.toLowerCase();
 
       // Play/Pause controls
       if (key === "g") {
-        handlePlayPause("left");
+        handlePlayDown("left");
       } else if (key === "h") {
-        handlePlayPause("right");
+        handlePlayDown("right");
       }
 
-      // Left deck effect toggles
+      // Cue controls
+      if (key === "t") {
+        event.preventDefault();
+        handleCueDown("left");
+      } else if (key === "y") {
+        event.preventDefault();
+        handleCueDown("right");
+      }
+
+      // Effect toggles
       if (key === "q" && leftTrack.name) {
         event.preventDefault();
         handleEffectToggle("left", "bass");
@@ -289,78 +372,21 @@ const DJ = () => {
         event.preventDefault();
         handleEffectToggle("right", "vocals");
       }
-    },
-    [handleEffectToggle, handlePlayPause, leftTrack.name, rightTrack.name]
-  );
-
-  const handleCueDown = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
-
-    setIsCueing((prev) => ({ ...prev, [deck]: true }));
-
-    // Store current position as cue point if not already cueing
-    if (!isCueing[deck]) {
-      setCuePoints((prev) => ({ ...prev, [deck]: wavesurfers.current.bass.getCurrentTime() }));
-    }
-
-    // Pause playback and jump to cue point
-    Object.values(wavesurfers.current).forEach((wavesurfer) => {
-      wavesurfer.pause();
-      wavesurfer.setTime(cuePoints[deck]);
-    });
-
-    Object.values(trackState.audioElements).forEach((audio) => {
-      if (audio) {
-        audio.pause();
-        audio.currentTime = cuePoints[deck];
-        audio.play();
-      }
-    });
-
-    setPlaying((prev) => ({ ...prev, [deck]: false }));
-  };
-
-  const handleCueUp = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-
-    if (!trackState.name) return;
-
-    setIsCueing((prev) => ({ ...prev, [deck]: false }));
-
-    // Stop playback when releasing cue
-    Object.values(trackState.audioElements).forEach((audio) => {
-      if (audio) {
-        audio.pause();
-      }
-    });
-  };
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [handleKeyPress]);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.target.tagName === "INPUT") return;
-
-      const key = event.key.toLowerCase();
-      if (key === "t") {
-        event.preventDefault();
-        handleCueDown("left");
-      } else if (key === "y") {
-        event.preventDefault();
-        handleCueDown("right");
-      }
     };
 
     const handleKeyUp = (event) => {
       if (event.target.tagName === "INPUT") return;
 
       const key = event.key.toLowerCase();
+
+      // Play button release
+      if (key === "g") {
+        handlePlayUp("left");
+      } else if (key === "h") {
+        handlePlayUp("right");
+      }
+
+      // Cue controls
       if (key === "t") {
         event.preventDefault();
         handleCueUp("left");
@@ -370,14 +396,22 @@ const DJ = () => {
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [leftTrack, rightTrack, cuePoints, isCueing]);
+  }, [
+    handlePlayDown,
+    handlePlayUp,
+    handleCueDown,
+    handleCueUp,
+    handleEffectToggle,
+    leftTrack.name,
+    rightTrack.name,
+  ]);
 
   useEffect(() => {
     const initializeWaveSurfers = async (containerRef, wavesurfersRef) => {
@@ -746,7 +780,8 @@ const DJ = () => {
                   </button>
                   <button
                     className={`play-btn play-btn-left ${playing.left ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("left")}
+                    onMouseDown={() => handlePlayDown("left")}
+                    onMouseUp={() => handlePlayUp("left")}
                   >
                     {playing.left ? (
                       <span className="pause-symbol">❚❚</span>
@@ -851,7 +886,8 @@ const DJ = () => {
                   </button>
                   <button
                     className={`play-btn play-btn-right ${playing.right ? "playing" : ""}`}
-                    onClick={() => handlePlayPause("right")}
+                    onMouseDown={() => handlePlayDown("right")}
+                    onMouseUp={() => handlePlayUp("right")}
                   >
                     {playing.right ? (
                       <span className="pause-symbol">❚❚</span>
