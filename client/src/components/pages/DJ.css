@@ -23,48 +23,47 @@ html, body {
 .top-bar {
   border-radius: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background: rgba(255, 255, 255, 0.1);
-  padding: 10px 20px;
+  padding: 8px 0;
   backdrop-filter: blur(10px);
-  z-index: 999;
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
+  z-index: 2000;
   width: 100%;
-  box-sizing: border-box;
-  height: 90px;
 }
 
-@media (orientation: portrait) {
-  .top-bar {
-    top: 8vh; /* Match navbar height in portrait mode */
-    height: 90px;
-  }
-  
-  .dj-page {
-    padding-top: calc(8vh + 90px); /* navbar height + top bar height for portrait */
-  }
+.top-bar > div {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px;
 }
 
 .no-track {
   color: rgba(255, 255, 255, 0.8);
   font-family: var(--josefin);
   font-size: 1.1em;
-  text-align: center;
-  margin-left: 16px;
+  text-align: left;
+  margin-left: 0;
 }
 
 /* Import Controls */
 .import-container {
   position: relative;
-  display: inline-block;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
   z-index: 2000;
 }
 
-.import-btn {
+.import-container .import-btn {
+  width: 160px;
+  height: 35px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -81,7 +80,7 @@ html, body {
   pointer-events: auto;
 }
 
-.import-btn:hover {
+.import-container .import-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
 }
@@ -511,8 +510,18 @@ html, body {
   z-index: 2000;
 }
 
+.sync-reset-container {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
 .sync-btn,
 .reset-btn {
+  position: static;
+  transform: none;
   padding: 10px 18px;
   width: 72px;
   height: 40px;
@@ -719,6 +728,8 @@ html, body {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .turntable::before {
@@ -793,6 +804,12 @@ html, body {
   .deck {
     flex: 0 1 600px;
   }
+
+  .turntable {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+  }
 }
 
 @media screen and (max-width: 1100px) {
@@ -847,58 +864,143 @@ html, body {
     justify-content: center;
   }
 
+
   .bpm-slider-container-left,
   .bpm-slider-container-right {
     flex: 0 1 150px;
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .decks-container {
     flex-direction: column;
     gap: 30px;
-    padding: 0 10px;
+    padding: 20px 10px;
     margin-bottom: 30px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .deck-controls {
+    flex-direction: row;
+    align-self: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .top-bar {
+    height: 75px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+  }
+
+  .import-container .import-btn {
+    width: 140px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .deck-controls {
+    flex-direction: row;
+    align-self: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .top-bar .deck-controls {
+    display: flex;
+    align-items: center;
+    /* gap: 20px; */
+    margin-left: -50px;
+    flex: 1;
+  }
+
+  .top-bar .deck-controls:first-child {
+    justify-content: flex-start;
+  }
+
+  .top-bar .deck-controls:last-child {
+    justify-content: flex-end;
   }
 
   .deck {
-    flex: 0 1 400px;
+    flex: none;
+    width: 100%;
+    max-width: 600px;
   }
 
-  .decks-container {
-    flex-direction: row;
+  .deck-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 40px 0;
+    align-self: center;
   }
 
-  .deck-top {
-    gap: 10px;
+  .sync-btn,
+  .reset-btn {
+    width: 80px;
+    height: 45px;
+    font-size: 14px;
   }
 
   .deck-row {
     display: flex;
     justify-content: space-between;
     gap: 20px;
+    position: relative;
+    padding: 0 70px;
+  }
+
+  .deck-row.right-deck-row {
+    margin-top: -75px;
+  }
+
+  .right-deck {
+    margin-top: -100px;
   }
 
   .effect-buttons {
     flex: 0 1 auto;
+    gap: 10px
+  }
+
+  .effect-btn.active {
+    width: 80px;
+    height: 80px;
   }
 
   .playback-section {
     flex: 0 1 auto;
   }
 
-  .sync-reset-container {
-    position: static;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
+  .bpm-slider-container-left,
+  .bpm-slider-container-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
   }
 
-  .sync-btn,
-  .reset-btn {
-    position: static;
-    transform: none;
+  .bpm-slider-container-left {
+    left: 0;
+  }
+
+  .bpm-slider-container-right {
+    right: 0;
+  }
+
+  .bpm-slider {
+    width: 60px;
+    /* transform: rotate(-90deg); */
+    transform-origin: center;
+  }
+
+  .bpm-display {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 12px;
   }
 
   .no-track {
@@ -907,6 +1009,7 @@ html, body {
 
   .deck-controls {
     flex-direction: row;
+    align-self: center;
     /* margin-top: ; */
   }
 }
@@ -943,7 +1046,7 @@ html, body {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .cue-btn-left,
   .play-btn-left {
     margin-right: 15px;
@@ -985,7 +1088,7 @@ html, body {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .effect-buttons {
     max-width: 300px;
   }
@@ -1000,6 +1103,11 @@ html, body {
     width: 60px;
     height: 60px;
     font-size: 20px;
+  }
+
+  .volume-slider,
+  .volume-display {
+    display: none;
   }
 }
 
@@ -1047,6 +1155,43 @@ html, body {
   }
 }
 
+@media screen and (max-width: 1350px) {
+  .left-deck {
+    margin-right: -50px;
+    gap: 30px
+    /* transform: translateX(50px); */
+  }
+
+  .right-deck {
+    margin-left: -50px;
+    gap: 30px
+    /* transform: translateX(-50px); */
+  }
+
+  .left-deck-row {
+    gap: 30px;
+  }
+  .right-deck-row {
+    gap: 30px;
+  }
+
+}
+
+@media screen and (max-width: 1100px) {
+  .deck-controls {
+    gap: 40px;
+  }
+
+  .deck-row {
+    gap: 40px;
+  }
+
+  .left-deck-row,
+  .right-deck-row {
+    gap: 50px;
+  }
+}
+
 @keyframes rotate {
   from {
     transform: translateX(-50%) rotate(0deg);
@@ -1066,24 +1211,7 @@ html, body {
   .turntable {
     width: 200px;
     height: 200px;
-  }
-
-  .turntable-image {
-    width: 80px;
-    height: 80px;
-  }
-
-  .effect-buttons {
-    max-width: 350px;
-  }
-
-  .effect-btn {
-    width: 65px;
-    height: 65px;
-  }
-
-  .hotkey-indicator {
-    top: 5px;
+    flex-shrink: 0;
   }
 }
 
@@ -1096,24 +1224,11 @@ html, body {
   .turntable {
     width: 200px;
     height: 200px;
-  }
-
-  .turntable-image {
-    width: 80px;
-    height: 80px;
-  }
-
-  .effect-buttons {
-    max-width: 350px;
-  }
-
-  .effect-btn {
-    width: 65px;
-    height: 65px;
+    flex-shrink: 0;
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .effect-buttons {
     max-width: 300px;
   }
@@ -1172,38 +1287,33 @@ html, body {
   }
 }
 
-@media (orientation: portrait) {
-  .waveforms-section {
-    margin-top: calc(8vh + 100px);
-  }
-
-  /* Make turntables even smaller on portrait */
-  .turntable,
-  .turntable-container,
-  .vinyl,
-  .platter {
-    width: 240px;
-    height: 240px;
-  }
+.deck-controls:last-child {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
-/* Additional size reduction for very small screens */
-@media screen and (max-height: 800px) {
-  .turntable,
-  .turntable-container,
-  .vinyl,
-  .platter {
-    width: 240px;
-    height: 240px;
-  }
+.deck-controls:last-child .import-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
-@media screen and (max-height: 700px) {
-  .turntable,
-  .turntable-container,
-  .vinyl,
-  .platter {
-    width: 200px;
-    height: 200px;
-  }
+.deck-controls:last-child .track-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.deck-controls:last-child .no-track {
+  margin-left: 0;
+  /* margin-right: 20px; */
+}
+
+
+.deck-controls:last-child {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
