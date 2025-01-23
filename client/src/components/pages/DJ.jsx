@@ -63,10 +63,10 @@ const createWaveSurfer = (container, options = {}) => {
   });
 
   // Create and configure the media element
-  const audio = document.createElement('audio');
+  const audio = document.createElement("audio");
   audio.preservesPitch = true; // Enable pitch preservation by default
   wavesurfer.setMediaElement(audio);
-  
+
   return wavesurfer;
 };
 
@@ -241,55 +241,57 @@ const DJ = () => {
   );
 
   const handleEffectToggle = (deck, effect) => {
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const trackState = deck === "left" ? leftTrack : rightTrack;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
-    if (!trackState.name) return;
+    if (!wavesurfers.current || !trackState.name) return;
 
-    setTrackState((prev) => {
-      const newEffectsEnabled = {
-        ...prev.effectsEnabled,
-        [effect]: !prev.effectsEnabled[effect],
+    const newEffectsEnabled = {
+      ...trackState.effectsEnabled,
+      [effect]: !trackState.effectsEnabled[effect],
+    };
+
+    // Update wavesurfer colors and volume
+    if (wavesurfers.current && wavesurfers.current[effect]) {
+      const isEnabled = newEffectsEnabled[effect];
+      const colors = {
+        bass: {
+          waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
+          progressColor: "rgba(255, 49, 140, 0.4)",
+          disabledColor: "rgba(128, 128, 128, 0.2)",
+        },
+        drums: {
+          waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
+          progressColor: "rgba(56, 255, 130, 0.4)",
+          disabledColor: "rgba(128, 128, 128, 0.2)",
+        },
+        melody: {
+          waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
+          progressColor: "rgba(255, 247, 32, 0.4)",
+          disabledColor: "rgba(128, 128, 128, 0.2)",
+        },
+        vocals: {
+          waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
+          progressColor: "rgba(70, 237, 255, 0.4)",
+          disabledColor: "rgba(128, 128, 128, 0.2)",
+        },
       };
 
       // Update waveform colors
-      if (wavesurfers.current && wavesurfers.current[effect]) {
-        const isEnabled = newEffectsEnabled[effect];
-        const colors = {
-          bass: {
-            waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
-            progressColor: "rgba(255, 49, 140, 0.4)",
-            disabledColor: "rgba(128, 128, 128, 0.2)",
-          },
-          drums: {
-            waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
-            progressColor: "rgba(56, 255, 130, 0.4)",
-            disabledColor: "rgba(128, 128, 128, 0.2)",
-          },
-          melody: {
-            waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
-            progressColor: "rgba(255, 247, 32, 0.4)",
-            disabledColor: "rgba(128, 128, 128, 0.2)",
-          },
-          vocals: {
-            waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
-            progressColor: "rgba(70, 237, 255, 0.4)",
-            disabledColor: "rgba(128, 128, 128, 0.2)",
-          },
-        };
+      wavesurfers.current[effect].setOptions({
+        waveColor: isEnabled ? colors[effect].waveColor : colors[effect].disabledColor,
+        progressColor: isEnabled ? colors[effect].progressColor : colors[effect].disabledColor,
+      });
 
-        wavesurfers.current[effect].setOptions({
-          waveColor: isEnabled ? colors[effect].waveColor : colors[effect].disabledColor,
-          progressColor: isEnabled ? colors[effect].progressColor : colors[effect].disabledColor,
-        });
-      }
+      // Set volume based on effect state
+      wavesurfers.current[effect].setVolume(isEnabled ? 1 : 0);
+    }
 
-      return {
-        ...prev,
-        effectsEnabled: newEffectsEnabled,
-      };
-    });
+    setTrackState((prev) => ({
+      ...prev,
+      effectsEnabled: newEffectsEnabled,
+    }));
   };
 
   const handleBPMChange = (deck, value) => {
@@ -308,14 +310,14 @@ const DJ = () => {
     Object.values(wavesurfers.current).forEach((wavesurfer) => {
       // Store current time before changing rate
       const currentTime = wavesurfer.getCurrentTime();
-      
+
       // Get the media element and ensure pitch preservation is enabled
       const mediaElement = wavesurfer.getMediaElement();
       if (mediaElement) {
         mediaElement.preservesPitch = true;
         mediaElement.playbackRate = newRate;
       }
-      
+
       // Restore the current time
       wavesurfer.setTime(currentTime);
     });
@@ -324,6 +326,93 @@ const DJ = () => {
       ...prev,
       bpm: value,
     }));
+  };
+
+  const handleSync = () => {
+    // Don't sync if either track is not loaded
+    if (!leftTrack.name || !rightTrack.name) return;
+
+    // Get the current BPM of both tracks
+    const leftBPM = leftTrack.bpm;
+    const rightBPM = rightTrack.bpm;
+
+    // Use the left track's BPM as the sync target
+    handleBPMChange("right", leftBPM);
+  };
+
+  const handleReset = () => {
+    // Stop any playing audio and reset wavesurfers
+    Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.pause();
+        wavesurfer.seekTo(0);
+        wavesurfer.empty(); // Clear the waveform
+      }
+    });
+    Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.pause();
+        wavesurfer.seekTo(0);
+        wavesurfer.empty(); // Clear the waveform
+      }
+    });
+
+    // Reset turntable animations
+    const leftTurntable = document.querySelector(".left-deck .turntable");
+    const rightTurntable = document.querySelector(".right-deck .turntable");
+    if (leftTurntable) leftTurntable.classList.remove("playing");
+    if (rightTurntable) rightTurntable.classList.remove("playing");
+
+    // Reset all state to initial values
+    setLeftTrack({
+      name: "",
+      key: "",
+      bpm: 120,
+      audioElements: null,
+      effectsEnabled: {
+        bass: true,
+        drums: true,
+        melody: true,
+        vocals: true,
+      },
+    });
+    setRightTrack({
+      name: "",
+      key: "",
+      bpm: 120,
+      audioElements: null,
+      effectsEnabled: {
+        bass: true,
+        drums: true,
+        melody: true,
+        vocals: true,
+      },
+    });
+
+    // Clear audio elements
+    if (leftTrack.audioElements) {
+      Object.values(leftTrack.audioElements).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.src = "";
+          audio.load();
+        }
+      });
+    }
+    if (rightTrack.audioElements) {
+      Object.values(rightTrack.audioElements).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.src = "";
+          audio.load();
+        }
+      });
+    }
+
+    setPlaying({ left: false, right: false });
+    setCueActive({ left: false, right: false });
+    setIsCueing({ left: false, right: false });
+    setDropdownOpen({ left: false, right: false });
   };
 
   useEffect(() => {
@@ -384,6 +473,18 @@ const DJ = () => {
         event.preventDefault();
         handleEffectToggle("right", "vocals");
       }
+
+      // Sync
+      if (key === "s") {
+        event.preventDefault();
+        handleSync();
+      }
+
+      // Reset
+      if (key === "k") {
+        event.preventDefault();
+        handleReset();
+      }
     };
 
     const handleKeyUp = (event) => {
@@ -421,6 +522,8 @@ const DJ = () => {
     handleCueDown,
     handleCueUp,
     handleEffectToggle,
+    handleSync,
+    handleReset,
     leftTrack.name,
     rightTrack.name,
   ]);
@@ -807,10 +910,23 @@ const DJ = () => {
           </div>
 
           <div className="deck-controls">
-            <button className="sync-btn">
+            <button
+              className="sync-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSync();
+              }}
+              disabled={!leftTrack.name || !rightTrack.name}
+            >
               <span className="sync-text">SYNC</span>
             </button>
-            <button className="reset-btn">
+            <button
+              className="reset-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReset();
+              }}
+            >
               <span className="reset-text">RESET</span>
             </button>
           </div>

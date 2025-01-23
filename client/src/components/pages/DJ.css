@@ -476,6 +476,12 @@ body {
   transform: translate(15px, 2px); /* First value is X (right/left), second is Y (up/down) */
 }
 
+.sync-btn:hover,
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
 .effect-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
