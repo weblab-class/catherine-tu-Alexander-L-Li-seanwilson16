@@ -117,6 +117,8 @@ const DJ = () => {
   const [playButtonPressed, setPlayButtonPressed] = useState({ left: false, right: false });
   const [cueKeyPressed, setCueKeyPressed] = useState({ left: false, right: false });
 
+  const [volume, setVolume] = useState({ left: 1, right: 1 });
+
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return "0:00";
     const minutes = Math.floor(seconds / 60);
@@ -131,54 +133,98 @@ const DJ = () => {
   const leftWavesurfers = useRef({});
   const rightWavesurfers = useRef({});
 
-  const handlePlayPause = useCallback(
-    (deck) => {
-      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-      const trackState = deck === "left" ? leftTrack : rightTrack;
+  const syncWavesurfers = useCallback((deck) => {
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    if (!wavesurfers.current) return;
 
-      if (!trackState.name || !wavesurfers.current) return;
+    // Get the first wavesurfer as reference
+    const stems = Object.keys(wavesurfers.current);
+    if (stems.length === 0) return;
 
-      // Get turntable element
-      const turntable = document.querySelector(`.${deck}-deck .turntable`);
+    const referenceWavesurfer = wavesurfers.current[stems[0]];
+    const referenceTime = referenceWavesurfer.getCurrentTime();
 
-      setPlaying((prev) => {
-        const newPlaying = { ...prev, [deck]: !prev[deck] };
-        const currentTime = Object.values(wavesurfers.current)[0].getCurrentTime();
+    // Sync all other wavesurfers to the reference time
+    stems.forEach((stem) => {
+      if (stem === stems[0]) return; // Skip reference wavesurfer
+      const wavesurfer = wavesurfers.current[stem];
+      const currentTime = wavesurfer.getCurrentTime();
 
-        if (newPlaying[deck]) {
-          // Start playing wavesurfers
-          Object.entries(wavesurfers.current).forEach(([stem, wavesurfer]) => {
-            if (trackState.effectsEnabled[stem]) {
-              wavesurfer.setVolume(1);
-              wavesurfer.play(currentTime);
-            } else {
-              wavesurfer.setVolume(0);
-              wavesurfer.play(currentTime);
-            }
-          });
-          if (turntable) turntable.classList.add("playing");
-        } else {
-          // Pause wavesurfers
-          Object.values(wavesurfers.current).forEach((wavesurfer) => {
-            wavesurfer.pause();
-          });
-          if (turntable) turntable.classList.remove("playing");
-        }
+      // Only adjust if drift is more than 10ms
+      if (Math.abs(currentTime - referenceTime) > 0.01) {
+        wavesurfer.setTime(referenceTime);
+      }
+    });
+  }, []);
 
-        return newPlaying;
-      });
-    },
-    [leftTrack, rightTrack]
-  );
+  useEffect(() => {
+    let syncInterval;
+
+    if (playing.left || playing.right) {
+      // Check sync every 1 second
+      syncInterval = setInterval(() => {
+        if (playing.left) syncWavesurfers("left");
+        if (playing.right) syncWavesurfers("right");
+      }, 1000);
+    }
+
+    return () => {
+      if (syncInterval) clearInterval(syncInterval);
+    };
+  }, [playing, syncWavesurfers]);
+
+  const handlePlay = (deck) => {
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    if (!wavesurfers.current) return;
+
+    // Sync before playing
+    syncWavesurfers(deck);
+
+    Object.values(wavesurfers.current).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.play();
+      }
+    });
+
+    setPlaying((prev) => ({
+      ...prev,
+      [deck]: true,
+    }));
+  };
+
+  const handlePause = (deck) => {
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    if (!wavesurfers.current) return;
+
+    Object.values(wavesurfers.current).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.pause();
+      }
+    });
+
+    // Get turntable element and remove playing class
+    const turntable = document.querySelector(`.${deck}-deck .turntable`);
+    if (turntable) turntable.classList.remove("playing");
+
+    setPlaying((prev) => ({
+      ...prev,
+      [deck]: false,
+    }));
+  };
 
   const handlePlayDown = useCallback(
     (deck) => {
       const trackState = deck === "left" ? leftTrack : rightTrack;
       if (!trackState.name || playButtonPressed[deck]) return; // Return if no track or button already pressed
       setPlayButtonPressed((prev) => ({ ...prev, [deck]: true }));
-      handlePlayPause(deck);
+      if (playing[deck]) {
+        handlePause(deck);
+      } else {
+        syncWavesurfers(deck);
+        handlePlay(deck);
+      }
     },
-    [playButtonPressed, handlePlayPause, leftTrack, rightTrack]
+    [playButtonPressed, playing, handlePause, handlePlay, leftTrack, rightTrack, syncWavesurfers]
   );
 
   const handlePlayUp = useCallback((deck) => {
@@ -326,6 +372,20 @@ const DJ = () => {
       ...prev,
       bpm: value,
     }));
+  };
+
+  const handleVolumeChange = (deck, value) => {
+    const normalizedValue = value / 100; // Convert percentage to decimal
+    setVolume((prev) => ({ ...prev, [deck]: normalizedValue }));
+
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    if (wavesurfers.current) {
+      Object.values(wavesurfers.current).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          wavesurfer.setVolume(normalizedValue);
+        }
+      });
+    }
   };
 
   const handleSync = () => {
@@ -833,13 +893,13 @@ const DJ = () => {
               <div className="bpm-slider-container-left">
                 <input
                   type="range"
-                  className="bpm-slider bpm-slider-left"
+                  className="bpm-slider"
                   min="60"
                   max="180"
                   value={leftTrack.bpm}
                   onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
                 />
-                <div className="bpm-display bpm-display-left">{leftTrack.bpm} BPM</div>
+                <div className="bpm-display">{leftTrack.bpm} BPM</div>
               </div>
               <div className="turntable">
                 <img
@@ -847,6 +907,17 @@ const DJ = () => {
                   src="/assets/chill-guy-head.webp"
                   alt="Chill Guy DJ"
                 />
+              </div>
+              <div className="volume-slider-container-left">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume.left * 100}
+                  className="volume-slider"
+                  onChange={(e) => handleVolumeChange("left", e.target.value)}
+                />
+                <div className="volume-display">VOL</div>
               </div>
             </div>
 
@@ -933,6 +1004,17 @@ const DJ = () => {
 
           <div className="deck right-deck">
             <div className="deck-top">
+              <div className="volume-slider-container-right">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volume.right * 100}
+                  className="volume-slider"
+                  onChange={(e) => handleVolumeChange("right", e.target.value)}
+                />
+                <div className="volume-display">VOL</div>
+              </div>
               <div className="turntable">
                 <img
                   className="turntable-image"
@@ -943,13 +1025,13 @@ const DJ = () => {
               <div className="bpm-slider-container-right">
                 <input
                   type="range"
-                  className="bpm-slider bpm-slider-right"
+                  className="bpm-slider"
                   min="60"
                   max="180"
                   value={rightTrack.bpm}
                   onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
                 />
-                <div className="bpm-display bpm-display-right">{rightTrack.bpm} BPM</div>
+                <div className="bpm-display">{rightTrack.bpm} BPM</div>
               </div>
             </div>
 
