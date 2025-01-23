@@ -220,8 +220,7 @@ body {
 
 .deck-row {
   display: flex;
-  justify-content: center;
-  gap: 0px;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   box-sizing: border-box;
@@ -907,7 +906,7 @@ body {
   }
 
   .deck-row.right-deck-row {
-    margin-top: -75px;
+    margin-top: -90px;
   }
 
   .right-deck {
@@ -917,6 +916,11 @@ body {
   .effect-buttons {
     flex: 0 1 auto;
     gap: 10px
+  }
+
+  .effect-btn {
+    width: 80px;
+    height: 80px;
   }
 
   .effect-btn.active {
@@ -983,19 +987,57 @@ body {
   }
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 550px) {
   .decks-container {
     gap: 5px;
     padding: 0 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .deck {
-    flex: 0 1 250px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 0%;  /* Make each deck take up roughly half the width */
+  }
+
+  .left-deck-row,
+  .right-deck-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .left-deck-row {
+    margin-top: 100px;
+    margin-left: -300px;
+  }
+
+  .right-deck-row {
+    margin-bottom: 300px;
+    margin-top: -400px;
+    margin-right: 600px;
+  }
+
+  .effect-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .effect-btn {
+    width: 50px;
+    height: 50px;
   }
 
   .bpm-slider-container-left,
   .bpm-slider-container-right {
-    flex: 0 1 100px;
+    display: none;  /* Hide the BPM sliders on small screens */
   }
 }
 
@@ -1007,7 +1049,11 @@ body {
 
   .cue-btn-right,
   .play-btn-right {
-    margin-left: 15px;
+    margin-left: 100px;
+  }
+
+  .bpm-slider:first-child {
+    /* margin-right: -100px; */
   }
 }
 
@@ -1047,8 +1093,24 @@ body {
   }
 
   .effect-btn {
-    width: 55px;
-    height: 55px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .effect-label {
+    font-size: 11px;
+  }
+
+  .bpm-slider,
+  .bpm-display {
+    display: none;
+  }
+
+}
+
+@media screen and (max-width: 700px) {
+  .decks-container {
+    padding: 0 5px;
   }
 
   .cue-btn,
@@ -1056,17 +1118,6 @@ body {
     width: 60px;
     height: 60px;
     font-size: 20px;
-  }
-
-  .volume-slider,
-  .volume-display {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 700px) {
-  .decks-container {
-    padding: 0 5px;
   }
 
   .effect-buttons {
@@ -1132,17 +1183,66 @@ body {
 
 @media screen and (max-width: 1100px) {
   .deck-controls {
-    gap: 40px;
+    gap: 10px;
   }
 
   .deck-row {
-    gap: 40px;
+    gap: 10px;
   }
 
-  .left-deck-row,
+  .left-deck-row {
+    gap: 100px;
+  }
+
   .right-deck-row {
     gap: 50px;
   }
+}
+
+@media screen and (max-width: 750px) {
+  .import-container .import-btn {
+    width: 100px;
+    height: 28px;
+    font-size: 11px;
+    padding: 4px 8px;
+    min-width: unset;
+  }
+
+  .import-dropdown {
+    min-width: 150px;
+  }
+
+  .import-dropdown button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .import-dropdown .song-name {
+    font-size: 12px;
+  }
+
+  .import-dropdown .song-details {
+    font-size: 10px;
+  }
+}
+
+@media screen and (max-width: 850px) {
+  .import-container .import-btn {
+    width: 120px;
+    height: 30px;
+    font-size: 12px;
+    min-width: unset;
+  }
+
+  .nav-link {
+    font-size: 14px;
+  }
+
+  .navbar-content {
+    align-items: center;
+    justify-content: center;
+  }
+  
 }
 
 @keyframes rotate {
@@ -1183,17 +1283,26 @@ body {
 
 @media screen and (max-width: 950px) {
   .effect-buttons {
-    max-width: 300px;
+    max-width: 500px;
   }
 
   .effect-btn {
-    width: 55px;
-    height: 55px;
+    width: 100px;
+    height: 100px;
   }
 
-  .effect-label {
-    font-size: 11px;
+  .cue-btn,
+  .play-btn {
+    width: 90px;
+    height: 90px;
+    font-size: 20px;
   }
+
+  .volume-slider,
+  .volume-display {
+    display: none;
+  }
+
 }
 
 @media screen and (max-width: 700px) {
@@ -1201,9 +1310,25 @@ body {
     padding: 0 5px;
   }
 
+  .cue-btn,
+  .play-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+
   .effect-buttons {
-    max-width: 250px;
+    /* max-width: 250px; */
     gap: 8px;
+  }
+
+  .left-deck {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .left-deck-row {
+    gap: 50px
   }
 
   .effect-btn {
@@ -1216,13 +1341,17 @@ body {
   }
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 600px) {
   .decks-container {
     padding: 0 3px;
   }
 
+  .left-deck-row {
+    margin-right: 60px
+  }
+
   .effect-buttons {
-    max-width: 200px;
+    max-width: 500px;
     gap: 5px;
   }
 
@@ -1237,6 +1366,30 @@ body {
 
   .bpm-display {
     font-size: 12px;
+  }
+
+  .navbar-notch-container {
+    width: 45%;
+  }
+
+  .nav-link {
+    font-size: 10px;
+  }
+
+  .import-container .import-btn {
+    width: 75px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+}
+
+@media screen and (max-width: 550px) {
+  .deck-controls {
+    display: none;
+  }
+  .effect-buttons {
+    flex-direction: column;
   }
 }
 
