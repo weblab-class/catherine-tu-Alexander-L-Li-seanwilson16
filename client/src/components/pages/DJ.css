@@ -7,13 +7,14 @@ html, body {
 }
 
 .dj-page {
-
   height: 100vh;
   color: white;
   overflow-x: hidden;
   position: relative;
-  z-index: 0;
   width: 100%;
+  padding-top: 90px;
+  box-sizing: border-box;
+  z-index: 0;
   top: 0;
   left: 0;
 }
@@ -24,15 +25,27 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.1);
   padding: 10px 20px;
   backdrop-filter: blur(10px);
-  z-index: -1;
-  position: relative;
+  z-index: 999;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
+  box-sizing: border-box;
+  height: 90px;
+}
+
+@media (orientation: portrait) {
+  .top-bar {
+    top: 8vh; /* Match navbar height in portrait mode */
+    height: 90px;
+  }
+  
+  .dj-page {
+    padding-top: calc(8vh + 90px); /* navbar height + top bar height for portrait */
+  }
 }
 
 .no-track {
@@ -202,13 +215,13 @@ html, body {
 }
 
 .left-deck .deck-top {
-  margin-right: 100px;
-  margin-top: 100px;
+  margin-right: 80px;
+  margin-top: 80px;
 }
 
 .right-deck .deck-top {
-  margin-left: 100px;
-  margin-top: 100px;
+  margin-left: 80px;
+  margin-top: 80px;
 }
 
 .deck-row {
@@ -319,6 +332,7 @@ html, body {
   position: relative;
   overflow: hidden;
   z-index: 1;
+  margin-top: 100px;
 }
 
 .waveform-container {
@@ -655,6 +669,33 @@ html, body {
   border-color: rgba(74, 158, 255, 0.2);
 }
 
+.turntable-container {
+  width: 280px;
+  height: 280px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.vinyl {
+  width: 280px;
+  height: 280px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.platter {
+  width: 280px;
+  height: 280px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 /* Position left controls */
 .cue-btn-left,
 .play-btn-left {
@@ -668,8 +709,8 @@ html, body {
 }
 
 .turntable {
-  width: 250px;
-  height: 250px;
+  width: 280px;
+  height: 280px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -727,6 +768,20 @@ html, body {
 .turntable.playing .turntable-image {
   animation-play-state: running;
   opacity: 1;
+}
+
+@media screen and (max-height: 800px) {
+  .left-deck .deck-top,
+  .right-deck .deck-top {
+    margin-top: 60px;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .left-deck .deck-top,
+  .right-deck .deck-top {
+    margin-top: 40px;
+  }
 }
 
 @media screen and (max-width: 1200px) {
@@ -1114,5 +1169,41 @@ html, body {
 
   .bpm-display {
     font-size: 12px;
+  }
+}
+
+@media (orientation: portrait) {
+  .waveforms-section {
+    margin-top: calc(8vh + 100px);
+  }
+
+  /* Make turntables even smaller on portrait */
+  .turntable,
+  .turntable-container,
+  .vinyl,
+  .platter {
+    width: 240px;
+    height: 240px;
+  }
+}
+
+/* Additional size reduction for very small screens */
+@media screen and (max-height: 800px) {
+  .turntable,
+  .turntable-container,
+  .vinyl,
+  .platter {
+    width: 240px;
+    height: 240px;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .turntable,
+  .turntable-container,
+  .vinyl,
+  .platter {
+    width: 200px;
+    height: 200px;
   }
 }

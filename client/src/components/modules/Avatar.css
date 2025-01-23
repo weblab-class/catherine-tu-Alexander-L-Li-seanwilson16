@@ -1,16 +1,20 @@
 .avatar-container {
   text-align: center;
-  margin: 20px auto;
+  margin: 0 auto;
   max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem 0;
 }
 
 .avatar-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 2rem;
   flex-direction: column;
-  padding-top: 1.5rem;
+  padding-top: calc(8vh + 1rem);
 }
 
 .avatar-image {
@@ -26,7 +30,6 @@
 }
 
 .avatar-selector {
-  margin-top: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -108,4 +111,68 @@ h3 {
 .profile-container {
   text-align: center; /* Center the content */
   margin-top: 20px; /* Add some spacing at the top */
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 480px) {
+  .avatar-container {
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(8vh + 0.75rem);
+    gap: 1.5rem;
+  }
+
+  .avatar-image {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  .avatar-option {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* iPhone in portrait */
+@media screen and (max-width: 390px) {
+  .avatar-container {
+    gap: 1.25rem;
+    padding: 1.25rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(8vh + 0.5rem);
+    gap: 1.25rem;
+  }
+
+  .avatar-image {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  .avatar-option {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .avatar-container {
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem);
+    gap: 1rem;
+  }
+
+  .avatar-image {
+    width: 120px !important;
+    height: 120px !important;
+  }
 }

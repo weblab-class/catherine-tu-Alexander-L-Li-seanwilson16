@@ -17,9 +17,10 @@ const TimeOfDay = ({ name }) => {
   }
 
   return (
-    <h1 className="profile-title">
-      {greeting}, {name.toLowerCase()}!
-    </h1>
+    <div className="profile-title">
+      <div className="greeting">{greeting},</div>
+      <div className="user-name">{name.toLowerCase()}!</div>
+    </div>
   );
 };
 

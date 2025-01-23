@@ -1,7 +1,53 @@
 .profile-title {
-  font-family: var(--cabin);
-  text-align: center;
-  font-size: 3rem;
-  margin-bottom: 2rem;
+  font-family: var(--josefin);
   color: white;
+  font-size: 2.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.greeting, .user-name {
+  line-height: 1.2;
+}
+
+@media screen and (max-width: 480px) {
+  .profile-title {
+    font-size: 2rem;
+    margin: 0.75rem 0;
+  }
+}
+
+@media screen and (max-width: 390px) {
+  .profile-title {
+    font-size: 1.75rem;
+    margin: 0.5rem 0;
+  }
+}
+
+/* Portrait mode */
+@media (orientation: portrait) {
+  .profile-title {
+    flex-direction: column;
+    gap: 0.25rem;
+    margin: 0.5rem 0;
+  }
+
+  .greeting, .user-name {
+    line-height: 1.1;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .profile-title {
+    font-size: 1.5rem;
+    margin: 0.25rem 0;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
 }

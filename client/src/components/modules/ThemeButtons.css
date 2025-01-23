@@ -28,9 +28,91 @@
 
 .button-container-profile {
   display: flex;
-  /* flex-direction: row; */
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 10px;
   margin-top: 20px;
+  padding: 0 10px;
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 480px) {
+  .button-style {
+    font-size: 1rem;
+    height: 1.3rem;
+    width: 6.5rem;
+    margin: 3px;
+    padding: 3px 6px;
+  }
+
+  .button-container-profile {
+    gap: 6px;
+  }
+}
+
+/* Portrait mode */
+@media (orientation: portrait) {
+  .button-container-profile {
+    flex-direction: column;
+    gap: 0.9rem;
+    width: auto;
+    margin: 0 auto;
+  }
+
+  .button-style {
+    width: 100%;
+    min-width: 12rem;
+    height: 2.2rem;
+    font-size: 1.2rem;
+    margin: 0;
+  }
+}
+
+/* iPhone in portrait */
+@media (orientation: portrait) and (max-width: 390px) {
+  .button-container-profile {
+    gap: 0.75rem;
+  }
+
+  .button-style {
+    min-width: 11rem;
+    height: 2rem;
+    font-size: 1.1rem;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .button-style {
+    font-size: 1rem;
+    height: 1.6rem;
+    width: 6.2rem;
+    margin: 3px;
+    padding: 3px 6px;
+  }
+
+  .button-container-profile {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 0;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+/* Even smaller screens in landscape */
+@media (orientation: landscape) and (max-height: 400px) {
+  .button-style {
+    font-size: 0.95rem;
+    height: 1.5rem;
+    width: 5.8rem;
+    margin: 2px;
+    padding: 2px 4px;
+  }
+
+  .button-container-profile {
+    gap: 6px;
+  }
 }
