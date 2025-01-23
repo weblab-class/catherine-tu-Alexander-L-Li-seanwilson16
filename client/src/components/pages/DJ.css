@@ -695,6 +695,8 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .turntable::before {
@@ -755,6 +757,12 @@ body {
   .deck {
     flex: 0 1 600px;
   }
+
+  .turntable {
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+  }
 }
 
 @media screen and (max-width: 1100px) {
@@ -809,13 +817,14 @@ body {
     justify-content: center;
   }
 
+
   .bpm-slider-container-left,
   .bpm-slider-container-right {
     flex: 0 1 150px;
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .decks-container {
     flex-direction: column;
     gap: 30px;
@@ -897,12 +906,22 @@ body {
     padding: 0 70px;
   }
 
+  .deck-row.right-deck-row {
+    margin-top: -75px;
+  }
+
   .right-deck {
     margin-top: -100px;
   }
 
   .effect-buttons {
     flex: 0 1 auto;
+    gap: 10px
+  }
+
+  .effect-btn.active {
+    width: 80px;
+    height: 80px;
   }
 
   .playback-section {
@@ -980,7 +999,7 @@ body {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .cue-btn-left,
   .play-btn-left {
     margin-right: 15px;
@@ -1022,7 +1041,7 @@ body {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .effect-buttons {
     max-width: 300px;
   }
@@ -1037,6 +1056,11 @@ body {
     width: 60px;
     height: 60px;
     font-size: 20px;
+  }
+
+  .volume-slider,
+  .volume-display {
+    display: none;
   }
 }
 
@@ -1084,6 +1108,43 @@ body {
   }
 }
 
+@media screen and (max-width: 1350px) {
+  .left-deck {
+    margin-right: -50px;
+    gap: 30px
+    /* transform: translateX(50px); */
+  }
+
+  .right-deck {
+    margin-left: -50px;
+    gap: 30px
+    /* transform: translateX(-50px); */
+  }
+
+  .left-deck-row {
+    gap: 30px;
+  }
+  .right-deck-row {
+    gap: 30px;
+  }
+
+}
+
+@media screen and (max-width: 1100px) {
+  .deck-controls {
+    gap: 40px;
+  }
+
+  .deck-row {
+    gap: 40px;
+  }
+
+  .left-deck-row,
+  .right-deck-row {
+    gap: 50px;
+  }
+}
+
 @keyframes rotate {
   from {
     transform: translateX(-50%) rotate(0deg);
@@ -1103,24 +1164,7 @@ body {
   .turntable {
     width: 200px;
     height: 200px;
-  }
-
-  .turntable-image {
-    width: 80px;
-    height: 80px;
-  }
-
-  .effect-buttons {
-    max-width: 350px;
-  }
-
-  .effect-btn {
-    width: 65px;
-    height: 65px;
-  }
-
-  .hotkey-indicator {
-    top: 5px;
+    flex-shrink: 0;
   }
 }
 
@@ -1133,24 +1177,11 @@ body {
   .turntable {
     width: 200px;
     height: 200px;
-  }
-
-  .turntable-image {
-    width: 80px;
-    height: 80px;
-  }
-
-  .effect-buttons {
-    max-width: 350px;
-  }
-
-  .effect-btn {
-    width: 65px;
-    height: 65px;
+    flex-shrink: 0;
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
   .effect-buttons {
     max-width: 300px;
   }
