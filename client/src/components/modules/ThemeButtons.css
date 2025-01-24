@@ -1,4 +1,6 @@
 .button-style {
+  position: relative;
+  z-index: 3;
   text-decoration: none;
   font-family: var(--josefin);
   font-size: 1.2rem;
@@ -8,6 +10,8 @@
   padding: 4px 8px;
   border: 2px solid rgba(255, 255, 255, 0.8);
   background-color: rgba(223, 226, 254, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   color: white;
   border-radius: 20px;
   cursor: pointer;
@@ -16,21 +20,519 @@
   height: 1.5rem;
   width: 8rem;
   margin: 5px;
+  touch-action: manipulation;
 }
 
 .button-style:hover {
   transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.15);
   border: 2px solid white;
   color: white;
 }
 
+.button-style.active {
+  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 2px solid white;
+  color: white;
+}
+
+.button-style.active:hover {
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
 .button-container-profile {
   display: flex;
-  /* flex-direction: row; */
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 10px;
   margin-top: 20px;
+  padding: 0 10px;
+  position: relative;
+  z-index: 3;
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 480px) {
+  .button-style {
+    font-size: 1rem;
+    height: 1.3rem;
+    width: 6.5rem;
+    margin: 3px;
+    padding: 3px 6px;
+  }
+
+  .button-container-profile {
+    gap: 6px;
+  }
+}
+
+/* Portrait mode */
+@media (orientation: portrait) {
+  .button-container-profile {
+    flex-direction: column;
+    gap: 0.9rem;
+    width: auto;
+    margin: 0 auto;
+  }
+
+  .button-style {
+    width: 100%;
+    min-width: 12rem;
+    height: 2.2rem;
+    font-size: 1.2rem;
+    margin: 0;
+  }
+}
+
+/* iPhone in portrait */
+@media (orientation: portrait) and (max-width: 390px) {
+  .button-container-profile {
+    gap: 0.75rem;
+  }
+
+  .button-style {
+    min-width: 11rem;
+    height: 2rem;
+    font-size: 1.1rem;
+  }
+}
+
+/* iPhone SE and similar small devices in portrait */
+@media screen and (max-width: 375px) and (max-height: 667px) and (orientation: portrait) {
+  .button-style {
+    width: 7rem;
+    height: 1.3rem;
+    font-size: 1rem;
+    margin: 0.3rem;
+  }
+
+  .button-container-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Landscape mode adjustments */
+@media (orientation: landscape) and (max-height: 500px) {
+  .button-style {
+    font-size: 1rem;
+    height: 1.6rem;
+    width: 6.2rem;
+    margin: 3px;
+    padding: 3px 6px;
+  }
+
+  .button-container-profile {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 0;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+/* Small devices in landscape with limited height */
+@media (orientation: landscape) and (max-height: 400px) {
+  .button-style {
+    width: 6.5rem;
+    height: 1.75rem;
+    font-size: 0.9rem;
+    margin: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem;
+    padding: 0;
+  }
+}
+
+/* Height-specific adjustments */
+@media screen and (max-height: 400px) {
+  .button-style {
+    height: 1.3rem;
+    font-size: 0.9rem;
+    width: 5rem;
+    margin: 3px;
+    padding: 2px 6px;
+  }
+
+  .button-container-profile {
+    gap: 5px;
+    margin-top: 5px;
+    padding: 0 5px;
+  }
+}
+
+/* Very small height adjustments */
+@media screen and (max-height: 300px) {
+  .button-style {
+    height: 1.2rem;
+    font-size: 0.8rem;
+    width: 4.5rem;
+    margin: 2px;
+    padding: 2px 4px;
+  }
+
+  .button-container-profile {
+    gap: 3px;
+    margin-top: 3px;
+    padding: 0 3px;
+  }
+}
+
+/* Medium-small devices */
+@media screen and (min-width: 390px) and (max-width: 768px) {
+  .button-style {
+    width: 7.5rem;
+    height: 2rem;
+    font-size: 1.1rem;
+    margin: 0.3rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .button-container-profile {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+}
+
+/* Laptop and tablet screens */
+@media screen and (min-width: 720px) and (max-width: 1024px) {
+  .button-style {
+    width: 10rem;
+    height: 2.5rem;
+    font-size: 1.3rem;
+    margin: 0 0.5rem;
+  }
+
+  .button-container-profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+}
+
+/* iPad Pro */
+@media screen and (min-width: 1024px) and (min-height: 1024px) {
+  .button-style {
+    width: 10rem;
+    height: 2.5rem;
+    font-size: 1.3rem;
+    margin: 0.4rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .button-container-profile {
+    gap: 1rem;
+  }
+}
+
+/* Surface Pro 7 */
+@media screen and (width: 912px) and (height: 1368px) {
+  .button-style {
+    width: 10rem;
+    height: 2.5rem;
+    font-size: 1.3rem;
+    margin: 0.4rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .button-container-profile {
+    gap: 1rem;
+  }
+}
+
+/* Nest Hub */
+@media screen and (width: 1024px) and (height: 600px) {
+  .button-style {
+    width: 8rem;
+    height: 2rem;
+    font-size: 1.1rem;
+    margin: 0.3rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .button-container-profile {
+    gap: 0.75rem;
+  }
+}
+
+/* Larger screens */
+@media screen and (min-width: 1024px) {
+  .button-style {
+    width: 10rem;
+    height: 2.5rem;
+    font-size: 1.3rem;
+    margin: 0.5rem;
+  }
+
+  .button-container-profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+/* iPhone SE landscape */
+@media only screen 
+  and (device-width: 667px) 
+  and (device-height: 375px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 5.5rem !important;
+    height: 1.6rem !important;
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0 !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* iPhone XR landscape */
+@media only screen 
+  and (device-width: 896px) 
+  and (device-height: 414px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 5rem !important;
+    height: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* iPhone 12 Pro landscape */
+@media only screen 
+  and (device-width: 844px) 
+  and (device-height: 390px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 5rem !important;
+    height: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* iPhone 14 Pro Max landscape */
+@media only screen 
+  and (device-width: 932px) 
+  and (device-height: 430px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 5rem !important;
+    height: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Pixel 7 landscape */
+@media only screen 
+  and (device-width: 915px) 
+  and (device-height: 412px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 5rem !important;
+    height: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Samsung Galaxy S8+ landscape */
+@media only screen 
+  and (device-width: 740px) 
+  and (device-height: 360px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 4.5rem !important;
+    height: 1.4rem !important;
+    font-size: 0.75rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.4rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Surface Duo landscape */
+@media only screen 
+  and (device-width: 1350px) 
+  and (device-height: 720px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 6rem !important;
+    height: 1.8rem !important;
+    font-size: 0.95rem !important;
+    margin: 0 0.2rem !important;
+    padding: 0.2rem 0.4rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.6rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* 720x540 screen */
+@media only screen 
+  and (width: 720px) 
+  and (height: 540px) {
+  .button-style {
+    width: 5rem !important;
+    height: 1.5rem !important;
+    font-size: 0.8rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.5rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Galaxy Z Fold landscape */
+@media only screen 
+  and (device-width: 882px) 
+  and (device-height: 344px) 
+  and (orientation: landscape) {
+  .button-style {
+    width: 4.5rem !important;
+    height: 1.4rem !important;
+    font-size: 0.75rem !important;
+    margin: 0 0.15rem !important;
+    padding: 0.15rem 0.3rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.4rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Width 480-510px */
+@media screen and (min-width: 480px) and (max-width: 510px) {
+  .button-style {
+    width: 4.2rem !important;
+    height: 1.4rem !important;
+    font-size: 0.7rem !important;
+    margin: 0 0.1rem !important;
+    padding: 0.15rem 0.25rem !important;
+    min-width: unset !important;
+  }
+
+  .button-container-profile {
+    gap: 0.3rem !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
 }

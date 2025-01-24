@@ -9,8 +9,8 @@ import TutorialModal from "../modules/TutorialModal";
 const Tutorial = () => {
   return (
     <>
-      <NavBar />
       <div className="dj-page">
+        <NavBar />
         <TutorialModal />
         <TutorialImportAndWaveforms />
 
