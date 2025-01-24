@@ -76,9 +76,11 @@ const DJ = () => {
   const [tracks] = useState(AVAILABLE_TRACKS);
   const [leftTrack, setLeftTrack] = useState({
     name: "",
+    path: "",
     key: "",
-    bpm: "",
-    originalBpm: "",
+    bpm: 120,
+    originalBpm: 120,
+    audioElements: null,
     effectsEnabled: {
       bass: true,
       drums: true,
@@ -89,9 +91,11 @@ const DJ = () => {
 
   const [rightTrack, setRightTrack] = useState({
     name: "",
+    path: "",
     key: "",
-    bpm: "",
-    originalBpm: "",
+    bpm: 120,
+    originalBpm: 120,
+    audioElements: null,
     effectsEnabled: {
       bass: true,
       drums: true,
@@ -271,7 +275,7 @@ const DJ = () => {
     });
   };
 
-  const handleTrackSelect = async (deck, track) => {
+  const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
     const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -345,79 +349,18 @@ const DJ = () => {
       );
     }
 
-    // Set up synchronization using requestAnimationFrame for smoother updates
-    let syncFrameId;
-    const syncAudio = () => {
-      const masterAudio = audioElements[STEM_TYPES[0]];
-      const currentTime = masterAudio.currentTime;
-
-      // Sync other audio elements
-      Object.entries(audioElements)
-        .slice(1)
-        .forEach(([_, audio]) => {
-          if (Math.abs(audio.currentTime - currentTime) > 0.005) {
-            audio.currentTime = currentTime;
-          }
-        });
-
-      // Sync waveforms
-      Object.values(wavesurfers.current).forEach((wavesurfer) => {
-        if (Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.005) {
-          wavesurfer.setTime(currentTime);
-        }
-      });
-
-      syncFrameId = requestAnimationFrame(syncAudio);
-    };
-
-    // Start sync loop when playing
-    const startSync = () => {
-      if (syncFrameId) cancelAnimationFrame(syncFrameId);
-      syncFrameId = requestAnimationFrame(syncAudio);
-    };
-
-    // Stop sync loop when paused
-    const stopSync = () => {
-      if (syncFrameId) {
-        cancelAnimationFrame(syncFrameId);
-        syncFrameId = null;
-      }
-    };
-
+    // Update track state with new info and audio elements
     setTrackState((prev) => ({
       ...prev,
-      name: trackInfo.name,
-      key: trackInfo.key,
-      bpm: currentBPM,
-      originalBpm: trackInfo.bpm,
+      ...trackInfo,
       audioElements,
-      effectsEnabled: {
-        bass: true,
-        drums: true,
-        melody: true,
-        vocals: true,
-      },
-      syncControl: {
-        start: startSync,
-        stop: stopSync,
-      },
+      originalBpm: trackInfo.bpm,
     }));
 
-    // Auto-play the other deck after loading
-    if (otherTrackState.name) {
-      // Only if other deck has a track loaded
-      // If other deck was playing, pause it first for clean restart
-      if (playing[otherDeck]) {
-        handlePlayPause(otherDeck);
-      }
-
-      // Small delay to ensure everything is loaded, then play
-      setTimeout(() => {
-        handlePlayPause(otherDeck);
-      }, 100);
+    // Only start playing if explicitly requested
+    if (shouldAutoPlay) {
+      handlePlayPause(deck);
     }
-
-    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
 
   const handleBPMChange = (deck, value) => {
@@ -920,6 +863,25 @@ const DJ = () => {
       if (rightTurntable) rightTurntable.classList.remove("playing");
     };
   }, [leftTrack.audioElements, rightTrack.audioElements]);
+
+  useEffect(() => {
+    // Load default tracks on mount
+    const loadDefaultTracks = async () => {
+      // Load left track (Chill Guy Remix)
+      const leftTrackInfo = tracks.find(t => t.path === "chill-guy-remix");
+      if (leftTrackInfo) {
+        await handleTrackSelect("left", leftTrackInfo, false); // false means don't auto-play
+      }
+
+      // Load right track (On & On)
+      const rightTrackInfo = tracks.find(t => t.path === "NCS_On&On");
+      if (rightTrackInfo) {
+        await handleTrackSelect("right", rightTrackInfo, false); // false means don't auto-play
+      }
+    };
+
+    loadDefaultTracks();
+  }, []); // Empty dependency array means this runs once on mount
 
   const handleImportSong = (deck) => {
     setDropdownOpen((prev) => ({
