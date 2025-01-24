@@ -176,3 +176,402 @@ h3 {
     height: 120px !important;
   }
 }
+
+/* iPad Pro and Surface Pro 7 */
+@media screen and (min-width: 1024px) and (min-height: 1024px) {
+  .avatar-container {
+    gap: 3rem;
+    padding: 3rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(12vh + 1rem);
+    gap: 3rem;
+  }
+
+  .avatar-image {
+    width: 250px !important;
+    height: 250px !important;
+    border-width: 3px !important;
+    outline-width: 4px !important;
+  }
+
+  .avatar-selector {
+    gap: 1rem;
+  }
+
+  .avatar-label {
+    font-size: 2rem;
+  }
+
+  .avatar-dropdown {
+    padding: 12px 16px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Surface Pro 7 */
+@media screen and (width: 912px) and (height: 1368px) {
+  .avatar-container {
+    gap: 3rem;
+    padding: 3rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(12vh + 1rem);
+    gap: 3rem;
+  }
+
+  .avatar-image {
+    width: 250px !important;
+    height: 250px !important;
+    border-width: 3px !important;
+    outline-width: 4px !important;
+  }
+
+  .avatar-selector {
+    gap: 1rem;
+  }
+
+  .avatar-label {
+    font-size: 2rem;
+  }
+
+  .avatar-dropdown {
+    padding: 12px 16px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Surface Duo */
+@media screen and (width: 540px) and (height: 720px) {
+  .avatar-container {
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(6vh + 1rem);
+    gap: 1.5rem;
+  }
+
+  .avatar-image {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.5rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 1rem;
+  }
+}
+
+/* Surface Duo landscape */
+@media only screen 
+  and (device-width: 1350px) 
+  and (device-height: 720px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 1rem;
+    padding: 0.75rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.75rem) !important;
+    gap: 1rem;
+  }
+
+  .avatar-image {
+    width: 150px !important;
+    height: 150px !important;
+  }
+
+  .avatar-selector {
+    gap: 1rem;
+  }
+
+  .avatar-label {
+    font-size: 1.5rem;
+  }
+
+  .avatar-dropdown {
+    padding: 8px 12px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Nest Hub */
+@media screen and (width: 1024px) and (height: 600px) {
+  .avatar-container {
+    gap: 1rem;
+    padding: 0.75rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(7vh + 0.5rem);
+    gap: 1rem;
+  }
+
+  .avatar-image {
+    width: 125px !important;
+    height: 125px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.5rem;
+  }
+
+  .avatar-label {
+    font-size: 1.2rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 1rem;
+  }
+}
+
+/* iPhone XR landscape */
+@media only screen 
+  and (device-width: 896px) 
+  and (device-height: 414px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh - 0.75rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* iPhone 12 Pro landscape */
+@media only screen 
+  and (device-width: 844px) 
+  and (device-height: 390px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* iPhone 14 Pro Max landscape */
+@media only screen 
+  and (device-width: 932px) 
+  and (device-height: 430px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Pixel 7 landscape */
+@media only screen 
+  and (device-width: 915px) 
+  and (device-height: 412px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 130px !important;
+    height: 130px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Samsung Galaxy S8+ landscape */
+@media only screen 
+  and (device-width: 740px) 
+  and (device-height: 360px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.2rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+/* 720x540 screen */
+@media only screen 
+  and (width: 720px) 
+  and (height: 540px) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.5rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.3rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Galaxy Z Fold landscape */
+@media only screen 
+  and (device-width: 882px) 
+  and (device-height: 344px) 
+  and (orientation: landscape) {
+  .avatar-container {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .avatar-content {
+    padding-top: calc(11vh + 0.25rem) !important;
+    gap: 0.75rem;
+  }
+
+  .avatar-image {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .avatar-selector {
+    gap: 0.75rem;
+  }
+
+  .avatar-label {
+    font-size: 1.2rem;
+  }
+
+  .avatar-dropdown {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+}
