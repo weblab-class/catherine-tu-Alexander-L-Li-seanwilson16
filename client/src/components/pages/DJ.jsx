@@ -903,7 +903,7 @@ const DJ = () => {
         <NavBar />
         <div className="top-bar">
           <div className="import-containers">
-            <div className="import-container">
+            <div className="import-container import-container-left">
               <button
                 className="import-btn"
                 onClick={(e) => {
@@ -947,7 +947,7 @@ const DJ = () => {
               </div>
             </div>
 
-            <div className="import-container">
+            <div className="import-container import-container-right">
               <button
                 className="import-btn"
                 onClick={(e) => {

@@ -55,8 +55,10 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  /* width: 100%; */
+  padding: 0 20px;
 }
-/* Import Controls */
+
 .import-container {
   position: relative;
   align-items: center;
@@ -67,6 +69,15 @@ body {
   z-index: 2000;
 }
 
+.import-container-left {
+  align-items: flex-start;
+}
+
+.import-container-right {
+  align-items: flex-end;
+}
+
+/* Import Controls */
 .import-container .import-btn {
   width: 160px;
   height: 35px;
