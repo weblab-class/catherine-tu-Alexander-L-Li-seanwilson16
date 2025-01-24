@@ -789,7 +789,7 @@ const DJ = () => {
       >
         <NavBar />
         <div className="top-bar">
-          <div className="deck-controls">
+          <div className="import-containers">
             <div className="import-container">
               <button
                 className="import-btn"
@@ -820,22 +820,20 @@ const DJ = () => {
                   ))}
                 </div>
               )}
+              <div className="track-info">
+                {leftTrack.name ? (
+                  <>
+                    <div className="track-name-left">{leftTrack.name}</div>
+                    <div className="track-details-left">
+                      {leftTrack.bpm + " BPM • " + leftTrack.key}
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-track-left">NO TRACK LOADED</div>
+                )}
+              </div>
             </div>
-            <div className="track-info">
-              {leftTrack.name ? (
-                <>
-                  <div className="track-name-left">{leftTrack.name}</div>
-                  <div className="track-details-left">
-                    {leftTrack.bpm + " BPM • " + leftTrack.key}
-                  </div>
-                </>
-              ) : (
-                <div className="no-track">NO TRACK LOADED</div>
-              )}
-            </div>
-          </div>
 
-          <div className="deck-controls">
             <div className="import-container">
               <button
                 className="import-btn"
@@ -865,19 +863,19 @@ const DJ = () => {
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
-            <div className="track-info">
-              {rightTrack.name ? (
-                <>
-                  <div className="track-name-right">{rightTrack.name}</div>
-                  <div className="track-details-right">
-                    {rightTrack.bpm + " BPM • " + rightTrack.key}
-                  </div>
-                </>
-              ) : (
-                <div className="no-track">NO TRACK LOADED</div>
-              )}
+              )}{" "}
+              <div className="track-info">
+                {rightTrack.name ? (
+                  <>
+                    <div className="track-name-right">{rightTrack.name}</div>
+                    <div className="track-details-right">
+                      {rightTrack.bpm + " BPM • " + rightTrack.key}
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-track-right">NO TRACK LOADED</div>
+                )}
+              </div>
             </div>
           </div>
         </div>
