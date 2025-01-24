@@ -1,48 +1,94 @@
-import "../pages/DJ.css";
+import React, { useState } from "react";
+import "./Tutorial.css";
 import { Popover, Text } from "@mantine/core";
 
 const TutorialRightControls = () => {
+  const [turntableOpened, setTurntableOpened] = useState(false);
+  const [bpmOpened, setBpmOpened] = useState(false);
+  const [effectsOpened, setEffectsOpened] = useState(false);
+  const [cueOpened, setCueOpened] = useState(false);
+  const [playOpened, setPlayOpened] = useState(false);
+
   const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
   return (
     <div className="deck right-deck">
-      <Popover width={300} position="top" closeOnClickOutside={false} withArrow>
-        <Popover.Target>
-          <div className="turntable">
-            <img className="turntable-image" src="/assets/chill-guy-head.webp" alt="Chill Guy DJ" />
-          </div>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Text ta="center">turntable that syncs with right track's bpm</Text>
-        </Popover.Dropdown>
-      </Popover>
+      <div className="deck-top">
+        <Popover
+          width={300}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={turntableOpened}
+          onClose={() => setTurntableOpened(false)}
+        >
+          <Popover.Target>
+            <div
+              className="turntable"
+              onMouseEnter={() => setTurntableOpened(true)}
+              onMouseLeave={() => setTurntableOpened(false)}
+            >
+              <img
+                className="turntable-image"
+                src="/assets/chill-guy-head.webp"
+                alt="Chill Guy DJ"
+              />
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">turntable that syncs with right track's bpm</Text>
+          </Popover.Dropdown>
+        </Popover>
 
-      <Popover width={215} position="top" closeOnClickOutside={false} withArrow>
-        <Popover.Target>
-          <div className="bpm-slider-container-right">
-            <input
-              type="range"
-              className="bpm-slider bpm-slider-right"
-              min="60"
-              max="180"
-              // value={rightTrack.bpm}
-              // onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-            />
-            <div className="bpm-display bpm-display-right"> BPM</div>
-          </div>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Text ta="center">
-            allows for users to change the beats per minute (bpm) of the right imported song (range:
-            60-180 bpm)
-          </Text>
-        </Popover.Dropdown>
-      </Popover>
+        <Popover
+          width={215}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={bpmOpened}
+          onClose={() => setBpmOpened(false)}
+        >
+          <Popover.Target>
+            <div
+              className="bpm-slider-container-right"
+              onMouseEnter={() => setBpmOpened(true)}
+              onMouseLeave={() => setBpmOpened(false)}
+            >
+              <input
+                type="range"
+                className="bpm-slider bpm-slider-right"
+                min="60"
+                max="180"
+                // value={rightTrack.bpm}
+                // onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+              />
+              <div className="bpm-display bpm-display-right"> BPM</div>
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">
+              allows for users to change the beats per minute (bpm) of the right imported song
+              (range: 60-180 bpm)
+            </Text>
+          </Popover.Dropdown>
+        </Popover>
+      </div>
 
       <div className="deck-row right-deck-row">
-        <Popover width={175} position="right" closeOnClickOutside={false} withArrow>
+        <Popover
+          width={175}
+          position="right"
+          closeOnClickOutside={false}
+          withArrow
+          opened={effectsOpened}
+          onClose={() => setEffectsOpened(false)}
+        >
           <Popover.Target>
-            <div className="effect-buttons">
+            <div
+              className="effect-buttons"
+              onMouseEnter={() => setEffectsOpened(true)}
+              onMouseLeave={() => setEffectsOpened(false)}
+            >
               {STEM_TYPES.map((effect, index) => {
                 const hotkey = {
                   left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
@@ -73,9 +119,20 @@ const TutorialRightControls = () => {
 
         <div className="playback-section">
           <div className="playback-controls">
-            <Popover width={350} position="top" closeOnClickOutside={false} withArrow>
+            <Popover
+              width={350}
+              position="top"
+              closeOnClickOutside={false}
+              withArrow
+              opened={cueOpened}
+              onClose={() => setCueOpened(false)}
+            >
               <Popover.Target>
-                <button className="cue-btn cue-btn-right">
+                <button
+                  className="cue-btn cue-btn-right"
+                  onMouseEnter={() => setCueOpened(true)}
+                  onMouseLeave={() => setCueOpened(false)}
+                >
                   <span className="cue-symbol">CUE</span>
                 </button>
               </Popover.Target>
@@ -87,9 +144,20 @@ const TutorialRightControls = () => {
                 </Text>
               </Popover.Dropdown>
             </Popover>
-            <Popover width={200} position="right" closeOnClickOutside={false} withArrow>
+            <Popover
+              width={200}
+              position="right"
+              closeOnClickOutside={false}
+              withArrow
+              opened={playOpened}
+              onClose={() => setPlayOpened(false)}
+            >
               <Popover.Target>
-                <button className="play-btn play-btn-right">
+                <button
+                  className="play-btn play-btn-right"
+                  onMouseEnter={() => setPlayOpened(true)}
+                  onMouseLeave={() => setPlayOpened(false)}
+                >
                   <span className="play-symbol">▶</span>
                 </button>
               </Popover.Target>
@@ -103,4 +171,5 @@ const TutorialRightControls = () => {
     </div>
   );
 };
+
 export default TutorialRightControls;
