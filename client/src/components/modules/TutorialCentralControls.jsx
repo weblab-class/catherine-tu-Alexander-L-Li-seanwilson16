@@ -2,9 +2,21 @@ import React, { useState } from "react";
 import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
-const TutorialCentralControls = () => {
+const TutorialCentralControls = ({ enableHover = true }) => {
   const [syncOpened, setSyncOpened] = useState(false);
   const [resetOpened, setResetOpened] = useState(false);
+
+  const handleMouseEnter = (setter) => {
+    if (enableHover) {
+      setter(true);
+    }
+  };
+
+  const handleMouseLeave = (setter) => {
+    if (enableHover) {
+      setter(false);
+    }
+  };
 
   const popoverStyles = {
     dropdown: {
@@ -25,14 +37,14 @@ const TutorialCentralControls = () => {
         closeOnClickOutside={false}
         withArrow
         opened={syncOpened}
-        onClose={() => setSyncOpened(false)}
+        onClose={() => handleMouseLeave(setSyncOpened)}
         styles={popoverStyles}
       >
         <Popover.Target>
           <button
             className="sync-btn"
-            onMouseEnter={() => setSyncOpened(true)}
-            onMouseLeave={() => setSyncOpened(false)}
+            onMouseEnter={() => handleMouseEnter(setSyncOpened)}
+            onMouseLeave={() => handleMouseLeave(setSyncOpened)}
           >
             <span className="sync-text">SYNC</span>
           </button>
@@ -48,14 +60,14 @@ const TutorialCentralControls = () => {
         closeOnClickOutside={false}
         withArrow
         opened={resetOpened}
-        onClose={() => setResetOpened(false)}
+        onClose={() => handleMouseLeave(setResetOpened)}
         styles={popoverStyles}
       >
         <Popover.Target>
           <button
             className="reset-btn"
-            onMouseEnter={() => setResetOpened(true)}
-            onMouseLeave={() => setResetOpened(false)}
+            onMouseEnter={() => handleMouseEnter(setResetOpened)}
+            onMouseLeave={() => handleMouseLeave(setResetOpened)}
           >
             <span className="reset-text">RESET</span>
           </button>

@@ -2,15 +2,23 @@ import React, { useRef, useState } from "react";
 import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
-const TutorialImportAndWaveforms = () => {
+const TutorialImportAndWaveforms = ({ enableHover = true }) => {
   const leftContainerRef = useRef(null);
   const rightContainerRef = useRef(null);
   const [importLeftOpened, setImportLeftOpened] = useState(false);
   const [importRightOpened, setImportRightOpened] = useState(false);
   const [waveformsOpened, setWaveformsOpened] = useState(false);
 
-  const handleMouseLeave = (setState) => {
-    setState(false);
+  const handleMouseEnter = (setter) => {
+    if (enableHover) {
+      setter(true);
+    }
+  };
+
+  const handleMouseLeave = (setter) => {
+    if (enableHover) {
+      setter(false);
+    }
   };
 
   return (
@@ -39,14 +47,16 @@ const TutorialImportAndWaveforms = () => {
               <Popover.Target>
                 <button
                   className="import-btn"
-                  onMouseEnter={() => setImportLeftOpened(true)}
-                  onMouseLeave={() => setImportLeftOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setImportLeftOpened)}
+                  onMouseLeave={() => handleMouseLeave(setImportLeftOpened)}
                 >
                   IMPORT SONG ▼
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">Click here to import a song into the left deck.</Text>
+                <Text ta="center">
+                  Click here to import a song into the left deck.
+                </Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -78,14 +88,16 @@ const TutorialImportAndWaveforms = () => {
               <Popover.Target>
                 <button
                   className="import-btn"
-                  onMouseEnter={() => setImportRightOpened(true)}
-                  onMouseLeave={() => setImportRightOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setImportRightOpened)}
+                  onMouseLeave={() => handleMouseLeave(setImportRightOpened)}
                 >
                   IMPORT SONG ▼
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">Click here to import a song into the right deck.</Text>
+                <Text ta="center">
+                  Click here to import a song into the right deck.
+                </Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -122,8 +134,8 @@ const TutorialImportAndWaveforms = () => {
           <Popover.Target>
             <div
               className="waveforms-section"
-              onMouseEnter={() => setWaveformsOpened(true)}
-              onMouseLeave={() => setWaveformsOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setWaveformsOpened)}
+              onMouseLeave={() => handleMouseLeave(setWaveformsOpened)}
               style={{
                 background: "rgba(255, 255, 255, 0.1)",
                 borderRadius: "4px",
@@ -135,7 +147,9 @@ const TutorialImportAndWaveforms = () => {
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">This is where the waveforms of your songs will appear.</Text>
+            <Text ta="center">
+              This is where the waveforms of your songs will appear.
+            </Text>
           </Popover.Dropdown>
         </Popover>
       </div>
