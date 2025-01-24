@@ -255,6 +255,8 @@ const DJ = () => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    const otherDeck = deck === "left" ? "right" : "left";
+    const otherTrackState = deck === "left" ? rightTrack : leftTrack;
 
     // Find the track in AVAILABLE_TRACKS to get the correct BPM
     const trackInfo = AVAILABLE_TRACKS.find((t) => t.path === track.path);
@@ -379,6 +381,20 @@ const DJ = () => {
         stop: stopSync,
       },
     }));
+
+    // Auto-play the other deck after loading
+    if (otherTrackState.name) {
+      // Only if other deck has a track loaded
+      // If other deck was playing, pause it first for clean restart
+      if (playing[otherDeck]) {
+        handlePlayPause(otherDeck);
+      }
+
+      // Small delay to ensure everything is loaded, then play
+      setTimeout(() => {
+        handlePlayPause(otherDeck);
+      }, 100);
+    }
 
     setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
