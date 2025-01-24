@@ -20,23 +20,15 @@ const themeOptions = [
 
 const ThemeButtons = () => {
   const { theme, setTheme } = useContext(ThemeContext);
+  const [activeTheme, setActiveTheme] = useState("");
 
-  // const [file, setFile] = useState([]);
-
-  // useEffect(() => {
-  //   console.log("in here");
-  //   if (file) {
-  //     // reate a URL from the uploaded file
-  //     const imageUrl = URL.createObjectURL(file); // generate a URL for the uploaded image
-  //     post("/api/theme", { userid: userId, theme: imageUrl })
-  //       .then(() => {
-  //         setTheme(imageUrl); // set the background to the uploaded image URL
-  //       })
-  //       .catch((err) => {
-  //         console.error("Failed to update theme:", err);
-  //       });
-  //   }
-  // }, [file, userId, setTheme]);
+  // Initialize active theme on component mount
+  useEffect(() => {
+    const currentTheme = themeOptions.find(option => option.url === theme);
+    if (currentTheme) {
+      setActiveTheme(currentTheme.name);
+    }
+  }, [theme]);
 
   // user changing the theme
   const updateTheme = (newTheme) => {
@@ -44,6 +36,9 @@ const ThemeButtons = () => {
     post("/api/theme", { theme: newTheme.url })
       .then(() => {
         setTheme(newTheme.url);
+        setActiveTheme(newTheme.name);
+        // Store active theme in localStorage
+        localStorage.setItem('activeTheme', newTheme.name);
       })
       .catch((err) => {
         console.error("Failed to update theme:", err);
@@ -56,28 +51,25 @@ const ThemeButtons = () => {
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundRepeat = "no-repeat";
+
+    // Restore active theme from localStorage
+    const savedTheme = localStorage.getItem('activeTheme');
+    if (savedTheme) {
+      setActiveTheme(savedTheme);
+    }
   }, [theme]);
 
   return (
     <div className="button-container-profile">
       {themeOptions.map((option) => (
-        <button className="button-style" key={option.name} onClick={() => updateTheme(option)}>
+        <button 
+          className={`button-style ${activeTheme === option.name ? 'active' : ''}`}
+          key={option.name} 
+          onClick={() => updateTheme(option)}
+        >
           {option.name}
         </button>
       ))}
-      {/* <div className="button-style">
-  <Group justify="center">
-    <FileButton onChange={setFile} accept="image/png,image/jpeg,image/jpg">
-      {(props) => <Button {...props}>upload image</Button>}
-    </FileButton>
-  </Group>
-
-  {file && (
-    <Text size="sm" ta="center" mt="sm">
-      {file.name}
-    </Text>
-  )}
-</div> */}
     </div>
   );
 };

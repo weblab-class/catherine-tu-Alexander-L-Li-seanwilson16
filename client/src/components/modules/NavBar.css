@@ -104,6 +104,311 @@ html, body {
   }
 }
 
+/* iPhone XR and similar devices in landscape mode */
+@media only screen 
+  and (device-width: 896px) 
+  and (device-height: 414px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* iPhone 12 Pro landscape */
+@media only screen 
+  and (device-width: 844px) 
+  and (device-height: 390px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* iPhone 14 Pro Max landscape */
+@media only screen 
+  and (device-width: 932px) 
+  and (device-height: 430px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* Pixel 7 landscape */
+@media only screen 
+  and (device-width: 915px) 
+  and (device-height: 412px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* Samsung Galaxy S8+ landscape */
+@media only screen 
+  and (device-width: 740px) 
+  and (device-height: 360px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* Surface Duo landscape */
+@media only screen 
+  and (device-width: 1350px) 
+  and (device-height: 720px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 20px 20px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+    padding: 6px 12px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 6px 12px;
+    border-radius: 6px;
+    max-height: 5vh;
+  }
+}
+
+/* 720x540 screen */
+@media only screen 
+  and (width: 720px) 
+  and (height: 540px) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
+  }
+}
+
+/* Medium-sized devices (tablets, iPads) */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 1.2rem;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+    padding: 0.3rem 0.7rem;
+  }
+}
+
+/* Nest Hub */
+@media screen and (width: 1024px) and (height: 600px) {
+  .navbar-notch-container {
+    height: 7vh;
+  }
+
+  .navbar-content {
+    width: 60%;
+  }
+}
+
 /* Additional breakpoints for smaller screens */
 @media (orientation: landscape) and (max-width: 600px) {
   .navbar-notch-container {
@@ -124,6 +429,45 @@ html, body {
   .nav-link {
     font-size: clamp(0.5rem, 1.2vw, 0.7rem);
     padding: 2px 4px;
+  }
+}
+
+/* Galaxy Z Fold landscape */
+@media only screen 
+  and (device-width: 882px) 
+  and (device-height: 344px) 
+  and (orientation: landscape) {
+  .navbar-notch-container {
+    width: 50%;
+    height: 11vh !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 0 0 15px 15px;
+  }
+
+  .navbar-content {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 5vh;
+  }
+
+  .nav-link-active {
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 5vh;
   }
 }
 
