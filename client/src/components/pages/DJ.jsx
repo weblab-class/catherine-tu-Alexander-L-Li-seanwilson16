@@ -9,14 +9,14 @@ const AVAILABLE_TRACKS = [
     id: 1,
     name: "Fall to Light - NCS",
     path: "NCS_Fall_to_Light",
-    bpm: 85,
+    bpm: 87,
     key: "1B",
   },
   {
     id: 2,
     name: "On & On - NCS",
     path: "NCS_On&On",
-    bpm: 85,
+    bpm: 86,
     key: "1B",
   },
   {
@@ -154,8 +154,8 @@ const DJ = () => {
       const wavesurfer = wavesurfers.current[stem];
       const currentTime = wavesurfer.getCurrentTime();
 
-      // Only adjust if drift is more than 10ms
-      if (Math.abs(currentTime - referenceTime) > 0.01) {
+      // Only adjust if drift is more than 5ms
+      if (Math.abs(currentTime - referenceTime) > 0.005) {
         wavesurfer.setTime(referenceTime);
       }
     });
@@ -332,14 +332,14 @@ const DJ = () => {
       Object.entries(audioElements)
         .slice(1)
         .forEach(([_, audio]) => {
-          if (Math.abs(audio.currentTime - currentTime) > 0.01) {
+          if (Math.abs(audio.currentTime - currentTime) > 0.005) {
             audio.currentTime = currentTime;
           }
         });
 
       // Sync waveforms
       Object.values(wavesurfers.current).forEach((wavesurfer) => {
-        if (Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.01) {
+        if (Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.005) {
           wavesurfer.setTime(currentTime);
         }
       });
@@ -421,7 +421,7 @@ const DJ = () => {
       // After all updates are complete, ensure waveforms stay in sync
       requestAnimationFrame(() => {
         Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-          if (wavesurfer && Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.01) {
+          if (wavesurfer && Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.005) {
             wavesurfer.setTime(currentTime);
           }
         });
