@@ -23,6 +23,7 @@
     "@mantine/core": "^7.16.0",
     "@mantine/hooks": "^7.16.0",
     "@react-oauth/google": "^0.12.1",
+    "@tabler/icons-react": "^3.29.0",
     "connect-ensure-login": "^0.1.1",
     "core-js": "^3.8.1",
     "dotenv": "^16.4.7",

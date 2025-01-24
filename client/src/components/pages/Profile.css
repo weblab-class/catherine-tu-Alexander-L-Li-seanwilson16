@@ -15,11 +15,49 @@
   align-items: center;
   text-align: center;
   width: 100%;
-  margin: 0 auto;
+  /* margin: 0 auto; */
+  margin-top: 50px;
   position: relative;
   z-index: 2;
   padding: 0.5rem;
   min-height: fit-content;
+}
+
+.mantine-FileInput-input {
+  padding: 5.5px 0px 5.5px 15px;
+}
+
+.file-input {
+  /* width: 100%;
+  max-width: 400px; */
+}
+
+.file-input .mantine-FileInput-label,
+.file-input .mantine-FileInput-description,
+.file-input .mantine-FileInput-error {
+  text-align: left;
+}
+
+.mantine-FileInput-label {
+  font-family: var(--josefin);
+  font-size: 20px;
+  color: white;
+}
+
+.mantine-FileInput-description {
+  font-family: var(--josefin);
+  font-size: 15px;
+  color: rgb(210, 210, 210);
+}
+
+.mantine-FileInput-error {
+  font-family: var(--josefin);
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.file-input .mantine-FileInput-input {
+  text-align: left;
 }
 
 .profile-container {
@@ -108,10 +146,7 @@
 }
 
 /* iPhone XR landscape specific */
-@media only screen 
-  and (device-width: 896px) 
-  and (device-height: 414px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 896px) and (device-height: 414px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -141,10 +176,7 @@
 }
 
 /* iPhone 12 Pro landscape specific */
-@media only screen 
-  and (device-width: 844px) 
-  and (device-height: 390px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 844px) and (device-height: 390px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -174,10 +206,7 @@
 }
 
 /* iPhone 14 Pro Max landscape specific */
-@media only screen 
-  and (device-width: 932px) 
-  and (device-height: 430px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 932px) and (device-height: 430px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -207,10 +236,7 @@
 }
 
 /* Pixel 7 landscape specific */
-@media only screen 
-  and (device-width: 915px) 
-  and (device-height: 412px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 915px) and (device-height: 412px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -240,10 +266,7 @@
 }
 
 /* Samsung Galaxy S8+ landscape specific */
-@media only screen 
-  and (device-width: 740px) 
-  and (device-height: 360px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 740px) and (device-height: 360px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -273,10 +296,7 @@
 }
 
 /* Surface Duo landscape specific */
-@media only screen 
-  and (device-width: 1350px) 
-  and (device-height: 720px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 1350px) and (device-height: 720px) and (orientation: landscape) {
   .profile-container {
     padding: 0.75rem 0;
     gap: 0.75rem;
@@ -306,9 +326,7 @@
 }
 
 /* 720x540 screen specific */
-@media only screen 
-  and (width: 720px) 
-  and (height: 540px) {
+@media only screen and (width: 720px) and (height: 540px) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
@@ -559,10 +577,7 @@
 }
 
 /* Galaxy Z Fold landscape specific */
-@media only screen 
-  and (device-width: 882px) 
-  and (device-height: 344px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 882px) and (device-height: 344px) and (orientation: landscape) {
   .profile-container {
     padding: 0.5rem 0;
     gap: 0.5rem;
