@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%; /* Ensure the body spans the full viewport */
@@ -26,8 +27,8 @@ html, body {
   z-index: 9999;
 }
 
- /* For small screens (e.g., phones) */
- @media (orientation: portrait) {
+/* For small screens (e.g., phones) */
+@media (orientation: portrait) {
   .navbar-notch-container {
     align-items: flex-start;
     width: 100%; /* Full screen width */
@@ -51,7 +52,7 @@ html, body {
   .navbar-notch-container {
     width: 60%; /* Wider for this specific range */
   }
-  
+
   .nav-link {
     font-size: clamp(0.65rem, 1.4vw, 0.85rem);
     padding: 3px 6px;
@@ -62,7 +63,7 @@ html, body {
   .navbar-notch-container {
     width: 65%; /* Even wider for the most problematic range */
   }
-  
+
   .nav-link {
     font-size: clamp(0.63rem, 1.35vw, 0.83rem);
     padding: 3px 5px;
@@ -105,10 +106,7 @@ html, body {
 }
 
 /* iPhone XR and similar devices in landscape mode */
-@media only screen 
-  and (device-width: 896px) 
-  and (device-height: 414px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 896px) and (device-height: 414px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -144,10 +142,7 @@ html, body {
 }
 
 /* iPhone 12 Pro landscape */
-@media only screen 
-  and (device-width: 844px) 
-  and (device-height: 390px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 844px) and (device-height: 390px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -183,10 +178,7 @@ html, body {
 }
 
 /* iPhone 14 Pro Max landscape */
-@media only screen 
-  and (device-width: 932px) 
-  and (device-height: 430px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 932px) and (device-height: 430px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -222,10 +214,7 @@ html, body {
 }
 
 /* Pixel 7 landscape */
-@media only screen 
-  and (device-width: 915px) 
-  and (device-height: 412px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 915px) and (device-height: 412px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -261,10 +250,7 @@ html, body {
 }
 
 /* Samsung Galaxy S8+ landscape */
-@media only screen 
-  and (device-width: 740px) 
-  and (device-height: 360px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 740px) and (device-height: 360px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -300,10 +286,7 @@ html, body {
 }
 
 /* Surface Duo landscape */
-@media only screen 
-  and (device-width: 1350px) 
-  and (device-height: 720px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 1350px) and (device-height: 720px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -339,9 +322,7 @@ html, body {
 }
 
 /* 720x540 screen */
-@media only screen 
-  and (width: 720px) 
-  and (height: 540px) {
+@media only screen and (width: 720px) and (height: 540px) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -414,7 +395,7 @@ html, body {
   .navbar-notch-container {
     width: 65%; /* Wider for medium-small screens */
   }
-  
+
   .nav-link {
     font-size: clamp(0.6rem, 1.3vw, 0.8rem);
     padding: 3px 6px;
@@ -425,7 +406,7 @@ html, body {
   .navbar-notch-container {
     width: 80%; /* Even wider for very small screens */
   }
-  
+
   .nav-link {
     font-size: clamp(0.5rem, 1.2vw, 0.7rem);
     padding: 2px 4px;
@@ -433,10 +414,7 @@ html, body {
 }
 
 /* Galaxy Z Fold landscape */
-@media only screen 
-  and (device-width: 882px) 
-  and (device-height: 344px) 
-  and (orientation: landscape) {
+@media only screen and (device-width: 882px) and (device-height: 344px) and (orientation: landscape) {
   .navbar-notch-container {
     width: 50%;
     height: 11vh !important;
@@ -472,8 +450,8 @@ html, body {
 }
 
 .dj-page .navbar-notch-container {
-    top: 0;
-    left: 50%; /* Keep horizontally centered */
+  top: 0;
+  left: 50%; /* Keep horizontally centered */
 }
 
 .lofi .navbar-notch-container {

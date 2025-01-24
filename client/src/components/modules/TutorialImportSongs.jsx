@@ -1,22 +1,60 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
-const TutorialImportAndWaveforms = () => {
+const TutorialImportAndWaveforms = ({ enableHover = true }) => {
   const leftContainerRef = useRef(null);
   const rightContainerRef = useRef(null);
+  const [importLeftOpened, setImportLeftOpened] = useState(false);
+  const [importRightOpened, setImportRightOpened] = useState(false);
+  const [waveformsOpened, setWaveformsOpened] = useState(false);
+
+  const handleMouseEnter = (setter) => {
+    if (enableHover) {
+      setter(true);
+    }
+  };
+
+  const handleMouseLeave = (setter) => {
+    if (enableHover) {
+      setter(false);
+    }
+  };
 
   return (
     <div>
       <div className="top-bar">
         <div className="deck-controls">
           <div className="import-container">
-            <Popover width={175} position="bottom" closeOnClickOutside={false} withArrow>
+            <Popover
+              width={175}
+              position="bottom"
+              closeOnClickOutside={false}
+              withArrow
+              opened={importLeftOpened}
+              onClose={() => handleMouseLeave(setImportLeftOpened)}
+              styles={{
+                dropdown: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                  fontFamily: "var(--josefin)",
+                  color: "white",
+                },
+                arrow: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                },
+              }}
+            >
               <Popover.Target>
-                <button className="import-btn">IMPORT SONG ▼</button>
+                <button
+                  className="import-btn"
+                  onMouseEnter={() => handleMouseEnter(setImportLeftOpened)}
+                  onMouseLeave={() => handleMouseLeave(setImportLeftOpened)}
+                >
+                  IMPORT SONG ▼
+                </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">choose a song to mix on the left deck</Text>
+                <Text ta="center">Click here to import a song into the left deck.</Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -27,12 +65,35 @@ const TutorialImportAndWaveforms = () => {
 
         <div className="deck-controls">
           <div className="import-container">
-            <Popover width={175} position="bottom" closeOnClickOutside={false} withArrow>
+            <Popover
+              width={175}
+              position="bottom"
+              closeOnClickOutside={false}
+              withArrow
+              opened={importRightOpened}
+              onClose={() => handleMouseLeave(setImportRightOpened)}
+              styles={{
+                dropdown: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                  fontFamily: "var(--josefin)",
+                  color: "white",
+                },
+                arrow: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                },
+              }}
+            >
               <Popover.Target>
-                <button className="import-btn">IMPORT SONG ▼</button>
+                <button
+                  className="import-btn"
+                  onMouseEnter={() => handleMouseEnter(setImportRightOpened)}
+                  onMouseLeave={() => handleMouseLeave(setImportRightOpened)}
+                >
+                  IMPORT SONG ▼
+                </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">choose a song to mix on the right deck</Text>
+                <Text ta="center">Click here to import a song into the right deck.</Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -42,19 +103,50 @@ const TutorialImportAndWaveforms = () => {
         </div>
       </div>
 
-      <Popover width={250} position="bottom" closeOnClickOutside={false} withArrow>
-        <Popover.Target>
-          <div className="waveforms-section">
-            <div ref={leftContainerRef}></div>
-            <div ref={rightContainerRef}></div>
-          </div>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Text ta="center">
-            waveform box showing the two songs and their stem amplitudes over the song duration
-          </Text>
-        </Popover.Dropdown>
-      </Popover>
+      <div style={{ position: "relative", zIndex: 1000 }}>
+        <Popover
+          width={250}
+          position="bottom"
+          closeOnClickOutside={false}
+          withArrow
+          opened={waveformsOpened}
+          onClose={() => handleMouseLeave(setWaveformsOpened)}
+          styles={{
+            target: {
+              width: "100%",
+              height: "200px",
+              display: "block",
+            },
+            dropdown: {
+              background: "rgba(0, 0, 0, 0.3)",
+              fontFamily: "var(--josefin)",
+              color: "white",
+            },
+            arrow: {
+              background: "rgba(0, 0, 0, 0.3)",
+            },
+          }}
+        >
+          <Popover.Target>
+            <div
+              className="waveforms-section"
+              onMouseEnter={() => handleMouseEnter(setWaveformsOpened)}
+              onMouseLeave={() => handleMouseLeave(setWaveformsOpened)}
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              <div ref={leftContainerRef} style={{ flex: 1 }}></div>
+              <div ref={rightContainerRef} style={{ flex: 1 }}></div>
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">This is where the waveforms of your songs will appear.</Text>
+          </Popover.Dropdown>
+        </Popover>
+      </div>
     </div>
   );
 };
