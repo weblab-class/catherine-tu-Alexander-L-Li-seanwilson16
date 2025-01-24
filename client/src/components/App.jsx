@@ -12,10 +12,12 @@ import { MantineProvider } from "@mantine/core";
 import { UserContext, ThemeContext } from "./context/Context";
 
 import lofibackground from "/assets/lofi-bg.png";
+import Loading from "./modules/Loading";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  const [theme, setTheme] = useState(lofibackground);
+  const [theme, setTheme] = useState();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Add lofi class to body when app loads
   useEffect(() => {
@@ -28,22 +30,27 @@ function App() {
       if (user._id) {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
+        // Fetch theme immediately after confirming user
+        get("/api/user", { userid: user._id }).then((userData) => {
+          setTheme(userData.theme);
+        });
+      } else {
+        setTheme(lofibackground);
       }
     });
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && !theme) {
+      setIsLoading(true);
       get("/api/user", { userid: userId }).then((user) => {
-        // console.log("user get", user);
-        // console.log("theme has been set!");
         setTheme(user.theme);
       });
-    } else {
-      setTheme(lofibackground);
     }
   }, [userId]);
+
   const handleLogin = (credentialResponse) => {
+    setIsLoading(true);
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
     console.log(`Logged in as ${decodedCredential.name}`);
@@ -65,20 +72,29 @@ function App() {
   };
 
   useEffect(() => {
-    console.log("theme dependency");
-    // setTheme(theme);
-    document.body.style.backgroundImage = `url(${theme})`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundRepeat = "no-repeat";
-    console.log("theme", theme);
+    if (!theme) return; // Don't apply undefined theme
+    
+    // Preload the theme image before removing loading screen
+    const img = new Image();
+    img.src = theme;
+    img.onload = () => {
+      document.body.style.backgroundImage = `url(${theme})`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundRepeat = "no-repeat";
+      setIsLoading(false);
+    };
   }, [theme]);
 
   return (
     <MantineProvider>
       <UserContext.Provider value={authContextValue}>
         <ThemeContext.Provider value={{ theme, setTheme }}>
-          <Outlet context={{ userId: userId }} />
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <Outlet context={{ userId: userId }} />
+          )}
         </ThemeContext.Provider>
       </UserContext.Provider>
     </MantineProvider>
