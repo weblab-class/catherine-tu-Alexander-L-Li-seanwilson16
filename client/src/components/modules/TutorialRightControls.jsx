@@ -1,19 +1,56 @@
 import React, { useState } from "react";
-import "./Tutorial.css";
+import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
 const TutorialRightControls = () => {
   const [turntableOpened, setTurntableOpened] = useState(false);
   const [bpmOpened, setBpmOpened] = useState(false);
+  const [volumeOpened, setVolumeOpened] = useState(false);
   const [effectsOpened, setEffectsOpened] = useState(false);
   const [cueOpened, setCueOpened] = useState(false);
   const [playOpened, setPlayOpened] = useState(false);
 
   const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
+  const popoverStyles = {
+    dropdown: {
+      background: "rgba(0, 0, 0, 0.3)",
+      fontFamily: "var(--josefin)",
+      color: "white",
+    },
+    arrow: {
+      background: "rgba(0, 0, 0, 0.3)",
+    },
+  };
+
   return (
     <div className="deck right-deck">
       <div className="deck-top">
+        <Popover
+          width={215}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={volumeOpened}
+          onClose={() => setVolumeOpened(false)}
+          styles={popoverStyles}
+        >
+          <Popover.Target>
+            <div
+              className="volume-slider-container-right"
+              onMouseEnter={() => setVolumeOpened(true)}
+              onMouseLeave={() => setVolumeOpened(false)}
+            >
+              <input type="range" className="volume-slider volume-slider-right" min="0" max="100" />
+              <div className="volume-display volume-display-right"> VOL</div>
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">
+              allows for users to change the volume of the right imported song
+            </Text>
+          </Popover.Dropdown>
+        </Popover>
         <Popover
           width={300}
           position="top"
@@ -21,6 +58,7 @@ const TutorialRightControls = () => {
           withArrow
           opened={turntableOpened}
           onClose={() => setTurntableOpened(false)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
@@ -47,6 +85,7 @@ const TutorialRightControls = () => {
           withArrow
           opened={bpmOpened}
           onClose={() => setBpmOpened(false)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
@@ -54,14 +93,7 @@ const TutorialRightControls = () => {
               onMouseEnter={() => setBpmOpened(true)}
               onMouseLeave={() => setBpmOpened(false)}
             >
-              <input
-                type="range"
-                className="bpm-slider bpm-slider-right"
-                min="60"
-                max="180"
-                // value={rightTrack.bpm}
-                // onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-              />
+              <input type="range" className="bpm-slider bpm-slider-right" min="60" max="180" />
               <div className="bpm-display bpm-display-right"> BPM</div>
             </div>
           </Popover.Target>
@@ -77,11 +109,12 @@ const TutorialRightControls = () => {
       <div className="deck-row right-deck-row">
         <Popover
           width={175}
-          position="right"
+          position="left"
           closeOnClickOutside={false}
           withArrow
           opened={effectsOpened}
           onClose={() => setEffectsOpened(false)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
@@ -126,6 +159,7 @@ const TutorialRightControls = () => {
               withArrow
               opened={cueOpened}
               onClose={() => setCueOpened(false)}
+              styles={popoverStyles}
             >
               <Popover.Target>
                 <button
@@ -146,11 +180,12 @@ const TutorialRightControls = () => {
             </Popover>
             <Popover
               width={200}
-              position="right"
+              position="bottom"
               closeOnClickOutside={false}
               withArrow
               opened={playOpened}
               onClose={() => setPlayOpened(false)}
+              styles={popoverStyles}
             >
               <Popover.Target>
                 <button

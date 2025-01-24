@@ -1,15 +1,39 @@
 import React, { useState } from "react";
-import "./Tutorial.css";
+import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
-const TutorialLeftControls = () => {
+const TutorialLeftControls = ({ enableHover = true }) => {
   const [turntableOpened, setTurntableOpened] = useState(false);
   const [bpmOpened, setBpmOpened] = useState(false);
+  const [volumeOpened, setVolumeOpened] = useState(false);
   const [cueOpened, setCueOpened] = useState(false);
   const [playOpened, setPlayOpened] = useState(false);
   const [effectsOpened, setEffectsOpened] = useState(false);
 
   const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
+
+  const handleMouseEnter = (setter) => {
+    if (enableHover) {
+      setter(true);
+    }
+  };
+
+  const handleMouseLeave = (setter) => {
+    if (enableHover) {
+      setter(false);
+    }
+  };
+
+  const popoverStyles = {
+    dropdown: {
+      background: "rgba(0, 0, 0, 0.3)",
+      fontFamily: "var(--josefin)",
+      color: "white",
+    },
+    arrow: {
+      background: "rgba(0, 0, 0, 0.3)",
+    },
+  };
 
   return (
     <div className="deck left-deck">
@@ -20,13 +44,14 @@ const TutorialLeftControls = () => {
           closeOnClickOutside={false}
           withArrow
           opened={bpmOpened}
-          onClose={() => setBpmOpened(false)}
+          onClose={() => handleMouseLeave(setBpmOpened)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
               className="bpm-slider-container-left"
-              onMouseEnter={() => setBpmOpened(true)}
-              onMouseLeave={() => setBpmOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setBpmOpened)}
+              onMouseLeave={() => handleMouseLeave(setBpmOpened)}
             >
               <input type="range" className="bpm-slider bpm-slider-left" min="60" max="180" />
 
@@ -46,13 +71,14 @@ const TutorialLeftControls = () => {
           closeOnClickOutside={false}
           withArrow
           opened={turntableOpened}
-          onClose={() => setTurntableOpened(false)}
+          onClose={() => handleMouseLeave(setTurntableOpened)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
               className="turntable"
-              onMouseEnter={() => setTurntableOpened(true)}
-              onMouseLeave={() => setTurntableOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setTurntableOpened)}
+              onMouseLeave={() => handleMouseLeave(setTurntableOpened)}
             >
               <img
                 className="turntable-image"
@@ -63,6 +89,30 @@ const TutorialLeftControls = () => {
           </Popover.Target>
           <Popover.Dropdown>
             <Text ta="center"> turntable that syncs with left track's bpm</Text>
+          </Popover.Dropdown>
+        </Popover>
+        <Popover
+          width={215}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={volumeOpened}
+          onClose={() => handleMouseLeave(setVolumeOpened)}
+          styles={popoverStyles}
+        >
+          <Popover.Target>
+            <div
+              className="volume-slider-container-left"
+              onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
+              onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
+            >
+              <input type="range" className="volume-slider volume-slider-left" min="0" max="100" />
+
+              <div className="volume-display volume-display-left"> VOL</div>
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">allows for users to change the volume of the left imported song</Text>
           </Popover.Dropdown>
         </Popover>
       </div>
@@ -76,13 +126,14 @@ const TutorialLeftControls = () => {
               closeOnClickOutside={false}
               withArrow
               opened={cueOpened}
-              onClose={() => setCueOpened(false)}
+              onClose={() => handleMouseLeave(setCueOpened)}
+              styles={popoverStyles}
             >
               <Popover.Target>
                 <button
                   className="cue-btn cue-btn-left"
-                  onMouseEnter={() => setCueOpened(true)}
-                  onMouseLeave={() => setCueOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setCueOpened)}
+                  onMouseLeave={() => handleMouseLeave(setCueOpened)}
                 >
                   <span className="cue-symbol">CUE</span>
                 </button>
@@ -98,17 +149,18 @@ const TutorialLeftControls = () => {
 
             <Popover
               width={200}
-              position="right"
+              position="bottom"
               closeOnClickOutside={false}
               withArrow
               opened={playOpened}
-              onClose={() => setPlayOpened(false)}
+              onClose={() => handleMouseLeave(setPlayOpened)}
+              styles={popoverStyles}
             >
               <Popover.Target>
                 <button
                   className="play-btn play-btn-left"
-                  onMouseEnter={() => setPlayOpened(true)}
-                  onMouseLeave={() => setPlayOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setPlayOpened)}
+                  onMouseLeave={() => handleMouseLeave(setPlayOpened)}
                 >
                   <span className="play-symbol">▶</span>
                 </button>
@@ -126,13 +178,14 @@ const TutorialLeftControls = () => {
           closeOnClickOutside={false}
           withArrow
           opened={effectsOpened}
-          onClose={() => setEffectsOpened(false)}
+          onClose={() => handleMouseLeave(setEffectsOpened)}
+          styles={popoverStyles}
         >
           <Popover.Target>
             <div
               className="effect-buttons"
-              onMouseEnter={() => setEffectsOpened(true)}
-              onMouseLeave={() => setEffectsOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
+              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
             >
               {STEM_TYPES.map((effect, index) => {
                 const hotkey = {

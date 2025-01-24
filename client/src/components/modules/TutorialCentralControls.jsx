@@ -1,16 +1,35 @@
 import React, { useState } from "react";
-import "./Tutorial.css";
+import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
 const TutorialCentralControls = () => {
   const [syncOpened, setSyncOpened] = useState(false);
   const [resetOpened, setResetOpened] = useState(false);
 
+  const popoverStyles = {
+    dropdown: {
+      background: "rgba(0, 0, 0, 0.3)",
+      fontFamily: "var(--josefin)",
+      color: "white",
+    },
+    arrow: {
+      background: "rgba(0, 0, 0, 0.3)",
+    },
+  };
+
   return (
     <div className="deck-controls">
-      <Popover width={350} position="top" closeOnClickOutside={false} withArrow opened={syncOpened} onClose={() => setSyncOpened(false)}>
+      <Popover
+        width={350}
+        position="top"
+        closeOnClickOutside={false}
+        withArrow
+        opened={syncOpened}
+        onClose={() => setSyncOpened(false)}
+        styles={popoverStyles}
+      >
         <Popover.Target>
-          <button 
+          <button
             className="sync-btn"
             onMouseEnter={() => setSyncOpened(true)}
             onMouseLeave={() => setSyncOpened(false)}
@@ -19,15 +38,21 @@ const TutorialCentralControls = () => {
           </button>
         </Popover.Target>
         <Popover.Dropdown>
-          <Text ta="center">
-            Sync the BPM of both decks to match.
-          </Text>
+          <Text ta="center">Sync the BPM of both decks to match.</Text>
         </Popover.Dropdown>
       </Popover>
 
-      <Popover width={100} position="right" closeOnClickOutside={false} withArrow opened={resetOpened} onClose={() => setResetOpened(false)}>
+      <Popover
+        width={100}
+        position="bottom"
+        closeOnClickOutside={false}
+        withArrow
+        opened={resetOpened}
+        onClose={() => setResetOpened(false)}
+        styles={popoverStyles}
+      >
         <Popover.Target>
-          <button 
+          <button
             className="reset-btn"
             onMouseEnter={() => setResetOpened(true)}
             onMouseLeave={() => setResetOpened(false)}
@@ -36,9 +61,7 @@ const TutorialCentralControls = () => {
           </button>
         </Popover.Target>
         <Popover.Dropdown>
-          <Text ta="center">
-            Reset all controls.
-          </Text>
+          <Text ta="center">Reset all controls.</Text>
         </Popover.Dropdown>
       </Popover>
     </div>

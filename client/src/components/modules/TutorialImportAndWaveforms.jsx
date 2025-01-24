@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import "./Tutorial.css";
+import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
 const TutorialImportAndWaveforms = () => {
@@ -8,6 +8,10 @@ const TutorialImportAndWaveforms = () => {
   const [importLeftOpened, setImportLeftOpened] = useState(false);
   const [importRightOpened, setImportRightOpened] = useState(false);
   const [waveformsOpened, setWaveformsOpened] = useState(false);
+
+  const handleMouseLeave = (setState) => {
+    setState(false);
+  };
 
   return (
     <div>
@@ -20,7 +24,17 @@ const TutorialImportAndWaveforms = () => {
               closeOnClickOutside={false}
               withArrow
               opened={importLeftOpened}
-              onClose={() => setImportLeftOpened(false)}
+              onClose={() => handleMouseLeave(setImportLeftOpened)}
+              styles={{
+                dropdown: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                  fontFamily: "var(--josefin)",
+                  color: "white",
+                },
+                arrow: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                },
+              }}
             >
               <Popover.Target>
                 <button
@@ -49,7 +63,17 @@ const TutorialImportAndWaveforms = () => {
               closeOnClickOutside={false}
               withArrow
               opened={importRightOpened}
-              onClose={() => setImportRightOpened(false)}
+              onClose={() => handleMouseLeave(setImportRightOpened)}
+              styles={{
+                dropdown: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                  fontFamily: "var(--josefin)",
+                  color: "white",
+                },
+                arrow: {
+                  background: "rgba(0, 0, 0, 0.3)",
+                },
+              }}
             >
               <Popover.Target>
                 <button
@@ -71,23 +95,43 @@ const TutorialImportAndWaveforms = () => {
         </div>
       </div>
 
-      <div className="deck-row">
+      <div style={{ position: "relative", zIndex: 1000 }}>
         <Popover
           width={250}
           position="bottom"
           closeOnClickOutside={false}
           withArrow
           opened={waveformsOpened}
-          onClose={() => setWaveformsOpened(false)}
+          onClose={() => handleMouseLeave(setWaveformsOpened)}
+          styles={{
+            target: {
+              width: "100%",
+              height: "200px",
+              display: "block",
+            },
+            dropdown: {
+              background: "rgba(0, 0, 0, 0.3)",
+              fontFamily: "var(--josefin)",
+              color: "white",
+            },
+            arrow: {
+              background: "rgba(0, 0, 0, 0.3)",
+            },
+          }}
         >
           <Popover.Target>
             <div
               className="waveforms-section"
               onMouseEnter={() => setWaveformsOpened(true)}
               onMouseLeave={() => setWaveformsOpened(false)}
+              style={{
+                background: "rgba(255, 255, 255, 0.1)",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
             >
-              <div className="waveform-container left" ref={leftContainerRef}></div>
-              <div className="waveform-container right" ref={rightContainerRef}></div>
+              <div ref={leftContainerRef} style={{ flex: 1 }}></div>
+              <div ref={rightContainerRef} style={{ flex: 1 }}></div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
