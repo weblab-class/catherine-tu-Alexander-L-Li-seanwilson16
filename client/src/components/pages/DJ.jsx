@@ -1048,6 +1048,7 @@ const DJ = () => {
                     onMouseLeave={() => handleCueEnd("left")}
                   >
                     <span className="cue-symbol">CUE</span>
+                    <span className="playback-text">(T)</span>
                   </button>
                   <button
                     className={`play-btn play-btn-left ${playing.left ? "playing" : ""} ${
@@ -1057,9 +1058,15 @@ const DJ = () => {
                     disabled={!leftTrack.name}
                   >
                     {playing.left ? (
-                      <span className="pause-symbol">❚❚</span>
+                      <span className="pause-symbol">
+                        <span>❚❚</span>
+                        <span className="playback-text">(G)</span>
+                      </span>
                     ) : (
-                      <span className="play-symbol">▶</span>
+                      <span className="play-symbol">
+                        <span>▶</span>
+                        <span className="playback-text">(G)</span>
+                      </span>
                     )}
                   </button>
                 </div>
@@ -1103,6 +1110,7 @@ const DJ = () => {
               disabled={!leftTrack.name || !rightTrack.name}
             >
               <span className="sync-text">SYNC</span>
+              <span className="playback-text">(S)</span>
             </button>
             <button
               className="reset-btn"
@@ -1112,6 +1120,7 @@ const DJ = () => {
               }}
             >
               <span className="reset-text">RESET</span>
+              <span className="playback-text">(K)</span>
             </button>
           </div>
 
@@ -1190,6 +1199,7 @@ const DJ = () => {
                     onMouseLeave={() => handleCueEnd("right")}
                   >
                     <span className="cue-symbol">CUE</span>
+                    <span className="playback-text">(Y)</span>
                   </button>
                   <button
                     className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
@@ -1199,9 +1209,15 @@ const DJ = () => {
                     disabled={!rightTrack.name}
                   >
                     {playing.right ? (
-                      <span className="pause-symbol">❚❚</span>
+                      <span className="pause-symbol">
+                        <span className="playback-text">❚❚</span>
+                        <span className="playback-text">(H)</span>
+                      </span>
                     ) : (
-                      <span className="play-symbol">▶</span>
+                      <span className="play-symbol">
+                        <span>▶</span>
+                        <span className="playback-text">(H)</span>
+                      </span>
                     )}
                   </button>
                 </div>
