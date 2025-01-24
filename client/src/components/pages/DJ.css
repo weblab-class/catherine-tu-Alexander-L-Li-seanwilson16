@@ -655,7 +655,7 @@ body {
 
 .effect-btn[data-effect="bass"].active {
   background: rgba(255, 59, 147, 0.2);
-  border-color: rgb(255, 28, 123);
+  border-color: rgb(255, 0, 98);
 }
 
 .effect-btn[data-effect="drums"].active {
