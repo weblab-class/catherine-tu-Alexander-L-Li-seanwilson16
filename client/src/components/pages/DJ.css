@@ -33,7 +33,7 @@ body {
   max-width: 1200px;
   display: flex;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 0px;
 }
 
 .no-track {
@@ -816,7 +816,6 @@ body {
     justify-content: center;
   }
 
-
   .bpm-slider-container-left,
   .bpm-slider-container-right {
     flex: 0 1 150px;
@@ -844,7 +843,7 @@ body {
     height: 75px;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
+    padding: 0 0px;
   }
 
   .import-container .import-btn {
@@ -915,7 +914,7 @@ body {
 
   .effect-buttons {
     flex: 0 1 auto;
-    gap: 10px
+    gap: 10px;
   }
 
   .effect-btn {
@@ -988,56 +987,14 @@ body {
 }
 
 @media screen and (max-width: 550px) {
-  .decks-container {
-    gap: 5px;
-    padding: 0 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .deck {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 0%;  /* Make each deck take up roughly half the width */
-  }
-
   .left-deck-row,
   .right-deck-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-  }
-
-  .left-deck-row {
-    margin-top: 100px;
-    margin-left: -300px;
-  }
-
-  .right-deck-row {
-    margin-bottom: 300px;
-    margin-top: -400px;
-    margin-right: 600px;
-  }
-
-  .effect-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-  }
-
-  .effect-btn {
-    width: 50px;
-    height: 50px;
+    transform: scale(0.7);
   }
 
   .bpm-slider-container-left,
   .bpm-slider-container-right {
-    display: none;  /* Hide the BPM sliders on small screens */
+    display: none; /* Hide the BPM sliders on small screens */
   }
 }
 
@@ -1105,7 +1062,6 @@ body {
   .bpm-display {
     display: none;
   }
-
 }
 
 @media screen and (max-width: 700px) {
@@ -1135,7 +1091,7 @@ body {
   }
 }
 
-@media screen and (max-width: 500px) {
+/* @media screen and (max-width: 500px) {
   .decks-container {
     padding: 0 3px;
   }
@@ -1157,18 +1113,18 @@ body {
   .bpm-display {
     font-size: 12px;
   }
-}
+} */
 
 @media screen and (max-width: 1350px) {
   .left-deck {
     margin-right: -50px;
-    gap: 30px
+    gap: 30px;
     /* transform: translateX(50px); */
   }
 
   .right-deck {
     margin-left: -50px;
-    gap: 30px
+    gap: 30px;
     /* transform: translateX(-50px); */
   }
 
@@ -1178,7 +1134,6 @@ body {
   .right-deck-row {
     gap: 30px;
   }
-
 }
 
 @media screen and (max-width: 1100px) {
@@ -1242,7 +1197,6 @@ body {
     align-items: center;
     justify-content: center;
   }
-  
 }
 
 @keyframes rotate {
@@ -1302,7 +1256,6 @@ body {
   .volume-display {
     display: none;
   }
-
 }
 
 @media screen and (max-width: 700px) {
@@ -1328,7 +1281,7 @@ body {
   }
 
   .left-deck-row {
-    gap: 50px
+    gap: 50px;
   }
 
   .effect-btn {
@@ -1347,7 +1300,7 @@ body {
   }
 
   .left-deck-row {
-    margin-right: 60px
+    margin-right: 60px;
   }
 
   .effect-buttons {
@@ -1381,15 +1334,61 @@ body {
     height: 20px;
     font-size: 8px;
   }
-
 }
 
 @media screen and (max-width: 550px) {
+  .decks-container {
+    flex-direction: row;
+  }
+  .cue-btn-left,
+  .play-btn-left {
+    margin: 0px;
+  }
+  .cue-btn-right,
+  .play-btn-right {
+    margin: 0px;
+  }
   .deck-controls {
     display: none;
   }
   .effect-buttons {
+    display: flex;
     flex-direction: column;
+  }
+
+  .left-deck-row {
+    margin: 0px;
+  }
+
+  .right-deck-row {
+    margin: 0px;
+  }
+
+  .deck-row.right-deck-row {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px;
+    flex-direction: column-reverse;
+  }
+
+  .deck-row.left-deck-row {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px;
+    flex-direction: column;
+  }
+
+  .deck.right-deck {
+    margin: 0px 0px 0px 0px;
+    max-width: 50%;
+    align-items: center;
+  }
+  .deck.left-deck {
+    margin: 0px 0px 0px 0px;
+    max-width: 50%;
+  }
+
+  .deck-top {
+    /* margin: 0px 0px 0px 0px; */
+    display: none;
   }
 }
 
@@ -1416,7 +1415,6 @@ body {
   margin-left: 0;
   /* margin-right: 20px; */
 }
-
 
 .deck-controls:last-child {
   display: flex;
