@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%; /* Ensure the body spans the full viewport */
@@ -38,7 +39,7 @@ html, body {
   max-width: 1200px;
   display: flex;
   justify-content: space-between;
-  padding: 0 0px;
+  padding: 0 40px;
 }
 
 .no-track {
@@ -214,30 +215,22 @@ html, body {
 }
 
 .left-deck .deck-top {
-  margin-right: 80px;
+  /* margin-right: 80px; */
   margin-top: 80px;
 }
 
 .right-deck .deck-top {
-  margin-left: 80px;
+  /* margin-left: 80px; */
   margin-top: 80px;
 }
 
 .deck-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
-  width: 100%;
+  width: 550px;
   box-sizing: border-box;
   margin: 0 auto;
-}
-
-.left-deck-row {
-  margin-right: auto;
-}
-
-.right-deck-row {
-  margin-left: auto;
 }
 
 .bpm-slider {
@@ -330,7 +323,7 @@ html, body {
   position: relative;
   overflow: hidden;
   z-index: 1;
-  margin-top: 100px;
+  margin-top: 50px;
 }
 
 .waveform-container {
@@ -546,13 +539,13 @@ html, body {
 }
 
 .effect-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  width: 100%;
-  max-width: 400px;
+  display: flex;
+  /* grid-template-columns: repeat(4, 1fr); */
+  /* width: 100%; */
+  width: 366px;
   justify-items: center;
   gap: 10px;
-  margin: 0 auto;
+  margin: 0px;
 }
 
 .effect-button-container {
@@ -707,13 +700,13 @@ html, body {
 /* Position left controls */
 .cue-btn-left,
 .play-btn-left {
-  margin-left: 60px;
+  /* margin-left: 60px; */
 }
 
 /* Position right controls */
 .cue-btn-right,
 .play-btn-right {
-  margin-right: 60px;
+  /* margin-right: 60px; */
 }
 
 .turntable {
@@ -783,14 +776,14 @@ html, body {
 @media screen and (max-height: 800px) {
   .left-deck .deck-top,
   .right-deck .deck-top {
-    margin-top: 60px;
+    /* margin-top: 60px; */
   }
 }
 
 @media screen and (max-height: 700px) {
   .left-deck .deck-top,
   .right-deck .deck-top {
-    margin-top: 40px;
+    /* margin-top: 40px; */
   }
 }
 
@@ -866,6 +859,10 @@ html, body {
   .bpm-slider-container-left,
   .bpm-slider-container-right {
     flex: 0 1 150px;
+  }
+
+  .import-btn {
+    width: 20px;
   }
 }
 
@@ -1048,7 +1045,7 @@ html, body {
 @media screen and (max-width: 950px) {
   .cue-btn-left,
   .play-btn-left {
-    margin-right: 15px;
+    /* margin-right: 15px; */
   }
 
   .cue-btn-right,
@@ -1083,11 +1080,11 @@ html, body {
   }
 
   .play-btn-left {
-    margin-left: 60px;
+    /* margin-left: 60px; */
   }
 
   .play-btn-right {
-    margin-right: 60px;
+    /* margin-right: 60px; */
   }
 }
 
@@ -1193,11 +1190,11 @@ html, body {
   }
 
   .left-deck-row {
-    gap: 100px;
+    /* gap: 100px; */
   }
 
   .right-deck-row {
-    gap: 50px;
+    /* gap: 50px; */
   }
 }
 
