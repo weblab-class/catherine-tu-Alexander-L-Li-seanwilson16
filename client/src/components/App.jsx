@@ -16,7 +16,7 @@ import Loading from "./modules/Loading";
 
 function App() {
   const [userId, setUserId] = useState(undefined);
-  const [theme, setTheme] = useState();
+  const [theme, setTheme] = useState(null); // Start with no theme
   const [isLoading, setIsLoading] = useState(true);
 
   // Add lofi class to body when app loads
@@ -32,7 +32,15 @@ function App() {
         setUserId(user._id);
         // Fetch theme immediately after confirming user
         get("/api/user", { userid: user._id }).then((userData) => {
-          setTheme(userData.theme);
+          if (userData.theme) {
+            // Preload the theme before setting it
+            const img = new Image();
+            img.onload = () => setTheme(userData.theme);
+            img.onerror = () => setTheme(lofibackground);
+            img.src = userData.theme;
+          } else {
+            setTheme(lofibackground);
+          }
         });
       } else {
         setTheme(lofibackground);
@@ -40,23 +48,26 @@ function App() {
     });
   }, []);
 
-  useEffect(() => {
-    if (userId && !theme) {
-      setIsLoading(true);
-      get("/api/user", { userid: userId }).then((user) => {
-        setTheme(user.theme);
-      });
-    }
-  }, [userId]);
-
   const handleLogin = (credentialResponse) => {
     setIsLoading(true);
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
-    console.log(`Logged in as ${decodedCredential.name}`);
     post("/api/login", { token: userToken }).then((user) => {
+      console.log("login response:", user);
       setUserId(user._id);
       post("/api/initsocket", { socketid: socket.id });
+      // Fetch and set theme after successful login
+      get("/api/user", { userid: user._id }).then((userData) => {
+        if (userData.theme) {
+          // Preload the theme before setting it
+          const img = new Image();
+          img.onload = () => setTheme(userData.theme);
+          img.onerror = () => setTheme(lofibackground);
+          img.src = userData.theme;
+        } else {
+          setTheme(lofibackground);
+        }
+      });
     });
   };
 
@@ -72,18 +83,12 @@ function App() {
   };
 
   useEffect(() => {
-    if (!theme) return; // Don't apply undefined theme
-    
-    // Preload the theme image before removing loading screen
-    const img = new Image();
-    img.src = theme;
-    img.onload = () => {
-      document.body.style.backgroundImage = `url(${theme})`;
-      document.body.style.backgroundSize = "cover";
-      document.body.style.backgroundPosition = "center";
-      document.body.style.backgroundRepeat = "no-repeat";
-      setIsLoading(false);
-    };
+    if (!theme) return;
+    document.body.style.backgroundImage = `url(${theme})`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+    setIsLoading(false);
   }, [theme]);
 
   return (
