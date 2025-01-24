@@ -23,43 +23,6 @@
   min-height: fit-content;
 }
 
-.mantine-FileInput-input {
-  padding: 5.5px 0px 5.5px 15px;
-}
-
-.file-input {
-  /* width: 100%;
-  max-width: 400px; */
-}
-
-.file-input .mantine-FileInput-label,
-.file-input .mantine-FileInput-description,
-.file-input .mantine-FileInput-error {
-  text-align: left;
-}
-
-.mantine-FileInput-label {
-  font-family: var(--josefin);
-  font-size: 20px;
-  color: white;
-}
-
-.mantine-FileInput-description {
-  font-family: var(--josefin);
-  font-size: 15px;
-  color: rgb(210, 210, 210);
-}
-
-.mantine-FileInput-error {
-  font-family: var(--josefin);
-  margin-top: 4px;
-  font-size: 14px;
-}
-
-.file-input .mantine-FileInput-input {
-  text-align: left;
-}
-
 .profile-container {
   min-height: 100vh;
   width: 100%;
