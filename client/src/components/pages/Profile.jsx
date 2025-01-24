@@ -23,7 +23,7 @@ const Profile = () => {
   }, [userId]); // changing user id is the dependency
 
   if (!user) {
-    return <div> Loading!</div>;
+    return <div></div>;
   }
 
   return (
