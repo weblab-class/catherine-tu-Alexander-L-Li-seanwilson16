@@ -54,9 +54,7 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">
-                  Click here to import a song into the left deck.
-                </Text>
+                <Text ta="center">Click here to import a song into the left deck.</Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -95,9 +93,7 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">
-                  Click here to import a song into the right deck.
-                </Text>
+                <Text ta="center">Click here to import a song into the right deck.</Text>
               </Popover.Dropdown>
             </Popover>
           </div>
@@ -147,9 +143,7 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">
-              This is where the waveforms of your songs will appear.
-            </Text>
+            <Text ta="center">This is where the waveforms of your songs will appear.</Text>
           </Popover.Dropdown>
         </Popover>
       </div>
