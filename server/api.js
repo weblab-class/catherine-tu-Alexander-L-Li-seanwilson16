@@ -16,6 +16,9 @@ const Song = require("./models/song");
 // import authentication library
 const auth = require("./auth");
 
+// import socket manager
+const socketManager = require("./server-socket");
+
 // Configure multer for handling file uploads
 const path = require("path");
 const fs = require("fs");
@@ -67,10 +70,23 @@ router.get("/whoami", (req, res) => {
 });
 
 router.post("/initsocket", (req, res) => {
-  // do nothing if user not logged in
-  if (req.user)
-    socketManager.addUser(req.user, socketManager.getSocketFromSocketID(req.body.socketid));
-  res.send({});
+  try {
+    // do nothing if user not logged in
+    if (req.user && req.body.socketid) {
+      const socket = socketManager.getSocketFromSocketID(req.body.socketid);
+      if (socket) {
+        socketManager.addUser(req.user, socket);
+        res.send({});
+      } else {
+        res.status(400).send({ error: "Socket not found" });
+      }
+    } else {
+      res.send({}); // Still return 200 if user not logged in
+    }
+  } catch (error) {
+    console.error("Socket initialization error:", error);
+    res.status(500).send({ error: "Failed to initialize socket" });
+  }
 });
 
 // |------------------------------|

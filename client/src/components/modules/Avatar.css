@@ -17,6 +17,11 @@
   padding-top: calc(8vh + 1rem);
 }
 
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .avatar-image {
   width: 175px !important;
   height: 175px !important;
@@ -27,6 +32,82 @@
   display: block !important;
   overflow: hidden !important;
   outline: 3px solid rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer;
+  transition: filter 0.3s ease;
+}
+
+.avatar-wrapper:hover .avatar-image {
+  filter: brightness(70%);
+}
+
+.avatar-dropdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  z-index: 1000;
+  min-width: 180px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.avatar-options-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-avatar {
+  display: block;
+  padding: 0.75rem;
+  font-family: var(--cabin);
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #eee;
+  background-color: #f8f9fa;
+  border-radius: 12px 12px 0 0;
+  text-align: center;
+}
+
+.avatar-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #eee;
+}
+
+.avatar-option:last-child {
+  border-bottom: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.avatar-option:hover {
+  background-color: #f0f2f5;
+}
+
+.avatar-option.selected {
+  background-color: #e8f0fe;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.avatar-option span {
+  color: #2c3e50;
+  font-family: var(--josefin);
+  font-size: 0.9rem;
+  /* text-transform: capitalize; */
+}
+
+.avatar-option.selected span {
+  color: var(--primary);
 }
 
 .avatar-selector {
@@ -79,26 +160,6 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 1rem;
-}
-
-.avatar-option {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.avatar-option:hover {
-  transform: scale(1.1);
-  border-color: var(--primary);
-}
-
-.avatar-option.selected {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary);
 }
 
 h2,

@@ -66,7 +66,7 @@ const FileUpload = ({ onUploadSuccess }) => {
       <FileInput
         className="file-input"
         label="upload your own song"
-        description="acceptable types: .mp4, .wav, .mpeg"
+        description="acceptable types: .mp4, .mp3, .wav, .mpeg"
         placeholder="upload song here"
         rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
         accept={acceptedTypes.join(",")}

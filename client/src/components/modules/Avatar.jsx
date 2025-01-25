@@ -19,6 +19,7 @@ const avatarOptions = [
 
 const Avatar = ({ currentAvatar, onAvatarChange }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar || original);
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     if (currentAvatar) {
@@ -29,8 +30,8 @@ const Avatar = ({ currentAvatar, onAvatarChange }) => {
     }
   }, [currentAvatar]);
 
-  const handleAvatarChange = (event) => {
-    const selectedOption = avatarOptions.find((option) => option.id === event.target.value);
+  const handleAvatarChange = (newAvatarId) => {
+    const selectedOption = avatarOptions.find((option) => option.id === newAvatarId);
     if (selectedOption) {
       const newAvatar = selectedOption.url;
       setSelectedAvatar(newAvatar);
@@ -55,20 +56,28 @@ const Avatar = ({ currentAvatar, onAvatarChange }) => {
   return (
     <div className="avatar-container">
       <div className="avatar-content">
-        <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
-        <div className="avatar-selector">
-          <span className="avatar-label">my avatar:</span>
-          <select
-            value={currentOption.id}
-            onChange={handleAvatarChange}
-            className="avatar-dropdown"
-          >
-            {avatarOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+        <div 
+          className="avatar-wrapper"
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
+          {isHovering && (
+            <div className="avatar-dropdown">
+              <div className="avatar-options-list">
+                <span className="title-avatar">change avatar:</span>
+                {avatarOptions.map((option) => (
+                  <div
+                    key={option.id}
+                    className={`avatar-option ${option.id === currentOption.id ? 'selected' : ''}`}
+                    onClick={() => handleAvatarChange(option.id)}
+                  >
+                    <span>{option.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
