@@ -2,24 +2,34 @@ import React, { useState } from "react";
 import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
-const TutorialRightControls = () => {
-  const [turntableOpened, setTurntableOpened] = useState(false);
-  const [bpmOpened, setBpmOpened] = useState(false);
-  const [volumeOpened, setVolumeOpened] = useState(false);
-  const [effectsOpened, setEffectsOpened] = useState(false);
-  const [cueOpened, setCueOpened] = useState(false);
-  const [playOpened, setPlayOpened] = useState(false);
+const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setCueOpened, setPlayOpened, bpmOpened, setBpmOpened, turntableOpened, setTurntableOpened, volumeOpened, setVolumeOpened, effectsOpened, setEffectsOpened }) => {
+  const [turntableOpenedState, setTurntableOpenedState] = useState(false);
+  const [bpmOpenedState, setBpmOpenedState] = useState(false);
+  const [volumeOpenedState, setVolumeOpenedState] = useState(false);
+  const [effectsOpenedState, setEffectsOpenedState] = useState(false);
 
   const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
+  const handleMouseEnter = (setter) => {
+    if (enableHover) {
+      setter(true);
+    }
+  };
+
+  const handleMouseLeave = (setter) => {
+    if (enableHover) {
+      setter(false);
+    }
+  };
+
   const popoverStyles = {
     dropdown: {
-      background: "rgba(0, 0, 0, 0.3)",
+      background: "rgba(0, 0, 0, 0.7)",
       fontFamily: "var(--josefin)",
       color: "white",
     },
     arrow: {
-      background: "rgba(0, 0, 0, 0.3)",
+      background: "rgba(0, 0, 0, 0.7)",
     },
   };
 
@@ -31,40 +41,39 @@ const TutorialRightControls = () => {
           position="top"
           closeOnClickOutside={false}
           withArrow
-          opened={volumeOpened}
-          onClose={() => setVolumeOpened(false)}
+          opened={bpmOpened}
+          onClose={() => handleMouseLeave(setBpmOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
-              className="volume-slider-container-right"
-              onMouseEnter={() => setVolumeOpened(true)}
-              onMouseLeave={() => setVolumeOpened(false)}
+              className="bpm-slider-container-right"
+              onMouseEnter={() => handleMouseEnter(setBpmOpened)}
+              onMouseLeave={() => handleMouseLeave(setBpmOpened)}
             >
-              <input type="range" className="volume-slider volume-slider-right" min="0" max="100" />
-              <div className="volume-display volume-display-right"> VOL</div>
+              <input type="range" className="bpm-slider" min="60" max="180" />
+              <div className="bpm-display">BPM</div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">
-              allows for users to change the volume of the right imported song
-            </Text>
+            <Text ta="center">Adjust the BPM (speed) of the track.</Text>
           </Popover.Dropdown>
         </Popover>
+
         <Popover
-          width={300}
+          width={215}
           position="top"
           closeOnClickOutside={false}
           withArrow
           opened={turntableOpened}
-          onClose={() => setTurntableOpened(false)}
+          onClose={() => handleMouseLeave(setTurntableOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
               className="turntable"
-              onMouseEnter={() => setTurntableOpened(true)}
-              onMouseLeave={() => setTurntableOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setTurntableOpened)}
+              onMouseLeave={() => handleMouseLeave(setTurntableOpened)}
             >
               <img
                 className="turntable-image"
@@ -74,7 +83,7 @@ const TutorialRightControls = () => {
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">turntable that syncs with right track's bpm</Text>
+            <Text ta="center">Visual indicator for track playback.</Text>
           </Popover.Dropdown>
         </Popover>
 
@@ -83,59 +92,56 @@ const TutorialRightControls = () => {
           position="top"
           closeOnClickOutside={false}
           withArrow
-          opened={bpmOpened}
-          onClose={() => setBpmOpened(false)}
+          opened={volumeOpened}
+          onClose={() => handleMouseLeave(setVolumeOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
-              className="bpm-slider-container-right"
-              onMouseEnter={() => setBpmOpened(true)}
-              onMouseLeave={() => setBpmOpened(false)}
+              className="volume-slider-container-right"
+              onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
+              onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
             >
-              <input type="range" className="bpm-slider bpm-slider-right" min="60" max="180" />
-              <div className="bpm-display bpm-display-right"> BPM</div>
+              <input type="range" className="volume-slider" min="0" max="100" />
+              <div className="volume-display">VOL</div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">
-              allows for users to change the beats per minute (bpm) of the right imported song
-              (range: 60-180 bpm)
-            </Text>
+            <Text ta="center">Adjust the volume of the track.</Text>
           </Popover.Dropdown>
         </Popover>
       </div>
 
-      <div className="deck-row right-deck-row">
+      <div className="deck-row">
         <Popover
-          width={175}
-          position="left"
+          width={215}
+          position="top"
           closeOnClickOutside={false}
           withArrow
           opened={effectsOpened}
-          onClose={() => setEffectsOpened(false)}
+          onClose={() => handleMouseLeave(setEffectsOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
               className="effect-buttons"
-              onMouseEnter={() => setEffectsOpened(true)}
-              onMouseLeave={() => setEffectsOpened(false)}
+              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
+              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
             >
               {STEM_TYPES.map((effect, index) => {
                 const hotkey = {
-                  left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                  right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                };
+                  bass: "U",
+                  drums: "I",
+                  melody: "O",
+                  vocals: "P",
+                }[effect];
+
                 return (
                   <div key={effect} className="effect-button-container">
-                    <div className="hotkey-indicator">
-                      <span className="hotkey-text">{hotkey.right[effect]}</span>
+                    <div className="hotkey-indicator hotkey">
+                      <span className="hotkey-text">{hotkey}</span>
                     </div>
-                    <button
-                      className="effect-btn"
-                      //   onClick={() => handleEffectToggle("right", effect)}
-                    />
+                    <button className={`effect-btn ${effect}-btn`} />
                     <span className="effect-label">{effect}</span>
                   </div>
                 );
@@ -143,65 +149,59 @@ const TutorialRightControls = () => {
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">
-              controls the 4 stems of the right track. pressing on the button or the hotkey toggles
-              the mute / unmute
-            </Text>
+            <Text ta="center">Toggle individual track elements.</Text>
           </Popover.Dropdown>
         </Popover>
 
         <div className="playback-section">
           <div className="playback-controls">
             <Popover
-              width={350}
+              width={215}
               position="top"
               closeOnClickOutside={false}
               withArrow
               opened={cueOpened}
-              onClose={() => setCueOpened(false)}
+              onClose={() => handleMouseLeave(setCueOpened)}
               styles={popoverStyles}
             >
               <Popover.Target>
                 <button
                   className="cue-btn cue-btn-right"
-                  onMouseEnter={() => setCueOpened(true)}
-                  onMouseLeave={() => setCueOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setCueOpened)}
+                  onMouseLeave={() => handleMouseLeave(setCueOpened)}
                 >
                   <span className="cue-symbol">CUE</span>
-                  <span className="playback-text">(O)</span>
+                  <span className="playback-text">(Y)</span>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">
-                  allows users to come back to a certain part of the right track. press the button
-                  to set a cue point, then when pressed again, the left track will jump back to
-                  marked location.
-                </Text>
+                <Text ta="center">Click and hold to preview from the cue point.</Text>
               </Popover.Dropdown>
             </Popover>
+
             <Popover
-              width={200}
-              position="bottom"
+              width={215}
+              position="top"
               closeOnClickOutside={false}
               withArrow
               opened={playOpened}
-              onClose={() => setPlayOpened(false)}
+              onClose={() => handleMouseLeave(setPlayOpened)}
               styles={popoverStyles}
             >
               <Popover.Target>
                 <button
                   className="play-btn play-btn-right"
-                  onMouseEnter={() => setPlayOpened(true)}
-                  onMouseLeave={() => setPlayOpened(false)}
+                  onMouseEnter={() => handleMouseEnter(setPlayOpened)}
+                  onMouseLeave={() => handleMouseLeave(setPlayOpened)}
                 >
                   <div className="play-symbol">
                     <span>▶</span>
-                    <span className="playback-text">(P)</span>
+                    <span className="playback-text">(H)</span>
                   </div>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">play / pause toggle for the right track!</Text>
+                <Text ta="center">Click to play/pause.</Text>
               </Popover.Dropdown>
             </Popover>
           </div>

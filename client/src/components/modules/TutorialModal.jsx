@@ -13,7 +13,8 @@ const TutorialModal = ({ isVisible, setIsVisible }) => {
         <div className="tutorial-modal-content">
           <h2>welcome to the dj tutorial!</h2>
           <p>
-            hover your mouse over different elements of the deck (DJ board) to find out what they
+            <b>hover</b> your mouse over different elements of the deck (DJ board)
+            OR <b>press</b> the corresponding keybinds on your keyboard to find out what they
             do!
           </p>
         </div>

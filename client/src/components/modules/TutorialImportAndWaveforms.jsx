@@ -35,12 +35,12 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               onClose={() => handleMouseLeave(setImportLeftOpened)}
               styles={{
                 dropdown: {
-                  background: "rgba(0, 0, 0, 0.3)",
+                  background: "rgba(0, 0, 0, 0.7)",
                   fontFamily: "var(--josefin)",
                   color: "white",
                 },
                 arrow: {
-                  background: "rgba(0, 0, 0, 0.3)",
+                  background: "rgba(0, 0, 0, 0.7)",
                 },
               }}
             >
@@ -55,8 +55,8 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               </Popover.Target>
               <Popover.Dropdown>
                 <Text>
-                  Click this button to import songs into your left deck. Choose from a variety of songs
-                  to mix!
+                  Click this button to import songs into your left deck. Choose from a variety of
+                  songs to mix!
                 </Text>
               </Popover.Dropdown>
             </Popover>
@@ -75,12 +75,12 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               onClose={() => handleMouseLeave(setImportRightOpened)}
               styles={{
                 dropdown: {
-                  background: "rgba(0, 0, 0, 0.3)",
+                  background: "rgba(0, 0, 0, 0.7)",
                   fontFamily: "var(--josefin)",
                   color: "white",
                 },
                 arrow: {
-                  background: "rgba(0, 0, 0, 0.3)",
+                  background: "rgba(0, 0, 0, 0.7)",
                 },
               }}
             >
@@ -95,8 +95,8 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               </Popover.Target>
               <Popover.Dropdown>
                 <Text>
-                  Click this button to import songs into your right deck. Choose from a variety of songs
-                  to mix!
+                  Click this button to import songs into your right deck. Choose from a variety of
+                  songs to mix!
                 </Text>
               </Popover.Dropdown>
             </Popover>
@@ -121,12 +121,12 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               display: "block",
             },
             dropdown: {
-              background: "rgba(0, 0, 0, 0.3)",
+              background: "rgba(0, 0, 0, 0.7)",
               fontFamily: "var(--josefin)",
               color: "white",
             },
             arrow: {
-              background: "rgba(0, 0, 0, 0.3)",
+              background: "rgba(0, 0, 0, 0.7)",
             },
           }}
         >
@@ -152,6 +152,6 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
       </div>
     </div>
   );
-}
+};
 
 export default TutorialImportAndWaveforms;

@@ -539,6 +539,7 @@ body {
   cursor: pointer;
   font-size: 0.9em;
   font-family: var(--josefin);
+  transition: all 0.2s ease;
 }
 
 .sync-text,
