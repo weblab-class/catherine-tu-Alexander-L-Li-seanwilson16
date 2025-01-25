@@ -4,11 +4,14 @@ import musicPlusIcon from "../../../public/assets/music-plus.svg";
 
 import "./FileUpload.css";
 
-const FileUpload = () => {
+const FileUpload = ({ onUploadSuccess }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [fileError, setFileError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileUpload = (file) => {
+  const acceptedTypes = ["audio/mpeg", "audio/wav", "video/mp4", "audio/mp3"];
+
+  const handleFileUpload = async (file) => {
     if (!file) {
       setFileError("");
       setUploadedFile(null);
@@ -16,51 +19,64 @@ const FileUpload = () => {
     }
 
     if (!acceptedTypes.includes(file.type)) {
-      setFileError("Please upload the correct file type");
+      setFileError("please upload an MP3 or WAV file");
       setUploadedFile(null);
       return;
     }
 
     setFileError("");
     setUploadedFile(file);
-    console.log("File details:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
+    setIsUploading(true);
 
-    // Create a FileReader to read the file contents if needed
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      console.log("File loaded successfully");
-    };
-    reader.onerror = (error) => {
-      console.error("Error reading file:", error);
-      setFileError("Error reading file");
-    };
+    try {
+      const formData = new FormData();
+      formData.append("audio", file);
+      formData.append("title", file.name); // You can add a title input field later
 
-    // Start reading the file
-    reader.readAsArrayBuffer(file);
+      const response = await fetch("/api/song", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload song");
+      }
+
+      const result = await response.json();
+      console.log("Upload successful:", result);
+
+      // Clear the upload state
+      setUploadedFile(null);
+      setFileError("");
+
+      // Notify parent component of successful upload
+      if (onUploadSuccess) {
+        onUploadSuccess(result);
+      }
+    } catch (error) {
+      console.error("rror uploading file:", error);
+      setFileError("error uploading file");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <FileInput
-      className="file-input"
-      rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
-      rightSectionPointerEvents="none"
-      clearable
-      accept="audio/mp4,audio/mpeg,audio/wav,video/mp4"
-      label="upload your own audio file to mix"
-      description="accepted: audio/mpeg, audio/wav, video/mp4"
-      placeholder="input here"
-      error={fileError}
-      styles={{
-        root: { textAlign: "left" },
-        input: { textAlign: "left" },
-      }}
-      onChange={handleFileUpload}
-      value={uploadedFile}
-    />
+    <div className="file-upload-container">
+      <FileInput
+        className="file-input"
+        label="upload your own song"
+        description="acceptable types: .mp4, .wav, .mpeg"
+        placeholder="upload song here"
+        rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
+        accept={acceptedTypes.join(",")}
+        onChange={handleFileUpload}
+        error={fileError}
+        disabled={isUploading}
+        value={uploadedFile}
+      />
+      {isUploading && <div className="upload-status">uploading...</div>}
+    </div>
   );
 };
 

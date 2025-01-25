@@ -2,6 +2,18 @@
   padding: 5.5px 0px 5.5px 15px;
 }
 
+.file-upload-container {
+  text-align: left;
+  /* align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; */
+}
+
+/* .file-input {
+  width: 100%;
+} */
+
 .file-input .mantine-FileInput-label,
 .file-input .mantine-FileInput-description,
 .file-input .mantine-FileInput-error {
