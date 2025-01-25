@@ -20,6 +20,7 @@ const avatarOptions = [
 const Avatar = ({ currentAvatar, onAvatarChange }) => {
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar || original);
   const [isHovering, setIsHovering] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
     if (currentAvatar) {
@@ -35,6 +36,7 @@ const Avatar = ({ currentAvatar, onAvatarChange }) => {
     if (selectedOption) {
       const newAvatar = selectedOption.url;
       setSelectedAvatar(newAvatar);
+      setIsPreviewMode(false);
 
       // Send update to server
       post("/api/avatar", { avatar: newAvatar })
@@ -49,38 +51,73 @@ const Avatar = ({ currentAvatar, onAvatarChange }) => {
     }
   };
 
+  // Close preview when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isPreviewMode && !event.target.closest('.avatar-preview-content')) {
+        setIsPreviewMode(false);
+      }
+    };
+
+    if (isPreviewMode) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPreviewMode]);
+
   // Find the current avatar option
   const currentOption =
     avatarOptions.find((option) => option.url === selectedAvatar) || avatarOptions[0];
 
   return (
-    <div className="avatar-container">
-      <div className="avatar-content">
-        <div 
-          className="avatar-wrapper"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
-          {isHovering && (
-            <div className="avatar-dropdown">
-              <div className="avatar-options-list">
-                <span className="title-avatar">change avatar:</span>
-                {avatarOptions.map((option) => (
-                  <div
-                    key={option.id}
-                    className={`avatar-option ${option.id === currentOption.id ? 'selected' : ''}`}
-                    onClick={() => handleAvatarChange(option.id)}
-                  >
-                    <span>{option.label}</span>
-                  </div>
-                ))}
+    <>
+      <div className="avatar-container">
+        <div className="avatar-content">
+          <div 
+            className="avatar-wrapper"
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            onClick={() => setIsPreviewMode(true)}
+          >
+            <img src={selectedAvatar} alt="Current Avatar" className="avatar-image" />
+            {isHovering && !isPreviewMode && (
+              <div className="avatar-overlay">
+                <span>change avatar</span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {isPreviewMode && (
+        <div className="avatar-preview-overlay">
+          <div className="avatar-preview-content">
+            <h2>Choose Your Avatar</h2>
+            <div className="avatar-preview-grid">
+              {avatarOptions.map((option) => (
+                <div
+                  key={option.id}
+                  className={`avatar-preview-option ${option.id === currentOption.id ? 'selected' : ''}`}
+                  onClick={() => handleAvatarChange(option.id)}
+                >
+                  <div className="preview-image-wrapper">
+                    <img src={option.url} alt={option.label} />
+                    {option.id === currentOption.id && (
+                      <div className="current-overlay">
+                        <span>current</span>
+                      </div>
+                    )}
+                  </div>
+                  <span>{option.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
