@@ -13,8 +13,10 @@ const Tutorial = () => {
   return (
     <>
       <div className="dj-page">
+      <TutorialModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
+
         <NavBar />
-        <TutorialModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
+        
         <TutorialImportAndWaveforms enableHover={!isModalVisible} />
 
         <div className="decks-container">

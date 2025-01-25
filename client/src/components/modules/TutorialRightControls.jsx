@@ -168,6 +168,7 @@ const TutorialRightControls = () => {
                   onMouseLeave={() => setCueOpened(false)}
                 >
                   <span className="cue-symbol">CUE</span>
+                  <span className="playback-text">(O)</span>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
@@ -193,7 +194,10 @@ const TutorialRightControls = () => {
                   onMouseEnter={() => setPlayOpened(true)}
                   onMouseLeave={() => setPlayOpened(false)}
                 >
-                  <span className="play-symbol">▶</span>
+                  <div className="play-symbol">
+                    <span>▶</span>
+                    <span className="playback-text">(P)</span>
+                  </div>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>

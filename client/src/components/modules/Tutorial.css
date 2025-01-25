@@ -508,7 +508,13 @@ body {
   gap: 10px;
   align-self: center;
   position: relative;
-  z-index: 2000;
+  z-index: 1;
+}
+
+.deck-controls .sync-btn,
+.deck-controls .reset-btn {
+  position: relative;
+  z-index: 1;
 }
 
 .sync-reset-container {
@@ -545,6 +551,24 @@ body {
 .reset-btn:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
+}
+
+.deck-controls .sync-btn,
+.deck-controls .reset-btn {
+  position: relative;
+  z-index: 1;
+}
+
+.mantine-Popover-root {
+  z-index: 1000 !important;
+}
+
+.mantine-Popover-dropdown {
+  z-index: 1000 !important;
+}
+
+.mantine-Popover-arrow {
+  z-index: 1000 !important;
 }
 
 .effect-buttons {

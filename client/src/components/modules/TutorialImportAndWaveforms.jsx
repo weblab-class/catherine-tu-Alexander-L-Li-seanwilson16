@@ -24,8 +24,8 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
   return (
     <div>
       <div className="top-bar">
-        <div className="deck-controls">
-          <div className="import-container">
+        <div className="import-containers">
+          <div className="import-container import-container-left">
             <Popover
               width={175}
               position="bottom"
@@ -54,17 +54,18 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">Click here to import a song into the left deck.</Text>
+                <Text>
+                  Click this button to import songs into your left deck. Choose from a variety of songs
+                  to mix!
+                </Text>
               </Popover.Dropdown>
             </Popover>
+            <div className="track-info">
+              <div className="no-track-left">NO TRACK LOADED</div>
+            </div>
           </div>
-          <div className="track-info">
-            <div className="no-track">NO TRACK LOADED</div>
-          </div>
-        </div>
 
-        <div className="deck-controls">
-          <div className="import-container">
+          <div className="import-container import-container-right">
             <Popover
               width={175}
               position="bottom"
@@ -93,16 +94,18 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
-                <Text ta="center">Click here to import a song into the right deck.</Text>
+                <Text>
+                  Click this button to import songs into your right deck. Choose from a variety of songs
+                  to mix!
+                </Text>
               </Popover.Dropdown>
             </Popover>
-          </div>
-          <div className="track-info">
-            <div className="no-track">NO TRACK LOADED</div>
+            <div className="track-info">
+              <div className="no-track-right">NO TRACK LOADED</div>
+            </div>
           </div>
         </div>
       </div>
-
       <div style={{ position: "relative", zIndex: 1000 }}>
         <Popover
           width={250}
@@ -149,6 +152,6 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
       </div>
     </div>
   );
-};
+}
 
 export default TutorialImportAndWaveforms;

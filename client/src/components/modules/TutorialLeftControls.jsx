@@ -136,6 +136,7 @@ const TutorialLeftControls = ({ enableHover = true }) => {
                   onMouseLeave={() => handleMouseLeave(setCueOpened)}
                 >
                   <span className="cue-symbol">CUE</span>
+                  <span className="playback-text">(T)</span>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>
@@ -162,7 +163,10 @@ const TutorialLeftControls = ({ enableHover = true }) => {
                   onMouseEnter={() => handleMouseEnter(setPlayOpened)}
                   onMouseLeave={() => handleMouseLeave(setPlayOpened)}
                 >
-                  <span className="play-symbol">▶</span>
+                  <div className="play-symbol">
+                    <span>▶</span>
+                    <span className="playback-text">(Y)</span>
+                  </div>
                 </button>
               </Popover.Target>
               <Popover.Dropdown>

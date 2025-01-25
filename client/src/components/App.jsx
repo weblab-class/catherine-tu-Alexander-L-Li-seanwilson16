@@ -31,44 +31,78 @@ function App() {
         // they are registed in the database, and currently logged in.
         setUserId(user._id);
         // Fetch theme immediately after confirming user
-        get("/api/user", { userid: user._id }).then((userData) => {
-          if (userData.theme) {
-            // Preload the theme before setting it
-            const img = new Image();
-            img.onload = () => setTheme(userData.theme);
-            img.onerror = () => setTheme(lofibackground);
-            img.src = userData.theme;
-          } else {
+        get("/api/user", { userid: user._id })
+          .then((userData) => {
+            if (userData.theme) {
+              // Preload the theme before setting it
+              const img = new Image();
+              img.onload = () => setTheme(userData.theme);
+              img.onerror = () => {
+                setTheme(lofibackground);
+                setIsLoading(false);
+              };
+              img.src = userData.theme;
+            } else {
+              setTheme(lofibackground);
+              setIsLoading(false);
+            }
+          })
+          .catch(() => {
             setTheme(lofibackground);
-          }
-        });
+            setIsLoading(false);
+          });
       } else {
         setTheme(lofibackground);
+        setIsLoading(false);
       }
+    })
+    .catch(() => {
+      setTheme(lofibackground);
+      setIsLoading(false);
     });
+
+    // Failsafe: if loading takes more than 5 seconds, show the app anyway
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   const handleLogin = (credentialResponse) => {
     setIsLoading(true);
     const userToken = credentialResponse.credential;
     const decodedCredential = jwt_decode(userToken);
-    post("/api/login", { token: userToken }).then((user) => {
-      console.log("login response:", user);
-      setUserId(user._id);
-      post("/api/initsocket", { socketid: socket.id });
-      // Fetch and set theme after successful login
-      get("/api/user", { userid: user._id }).then((userData) => {
+    post("/api/login", { token: userToken })
+      .then((user) => {
+        console.log("login response:", user);
+        setUserId(user._id);
+        post("/api/initsocket", { socketid: socket.id });
+        // Fetch and set theme after successful login
+        return get("/api/user", { userid: user._id });
+      })
+      .then((userData) => {
         if (userData.theme) {
           // Preload the theme before setting it
           const img = new Image();
-          img.onload = () => setTheme(userData.theme);
-          img.onerror = () => setTheme(lofibackground);
+          img.onload = () => {
+            setTheme(userData.theme);
+            setIsLoading(false);
+          };
+          img.onerror = () => {
+            setTheme(lofibackground);
+            setIsLoading(false);
+          };
           img.src = userData.theme;
         } else {
           setTheme(lofibackground);
+          setIsLoading(false);
         }
+      })
+      .catch(() => {
+        setTheme(lofibackground);
+        setIsLoading(false);
       });
-    });
   };
 
   const handleLogout = () => {

@@ -30,7 +30,7 @@ body {
   /* padding: 8px 0; */
   backdrop-filter: blur(10px);
   position: relative;
-  z-index: 2000;
+  /* z-index: 2000; */
   width: 100%;
 }
 
@@ -531,8 +531,8 @@ body {
 }
 
 .play-symbol {
-  transform: translate(1.5px, 1px); 
-  display: flex;  
+  transform: translate(1.5px, 1px);
+  display: flex;
   flex-direction: column;
 }
 
@@ -552,7 +552,7 @@ body {
   gap: 10px;
   align-self: center;
   position: relative;
-  z-index: 2000;
+  /* z-index: 2000; */
 }
 
 .sync-reset-container {
@@ -1118,7 +1118,17 @@ body {
     font-size: 13px;
   }
 
+  .track-name-right {
+    font-family: var(--josefin);
+    font-size: 13px;
+  }
+
   .track-details-left {
+    font-family: var(--josefin);
+    font-size: 13px;
+  }
+
+  .track-details-right {
     font-family: var(--josefin);
     font-size: 13px;
   }
@@ -1175,7 +1185,17 @@ body {
     font-size: 7px;
   }
 
+  .track-name-right {
+    font-family: var(--josefin);
+    font-size: 7px;
+  }
+
   .track-details-left {
+    font-family: var(--josefin);
+    font-size: 7px;
+  }
+
+  .track-details-right {
     font-family: var(--josefin);
     font-size: 7px;
   }
@@ -1229,7 +1249,7 @@ body {
     width: 60px;
     height: 60px;
   } */
-/* 
+  /* 
   .effect-label {
     font-size: 10px;
   } */
@@ -1332,6 +1352,7 @@ body {
   .navbar-content {
     align-items: center;
     justify-content: center;
+    z-index: 2000;
   }
 }
 
@@ -1436,6 +1457,7 @@ body {
 
   .nav-link {
     font-size: 10px;
+    z-index: 2001;
   }
 
   .import-container .import-btn {
@@ -1461,7 +1483,17 @@ body {
     font-size: 10px;
   }
 
+  .track-name-right {
+    font-family: var(--josefin);
+    font-size: 10px;
+  }
+
   .track-details-left {
+    font-family: var(--josefin);
+    font-size: 10px;
+  }
+
+  .track-details-right {
     font-family: var(--josefin);
     font-size: 10px;
   }
@@ -1545,7 +1577,17 @@ body {
     font-size: 7px;
   }
 
+  .track-name-right {
+    font-family: var(--josefin);
+    font-size: 7px;
+  }
+
   .track-details-left {
+    font-family: var(--josefin);
+    font-size: 7px;
+  }
+
+  .track-details-right {
     font-family: var(--josefin);
     font-size: 7px;
   }

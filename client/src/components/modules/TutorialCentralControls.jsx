@@ -23,10 +23,15 @@ const TutorialCentralControls = ({ enableHover = true }) => {
       background: "rgba(0, 0, 0, 0.3)",
       fontFamily: "var(--josefin)",
       color: "white",
+      zIndex: 1000,
     },
     arrow: {
       background: "rgba(0, 0, 0, 0.3)",
+      zIndex: 1000,
     },
+    root: {
+      zIndex: 1000,
+    }
   };
 
   return (
@@ -47,6 +52,7 @@ const TutorialCentralControls = ({ enableHover = true }) => {
             onMouseLeave={() => handleMouseLeave(setSyncOpened)}
           >
             <span className="sync-text">SYNC</span>
+            <span className="playback-text">(S)</span>
           </button>
         </Popover.Target>
         <Popover.Dropdown>
@@ -70,6 +76,7 @@ const TutorialCentralControls = ({ enableHover = true }) => {
             onMouseLeave={() => handleMouseLeave(setResetOpened)}
           >
             <span className="reset-text">RESET</span>
+            <span className="playback-text">(K)</span>
           </button>
         </Popover.Target>
         <Popover.Dropdown>
