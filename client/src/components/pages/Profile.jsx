@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { get } from "../../utilities";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import LoginOverlay from "../modules/LoginOverlay";
 import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
@@ -12,17 +14,30 @@ import "./Profile.css";
 
 const Profile = () => {
   let { userId } = useParams();
-  const [user, setUser] = useState();
+  const isLoggedIn = useRequireLogin();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [refreshLibrary, setRefreshLibrary] = useState(0);
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+
     if (userId) {
       // Fetch user data including theme
-      get("/api/user", { userid: userId }).then((userObj) => {
-        setUser(userObj);
-      });
+      get("/api/user", { userid: userId })
+        .then((userObj) => {
+          setUser(userObj);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log("Failed to fetch user", err);
+          setLoading(false);
+        });
     }
-  }, [userId]); // changing user id is the dependency
+  }, [userId, isLoggedIn]);
 
   const handleUploadSuccess = (song) => {
     // Trigger a refresh of the song library
@@ -33,6 +48,14 @@ const Profile = () => {
     // You can implement song selection logic here
     console.log("Selected song:", song);
   };
+
+  if (loading) {
+    return <div></div>;
+  }
+
+  if (!isLoggedIn) {
+    return <LoginOverlay />;
+  }
 
   if (!user) {
     return <div></div>;

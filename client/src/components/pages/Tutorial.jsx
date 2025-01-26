@@ -1,5 +1,7 @@
 import "../pages/DJ.css";
 import React, { useState, useEffect } from "react";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import LoginOverlay from "../modules/LoginOverlay";
 import NavBar from "../modules/NavBar";
 import TutorialImportAndWaveforms from "../modules/TutorialImportAndWaveforms";
 import TutorialLeftControls from "../modules/TutorialLeftControls";
@@ -8,6 +10,7 @@ import TutorialCentralControls from "../modules/TutorialCentralControls";
 import TutorialModal from "../modules/TutorialModal";
 
 const Tutorial = () => {
+  const isLoggedIn = useRequireLogin();
   const [isModalVisible, setIsModalVisible] = useState(true);
   
   // Left deck states
@@ -154,6 +157,7 @@ const Tutorial = () => {
 
   return (
     <>
+      {!isLoggedIn && <LoginOverlay />}
       <div className="dj-page">
         <TutorialModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
 

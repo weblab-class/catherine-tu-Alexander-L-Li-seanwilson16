@@ -3,6 +3,9 @@ import WaveSurfer from "wavesurfer.js/dist/wavesurfer.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import NavBar from "../modules/NavBar";
 import "./DJ.css";
+import { get } from "../../utilities";
+import useRequireLogin from "../../hooks/useRequireLogin";
+import LoginOverlay from "../modules/LoginOverlay";
 
 const AVAILABLE_TRACKS = [
   {
@@ -76,6 +79,7 @@ const createWaveSurfer = (container, options = {}) => {
 };
 
 const DJ = () => {
+  const isLoggedIn = useRequireLogin();
   const [tracks] = useState(AVAILABLE_TRACKS);
   const [isLoading, setIsLoading] = useState({
     left: false,
@@ -949,340 +953,343 @@ const DJ = () => {
 
   return (
     <>
-      <div
-        className="dj-page"
-        onClick={(e) => {
-          if (!e.target.closest(".import-container")) {
-            setDropdownOpen({ left: false, right: false });
-          }
-        }}
-      >
-        <NavBar />
-        <div className="top-bar">
-          <div className="import-containers">
-            <div className="import-container import-container-left">
+      {!isLoggedIn && <LoginOverlay />}
+      <div className="dj-page">
+        <div
+          className="dj-container"
+          onClick={(e) => {
+            if (!e.target.closest(".import-container")) {
+              setDropdownOpen({ left: false, right: false });
+            }
+          }}
+        >
+          <NavBar />
+          <div className="top-bar">
+            <div className="import-containers">
+              <div className="import-container import-container-left">
               <div className="import-btn-container">
-                <button
-                  className="import-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImportSong("left");
-                  }}
-                >
-                  IMPORT SONG ▼
-                </button>
+                  <button
+                    className="import-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImportSong("left");
+                    }}
+                  >
+                    IMPORT SONG ▼
+                  </button>
                 {isLoading.left && <div className="track-loading-spinner left" />}
-                {dropdownOpen.left && (
-                  <div className="import-dropdown">
-                    {tracks.map((track) => (
-                      <button
-                        key={track.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTrackSelect("left", track);
-                        }}
-                      >
-                        <div className="song-info">
-                          <span className="song-name">{track.name}</span>
-                          <span className="song-details">
-                            {track.bpm} BPM • {track.key}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="track-info">
-                {leftTrack.name ? (
-                  <>
-                    <div className="track-name-left">{leftTrack.name}</div>
-                    <div className="track-details-left">
-                      {leftTrack.bpm + " BPM • " + leftTrack.key}
+                  {dropdownOpen.left && (
+                    <div className="import-dropdown">
+                      {tracks.map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTrackSelect("left", track);
+                          }}
+                        >
+                          <div className="song-info">
+                            <span className="song-name">{track.name}</span>
+                            <span className="song-details">
+                              {track.bpm} BPM • {track.key}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                  </>
-                ) : (
-                  <div className="no-track-left">NO TRACK LOADED</div>
-                )}
+                  )}
               </div>
-            </div>
-
-            <div className="import-container import-container-right">
-              <div className="import-btn-container">
-                <button
-                  className="import-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImportSong("right");
-                  }}
-                >
-                  IMPORT SONG ▼
-                </button>
-                {isLoading.right && <div className="track-loading-spinner right" />}
-                {dropdownOpen.right && (
-                  <div className="import-dropdown">
-                    {tracks.map((track) => (
-                      <button
-                        key={track.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTrackSelect("right", track);
-                        }}
-                      >
-                        <div className="song-info">
-                          <span className="song-name">{track.name}</span>
-                          <span className="song-details">
-                            {track.bpm} BPM • {track.key}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="track-info">
-                {rightTrack.name ? (
-                  <>
-                    <div className="track-name-right">{rightTrack.name}</div>
-                    <div className="track-details-right">
-                      {rightTrack.bpm + " BPM • " + rightTrack.key}
-                    </div>
-                  </>
-                ) : (
-                  <div className="no-track-right">NO TRACK LOADED</div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="waveforms-section">
-          <div className="waveform-container left" ref={leftContainerRef}></div>
-          <div className="waveform-container right" ref={rightContainerRef}></div>
-        </div>
-
-        <div className="decks-container">
-          <div className="deck left-deck">
-            <div className="deck-top">
-              <div className="bpm-slider-container-left">
-                <input
-                  type="range"
-                  className="bpm-slider"
-                  min="60"
-                  max="160"
-                  value={leftTrack.bpm}
-                  onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
-                  onMouseUp={(e) => e.target.blur()}
-                  disabled={!leftTrack.name || isLoading.left}
-                />
-                <div className="bpm-display">{leftTrack.bpm} BPM</div>
-              </div>
-              <div className="turntable">
-                <img
-                  className="turntable-image"
-                  src="/assets/chill-guy-head.webp"
-                  alt="Chill Guy DJ"
-                />
-              </div>
-              <div className="volume-slider-container-left">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume.left * 100}
-                  className="volume-slider"
-                  onChange={(e) => handleVolumeChange("left", e.target.value)}
-                  onMouseUp={(e) => e.target.blur()}
-                  disabled={!leftTrack.name || isLoading.left}
-                />
-                <div className="volume-display">VOL</div>
-              </div>
-            </div>
-
-            <div className="deck-row left-deck-row">
-              <div className="playback-section">
-                <div className="playback-controls">
-                  <button
-                    className={`cue-btn cue-btn-left ${isCueing.left ? "active" : ""} ${
-                      !leftTrack.name || isLoading.left ? "disabled" : ""
-                    }`}
-                    onMouseDown={() => handleCue("left")}
-                    onMouseUp={() => handleCueEnd("left")}
-                    onMouseLeave={() => handleCueEnd("left")}
-                  >
-                    <span className="cue-symbol">CUE</span>
-                    <span className="playback-text">(T)</span>
-                  </button>
-                  <button
-                    className={`play-btn play-btn-left ${playing.left ? "playing" : ""} ${
-                      !leftTrack.name || isLoading.left ? "disabled" : ""
-                    }`}
-                    onClick={() => handlePlayPause("left")}
-                    disabled={!leftTrack.name || isLoading.left}
-                  >
-                    {playing.left ? (
-                      <span className="pause-symbol">
-                        <span>❚❚</span>
-                        <span className="playback-text">(G)</span>
-                      </span>
-                    ) : (
-                      <span className="play-symbol">
-                        <span>▶</span>
-                        <span className="playback-text">(G)</span>
-                      </span>
-                    )}
-                  </button>
+                <div className="track-info">
+                  {leftTrack.name ? (
+                    <>
+                      <div className="track-name-left">{leftTrack.name}</div>
+                      <div className="track-details-left">
+                        {leftTrack.bpm + " BPM • " + leftTrack.key}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="no-track-left">NO TRACK LOADED</div>
+                  )}
                 </div>
               </div>
 
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator hotkey">
-                        <span className="hotkey-text">{hotkey.left[effect]}</span>
-                      </div>
-                      <button
-                        className={`effect-btn ${
-                          leftTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => handleEffectToggle("left", effect)}
-                        data-effect={effect}
-                      >
-                        <div className="effect-content"></div>
-                      </button>
-                      <span className="effect-label">{effect}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="deck-controls">
-            <button
-              className="sync-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSync();
-              }}
-              disabled={!leftTrack.name || !rightTrack.name || isLoading.left || isLoading.right}
-            >
-              <span className="sync-text">SYNC</span>
-              <span className="playback-text">(S)</span>
-            </button>
-            <button
-              className="reset-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleReset();
-              }}
-            >
-              <span className="reset-text">RESET</span>
-              <span className="playback-text">(K)</span>
-            </button>
-          </div>
-
-          <div className="deck right-deck">
-            <div className="deck-top">
-              <div className="volume-slider-container-right">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume.right * 100}
-                  className="volume-slider"
-                  onChange={(e) => handleVolumeChange("right", e.target.value)}
-                  onMouseUp={(e) => e.target.blur()}
-                  disabled={!rightTrack.name || isLoading.right}
-                />
-                <div className="volume-display">VOL</div>
-              </div>
-              <div className="turntable">
-                <img
-                  className="turntable-image"
-                  src="/assets/chill-guy-head.webp"
-                  alt="Chill Guy DJ"
-                />
-              </div>
-              <div className="bpm-slider-container-right">
-                <input
-                  type="range"
-                  className="bpm-slider"
-                  min="60"
-                  max="160"
-                  value={rightTrack.bpm}
-                  onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-                  onMouseUp={(e) => e.target.blur()}
-                  disabled={!rightTrack.name || isLoading.right}
-                />
-                <div className="bpm-display">{rightTrack.bpm} BPM</div>
-              </div>
-            </div>
-
-            <div className="deck-row right-deck-row">
-              <div className="effect-buttons">
-                {STEM_TYPES.map((effect, index) => {
-                  const hotkey = {
-                    left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                    right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                  };
-                  return (
-                    <div key={effect} className="effect-button-container">
-                      <div className="hotkey-indicator">
-                        <span className="hotkey-text">{hotkey.right[effect]}</span>
-                      </div>
-                      <button
-                        className={`effect-btn ${
-                          rightTrack.effectsEnabled?.[effect] ? "active" : ""
-                        }`}
-                        onClick={() => handleEffectToggle("right", effect)}
-                        data-effect={effect}
-                      >
-                        <div className="effect-content"></div>
-                      </button>
-                      <span className="effect-label">{effect}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="playback-section">
-                <div className="playback-controls">
+              <div className="import-container import-container-right">
+              <div className="import-btn-container">
                   <button
-                    className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
-                      !rightTrack.name || isLoading.right ? "disabled" : ""
-                    }`}
-                    onMouseDown={() => handleCue("right")}
-                    onMouseUp={() => handleCueEnd("right")}
-                    onMouseLeave={() => handleCueEnd("right")}
+                    className="import-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleImportSong("right");
+                    }}
                   >
-                    <span className="cue-symbol">CUE</span>
-                    <span className="playback-text">(Y)</span>
+                    IMPORT SONG ▼
                   </button>
-                  <button
-                    className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
-                      !rightTrack.name || isLoading.right ? "disabled" : ""
-                    }`}
-                    onClick={() => handlePlayPause("right")}
+                {isLoading.right && <div className="track-loading-spinner right" />}
+                  {dropdownOpen.right && (
+                    <div className="import-dropdown">
+                      {tracks.map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTrackSelect("right", track);
+                          }}
+                        >
+                          <div className="song-info">
+                            <span className="song-name">{track.name}</span>
+                            <span className="song-details">
+                              {track.bpm} BPM • {track.key}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+              </div>
+                <div className="track-info">
+                  {rightTrack.name ? (
+                    <>
+                      <div className="track-name-right">{rightTrack.name}</div>
+                      <div className="track-details-right">
+                        {rightTrack.bpm + " BPM • " + rightTrack.key}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="no-track-right">NO TRACK LOADED</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="waveforms-section">
+            <div className="waveform-container left" ref={leftContainerRef}></div>
+            <div className="waveform-container right" ref={rightContainerRef}></div>
+          </div>
+
+          <div className="decks-container">
+            <div className="deck left-deck">
+              <div className="deck-top">
+                <div className="bpm-slider-container-left">
+                  <input
+                    type="range"
+                    className="bpm-slider"
+                    min="60"
+                    max="160"
+                    value={leftTrack.bpm}
+                    onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
+                    onMouseUp={(e) => e.target.blur()}
+                    disabled={!leftTrack.name || isLoading.left}
+                  />
+                  <div className="bpm-display">{leftTrack.bpm} BPM</div>
+                </div>
+                <div className="turntable">
+                  <img
+                    className="turntable-image"
+                    src="/assets/chill-guy-head.webp"
+                    alt="Chill Guy DJ"
+                  />
+                </div>
+                <div className="volume-slider-container-left">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume.left * 100}
+                    className="volume-slider"
+                    onChange={(e) => handleVolumeChange("left", e.target.value)}
+                    onMouseUp={(e) => e.target.blur()}
+                    disabled={!leftTrack.name || isLoading.left}
+                  />
+                  <div className="volume-display">VOL</div>
+                </div>
+              </div>
+
+              <div className="deck-row left-deck-row">
+                <div className="playback-section">
+                  <div className="playback-controls">
+                    <button
+                      className={`cue-btn cue-btn-left ${isCueing.left ? "active" : ""} ${
+                        !leftTrack.name || isLoading.left ? "disabled" : ""
+                      }`}
+                      onMouseDown={() => handleCue("left")}
+                      onMouseUp={() => handleCueEnd("left")}
+                      onMouseLeave={() => handleCueEnd("left")}
+                    >
+                      <span className="cue-symbol">CUE</span>
+                      <span className="playback-text">(T)</span>
+                    </button>
+                    <button
+                      className={`play-btn play-btn-left ${playing.left ? "playing" : ""} ${
+                        !leftTrack.name || isLoading.left ? "disabled" : ""
+                      }`}
+                      onClick={() => handlePlayPause("left")}
+                      disabled={!leftTrack.name || isLoading.left}
+                    >
+                      {playing.left ? (
+                        <span className="pause-symbol">
+                          <span>❚❚</span>
+                          <span className="playback-text">(G)</span>
+                        </span>
+                      ) : (
+                        <span className="play-symbol">
+                          <span>▶</span>
+                          <span className="playback-text">(G)</span>
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="effect-buttons">
+                  {STEM_TYPES.map((effect, index) => {
+                    const hotkey = {
+                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                    };
+                    return (
+                      <div key={effect} className="effect-button-container">
+                        <div className="hotkey-indicator hotkey">
+                          <span className="hotkey-text">{hotkey.left[effect]}</span>
+                        </div>
+                        <button
+                          className={`effect-btn ${
+                            leftTrack.effectsEnabled?.[effect] ? "active" : ""
+                          }`}
+                          onClick={() => handleEffectToggle("left", effect)}
+                          data-effect={effect}
+                        >
+                          <div className="effect-content"></div>
+                        </button>
+                        <span className="effect-label">{effect}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="deck-controls">
+              <button
+                className="sync-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSync();
+                }}
+                disabled={!leftTrack.name || !rightTrack.name || isLoading.left || isLoading.right}
+              >
+                <span className="sync-text">SYNC</span>
+                <span className="playback-text">(S)</span>
+              </button>
+              <button
+                className="reset-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReset();
+                }}
+              >
+                <span className="reset-text">RESET</span>
+                <span className="playback-text">(K)</span>
+              </button>
+            </div>
+
+            <div className="deck right-deck">
+              <div className="deck-top">
+                <div className="volume-slider-container-right">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume.right * 100}
+                    className="volume-slider"
+                    onChange={(e) => handleVolumeChange("right", e.target.value)}
+                    onMouseUp={(e) => e.target.blur()}
                     disabled={!rightTrack.name || isLoading.right}
-                  >
-                    {playing.right ? (
-                      <span className="pause-symbol">
-                        <span className="playback-text">❚❚</span>
-                        <span className="playback-text">(H)</span>
-                      </span>
-                    ) : (
-                      <span className="play-symbol">
-                        <span>▶</span>
-                        <span className="playback-text">(H)</span>
-                      </span>
-                    )}
-                  </button>
+                  />
+                  <div className="volume-display">VOL</div>
+                </div>
+                <div className="turntable">
+                  <img
+                    className="turntable-image"
+                    src="/assets/chill-guy-head.webp"
+                    alt="Chill Guy DJ"
+                  />
+                </div>
+                <div className="bpm-slider-container-right">
+                  <input
+                    type="range"
+                    className="bpm-slider"
+                    min="60"
+                    max="160"
+                    value={rightTrack.bpm}
+                    onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
+                    onMouseUp={(e) => e.target.blur()}
+                    disabled={!rightTrack.name || isLoading.right}
+                  />
+                  <div className="bpm-display">{rightTrack.bpm} BPM</div>
+                </div>
+              </div>
+
+              <div className="deck-row right-deck-row">
+                <div className="effect-buttons">
+                  {STEM_TYPES.map((effect, index) => {
+                    const hotkey = {
+                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                    };
+                    return (
+                      <div key={effect} className="effect-button-container">
+                        <div className="hotkey-indicator">
+                          <span className="hotkey-text">{hotkey.right[effect]}</span>
+                        </div>
+                        <button
+                          className={`effect-btn ${
+                            rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                          }`}
+                          onClick={() => handleEffectToggle("right", effect)}
+                          data-effect={effect}
+                        >
+                          <div className="effect-content"></div>
+                        </button>
+                        <span className="effect-label">{effect}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="playback-section">
+                  <div className="playback-controls">
+                    <button
+                      className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
+                      }`}
+                      onMouseDown={() => handleCue("right")}
+                      onMouseUp={() => handleCueEnd("right")}
+                      onMouseLeave={() => handleCueEnd("right")}
+                    >
+                      <span className="cue-symbol">CUE</span>
+                      <span className="playback-text">(Y)</span>
+                    </button>
+                    <button
+                      className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
+                      }`}
+                      onClick={() => handlePlayPause("right")}
+                      disabled={!rightTrack.name || isLoading.right}
+                    >
+                      {playing.right ? (
+                        <span className="pause-symbol">
+                          <span className="playback-text">❚❚</span>
+                          <span className="playback-text">(H)</span>
+                        </span>
+                      ) : (
+                        <span className="play-symbol">
+                          <span>▶</span>
+                          <span className="playback-text">(H)</span>
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
