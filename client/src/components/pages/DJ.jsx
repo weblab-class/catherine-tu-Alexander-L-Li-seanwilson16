@@ -45,7 +45,7 @@ const createWaveSurfer = (container, options = {}) => {
     container,
     waveColor: options.waveColor || "rgba(255, 255, 255, 0.5)",
     progressColor: options.progressColor || "#fff",
-    cursorColor: "#ffffff",
+    cursorColor: options.cursorColor || "#ffffff",
     height: 70,
     responsive: true,
     normalize: true,
@@ -53,15 +53,18 @@ const createWaveSurfer = (container, options = {}) => {
     fillParent: true,
     scrollParent: true,
     autoCenter: true,
+    drag: true,
     hideScrollbar: true,
-    plugins: [timeline],
+    plugins: options.showTimeline ? [timeline] : [],
     backend: "MediaElement",
     mediaControls: false,
-    interact: true,
+    interact: options.interact !== undefined ? options.interact : true,
     dragToSeek: true,
     pixelRatio: 1,
     autoScroll: true,
     partialRender: true,
+    waveColor: options.hideWaveform ? "rgba(0,0,0,0)" : options.waveColor,
+    progressColor: options.hideWaveform ? "rgba(0,0,0,0)" : options.progressColor,
   });
 
   // Create and configure the media element
@@ -78,8 +81,8 @@ const DJ = () => {
     name: "",
     path: "",
     key: "",
-    bpm: 120,
-    originalBpm: 120,
+    bpm: null,
+    originalBpm: null,
     audioElements: null,
     effectsEnabled: {
       bass: true,
@@ -93,8 +96,8 @@ const DJ = () => {
     name: "",
     path: "",
     key: "",
-    bpm: 120,
-    originalBpm: 120,
+    bpm: null,
+    originalBpm: null,
     audioElements: null,
     effectsEnabled: {
       bass: true,
@@ -178,7 +181,7 @@ const DJ = () => {
       const currentTime = wavesurfer.getCurrentTime();
 
       // Only adjust if drift is more than 5ms
-      if (Math.abs(currentTime - referenceTime) > 0.005) {
+      if (Math.abs(currentTime - referenceTime) > 0) {
         wavesurfer.setTime(referenceTime);
       }
     });
@@ -324,12 +327,12 @@ const DJ = () => {
     // Then load waveforms
     if (Object.keys(wavesurfers.current).length > 0) {
       await Promise.all(
-        STEM_TYPES.map(async (stem) => {
+        [...STEM_TYPES, 'timeline'].map(async (stem) => {
           try {
             const wavesurfer = wavesurfers.current[stem];
-            await wavesurfer.load(
-              `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`
-            );
+            // Use bass stem for timeline wavesurfer
+            const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem === 'timeline' ? 'bass' : stem}.mp3`;
+            await wavesurfer.load(audioPath);
 
             // Configure wavesurfer and its media element
             wavesurfer.setVolume(0);
@@ -401,7 +404,7 @@ const DJ = () => {
       // After all updates are complete, ensure waveforms stay in sync
       requestAnimationFrame(() => {
         Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-          if (wavesurfer && Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0.005) {
+          if (wavesurfer && Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0) {
             wavesurfer.setTime(currentTime);
           }
         });
@@ -799,6 +802,29 @@ const DJ = () => {
       containerRef.current.style.zIndex = "1";
       containerRef.current.classList.add("waveform-container");
 
+      // Create timeline wavesurfer first (will be at the bottom)
+      const timelineContainer = document.createElement("div");
+      timelineContainer.style.position = "absolute";
+      timelineContainer.style.left = "0";
+      timelineContainer.style.right = "0";
+      timelineContainer.style.top = "0";
+      timelineContainer.style.height = "100%";
+      timelineContainer.style.pointerEvents = "none";
+      timelineContainer.style.zIndex = "0";
+      containerRef.current.appendChild(timelineContainer);
+
+      // Create timeline wavesurfer using bass stem
+      wavesurfersRef.current.timeline = createWaveSurfer(timelineContainer, {
+        waveColor: "rgba(0,0,0,0)",
+        progressColor: "rgba(0,0,0,0)",
+        cursorColor: "#ffffff",
+        height: 70,
+        interact: false,
+        showTimeline: true,
+        hideWaveform: true,
+      });
+
+      // Create other stem waveforms on top
       for (const [stem, colors] of Object.entries(stemColors)) {
         const stemContainer = document.createElement("div");
         stemContainer.style.position = "absolute";
@@ -816,6 +842,7 @@ const DJ = () => {
           height: 70,
           cursorColor: "transparent",
           interact: false,
+          showTimeline: false,
         });
       }
     };
