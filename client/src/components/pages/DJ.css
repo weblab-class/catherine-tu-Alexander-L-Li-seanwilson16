@@ -32,6 +32,7 @@ body {
   position: relative;
   /* z-index: 2000; */
   width: 100%;
+  z-index: 1000;
 }
 
 .top-bar > div {
@@ -66,7 +67,7 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   gap: 10px;
-  z-index: 2000;
+  z-index: 1000;
 }
 
 .import-container-left {
@@ -114,8 +115,7 @@ body {
   border-radius: 4px;
   padding: 8px 0;
   min-width: 200px;
-  z-index: 2001;
-  overflow: hidden;
+  z-index: 1000;
 }
 
 .import-dropdown button {
@@ -1158,13 +1158,6 @@ body {
     flex: 0 1 300px;
   }
 
-  .bpm-slider-container-left,
-  .bpm-slider-container-right {
-    flex: 0 1 120px;
-  }
-}
-
-@media screen and (max-width: 550px) {
   .bpm-slider-container-left,
   .bpm-slider-container-right {
     display: none; /* Hide the BPM sliders on small screens */

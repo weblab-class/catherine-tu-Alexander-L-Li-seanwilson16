@@ -216,7 +216,7 @@ const DJ = () => {
 
       if (newPlaying) {
         // Get current position - if we're cueing, use current position, otherwise use wavesurfer position
-        const currentTime = isCueing[deck] 
+        const currentTime = isCueing[deck]
           ? wavesurfers.current.bass.getCurrentTime()
           : wavesurfers.current.bass.getCurrentTime();
 
@@ -868,13 +868,13 @@ const DJ = () => {
     // Load default tracks on mount
     const loadDefaultTracks = async () => {
       // Load left track (Chill Guy Remix)
-      const leftTrackInfo = tracks.find(t => t.path === "chill-guy-remix");
+      const leftTrackInfo = tracks.find((t) => t.path === "chill-guy-remix");
       if (leftTrackInfo) {
         await handleTrackSelect("left", leftTrackInfo, false); // false means don't auto-play
       }
 
       // Load right track (On & On)
-      const rightTrackInfo = tracks.find(t => t.path === "NCS_On&On");
+      const rightTrackInfo = tracks.find((t) => t.path === "NCS_On&On");
       if (rightTrackInfo) {
         await handleTrackSelect("right", rightTrackInfo, false); // false means don't auto-play
       }
