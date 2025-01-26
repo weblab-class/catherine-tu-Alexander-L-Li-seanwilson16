@@ -56,8 +56,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  /* width: 100%; */
-  padding: 0 20px;
+  padding: 8px 20px;
 }
 
 .import-container {
@@ -66,7 +65,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 2px;
   z-index: 1000;
 }
 
@@ -78,7 +77,12 @@ body {
   align-items: flex-end;
 }
 
-/* Import Controls */
+.import-btn-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .import-container .import-btn {
   width: 160px;
   height: 35px;
@@ -101,6 +105,25 @@ body {
   pointer-events: auto;
 }
 
+.track-loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+  margin: 0 16px;
+}
+
+.track-loading-spinner.left {
+  order: 2; /* Places spinner after the button */
+}
+
+.track-loading-spinner.right {
+  order: -1; /* Places spinner before the button */
+}
+
 .import-container .import-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
@@ -108,7 +131,7 @@ body {
 
 .import-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 45px); /* Increased from 44px to 45px */
   left: 0;
   background: rgba(0, 0, 0, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -116,6 +139,11 @@ body {
   padding: 8px 0;
   min-width: 200px;
   z-index: 1000;
+}
+
+.import-container-right .import-dropdown {
+  right: 0;
+  left: auto;
 }
 
 .import-dropdown button {
@@ -158,6 +186,19 @@ body {
   font-family: var(--josefin);
   z-index: 105;
 }
+
+.track-info {
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Override for right deck to ensure it stays centered */
+/* .import-container-right .import-dropdown {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+} */
 
 .track-name-left {
   font-size: 1.2em;
@@ -1305,11 +1346,11 @@ body {
 
 @media screen and (max-width: 750px) {
   .import-container .import-btn {
-    width: 100px;
-    height: 28px;
-    font-size: 11px;
-    padding: 4px 8px;
+    /* width: 75px; */
+    height: 20px;
     min-width: unset;
+    width: 100px;
+    font-size: 8px;
   }
 
   .import-dropdown {
@@ -1358,239 +1399,9 @@ body {
   }
 }
 
-/* Media Queries */
-@media (max-width: 1200px) {
-  .decks-container {
-    gap: 10px;
-    /* padding: 0 15px; */
-  }
-
-  .turntable {
-    width: 200px;
-    height: 200px;
-    flex-shrink: 0;
-  }
-}
-
-@media screen and (max-width: 1050px) {
-  .navbar-notch-container {
-    width: 350px;
-  }
-}
-
-@media screen and (max-width: 950px) {
-  .effect-buttons {
-    max-width: 500px;
-  }
-
-  .effect-btn {
-    width: 100px;
-    height: 100px;
-  }
-
-  .cue-btn,
-  .play-btn {
-    width: 90px;
-    height: 90px;
-    font-size: 20px;
-  }
-
-  .volume-slider,
-  .volume-display {
-    display: none;
-  }
-
-  .deck {
-    margin: 0px;
-  }
-
-  .deck-top {
-    display: none;
-  }
-
-  .deck-row {
-    margin-top: 30px;
-  }
-}
-
-@media screen and (max-width: 650px) {
-  .deck-controls {
-    display: none;
-  }
-
-  .decks-container {
-    padding: 0 3px;
-  }
-
-  .left-deck-row {
-    margin-right: 60px;
-  }
-
-  .effect-buttons {
-    max-width: 500px;
-    gap: 5px;
-  }
-
-  .effect-btn {
-    width: 35px;
-    height: 35px;
-  }
-
-  .effect-label {
-    font-size: 9px;
-  }
-
-  .bpm-display {
-    font-size: 12px;
-  }
-
-  .navbar-notch-container {
-    width: 45%;
-  }
-
-  .nav-link {
-    font-size: 10px;
-    z-index: 2001;
-  }
-
-  .import-container .import-btn {
-    /* width: 75px; */
-    height: 20px;
-    min-width: unset;
-    width: 100px;
-    font-size: 8px;
-  }
-
-  .no-track-left {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-
-  .no-track-right {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-
-  .track-name-left {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-
-  .track-name-right {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-
-  .track-details-left {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-
-  .track-details-right {
-    font-family: var(--josefin);
-    font-size: 10px;
-  }
-}
-
-@media screen and (max-width: 550px) {
-  .decks-container {
-    flex-direction: row;
-  }
-  .cue-btn-left,
-  .play-btn-left {
-    margin: 0px;
-  }
-  .cue-btn-right,
-  .play-btn-right {
-    margin: 0px;
-  }
-  .deck-controls {
-    display: none;
-  }
-  .effect-buttons {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .left-deck-row {
-    margin: 0px;
-  }
-
-  .right-deck-row {
-    margin: 0px;
-  }
-
-  .deck-row.right-deck-row {
-    margin: 0px 0px 0px 0px;
-    padding: 0px 0px;
-    flex-direction: column-reverse;
-  }
-
-  .deck-row.left-deck-row {
-    margin: 0px 0px 0px 0px;
-    padding: 0px 0px;
-    flex-direction: column;
-  }
-
-  .deck.right-deck {
-    margin: 0px 0px 0px 0px;
-    max-width: 50%;
-    align-items: center;
-  }
-  .deck.left-deck {
-    margin: 0px 0px 0px 0px;
-    max-width: 50%;
-  }
-
-  .deck-top {
-    /* margin: 0px 0px 0px 0px; */
-    display: none;
-  }
-
-  .import-container .import-btn {
-    width: 70px;
-    height: 10px;
-    font-size: 7px;
-    padding: 4px 8px;
-    min-width: unset;
-  }
-
-  .no-track-left {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-
-  .no-track-right {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-
-  .track-name-left {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-
-  .track-name-right {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-
-  .track-details-left {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-
-  .track-details-right {
-    font-family: var(--josefin);
-    font-size: 7px;
-  }
-}
-
-@media screen and (max-width: 450px) {
-  .nav-link {
-    font-family: var(--josefin);
-    font-size: 5px;
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .deck-controls:last-child {

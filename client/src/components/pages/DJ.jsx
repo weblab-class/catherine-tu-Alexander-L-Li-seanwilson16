@@ -77,6 +77,10 @@ const createWaveSurfer = (container, options = {}) => {
 
 const DJ = () => {
   const [tracks] = useState(AVAILABLE_TRACKS);
+  const [isLoading, setIsLoading] = useState({
+    left: false,
+    right: false,
+  });
   const [leftTrack, setLeftTrack] = useState({
     name: "",
     path: "",
@@ -279,6 +283,9 @@ const DJ = () => {
   };
 
   const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
+    // Close the dropdown immediately when a track is selected
+    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
+
     const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -312,57 +319,78 @@ const DJ = () => {
     const currentBPM = trackState.bpm || trackInfo.bpm;
     const newRate = currentBPM / trackInfo.bpm;
 
-    // Load audio elements first
-    for (const stem of STEM_TYPES) {
-      const audio = new Audio();
-      audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
-      audio.volume = 1;
-      audio.preservesPitch = true;
-      audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-      audio.playbackRate = newRate;
-      audioElements[stem] = audio;
-      await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-    }
+    setIsLoading((prev) => ({ ...prev, [deck]: true }));
 
-    // Then load waveforms
-    if (Object.keys(wavesurfers.current).length > 0) {
-      await Promise.all(
-        [...STEM_TYPES, 'timeline'].map(async (stem) => {
-          try {
-            const wavesurfer = wavesurfers.current[stem];
-            // Use bass stem for timeline wavesurfer
-            const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem === 'timeline' ? 'bass' : stem}.mp3`;
-            await wavesurfer.load(audioPath);
+    try {
+      // Load audio elements first
+      for (const stem of STEM_TYPES) {
+        const audio = new Audio();
+        audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
+        audio.volume = 1;
+        audio.preservesPitch = true;
+        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+        audio.playbackRate = newRate;
+        audioElements[stem] = audio;
+        await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
+      }
 
-            // Configure wavesurfer and its media element
-            wavesurfer.setVolume(0);
-            wavesurfer.setPlaybackRate(newRate);
+      // Then load waveforms
+      if (Object.keys(wavesurfers.current).length > 0) {
+        await Promise.all(
+          [...STEM_TYPES, 'timeline'].map(async (stem) => {
+            try {
+              const wavesurfer = wavesurfers.current[stem];
+              // Use bass stem for timeline wavesurfer
+              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem === 'timeline' ? 'bass' : stem}.mp3`;
+              
+              // Create a promise that resolves when the waveform is fully rendered
+              const loadPromise = new Promise((resolve, reject) => {
+                wavesurfer.load(audioPath);
+                
+                // Listen for the waveform ready event
+                wavesurfer.once('ready', () => {
+                  // Configure wavesurfer and its media element
+                  wavesurfer.setVolume(0);
+                  wavesurfer.setPlaybackRate(newRate);
 
-            const mediaElement = wavesurfer.getMediaElement();
-            if (mediaElement) {
-              mediaElement.preservesPitch = true;
-              mediaElement.volume = 0;
-              mediaElement.muted = true;
-              mediaElement.playbackRate = newRate;
+                  const mediaElement = wavesurfer.getMediaElement();
+                  if (mediaElement) {
+                    mediaElement.preservesPitch = true;
+                    mediaElement.volume = 0;
+                    mediaElement.muted = true;
+                    mediaElement.playbackRate = newRate;
+                  }
+                  resolve();
+                });
+
+                wavesurfer.once('error', reject);
+              });
+
+              await loadPromise;
+            } catch (error) {
+              console.error(`Error loading waveform for ${stem}:`, error);
+              throw error;
             }
-          } catch (error) {
-            console.error(`Error loading waveform for ${stem}:`, error);
-          }
-        })
-      );
-    }
+          })
+        );
+      }
 
-    // Update track state with new info and audio elements
-    setTrackState((prev) => ({
-      ...prev,
-      ...trackInfo,
-      audioElements,
-      originalBpm: trackInfo.bpm,
-    }));
+      // Update track state with new info and audio elements
+      setTrackState((prev) => ({
+        ...prev,
+        ...trackInfo,
+        audioElements,
+        originalBpm: trackInfo.bpm,
+      }));
 
-    // Only start playing if explicitly requested
-    if (shouldAutoPlay) {
-      handlePlayPause(deck);
+      // Only start playing if explicitly requested
+      if (shouldAutoPlay) {
+        handlePlayPause(deck);
+      }
+    } catch (error) {
+      console.error("Error loading track:", error);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, [deck]: false }));
     }
   };
 
@@ -911,9 +939,11 @@ const DJ = () => {
   }, []); // Empty dependency array means this runs once on mount
 
   const handleImportSong = (deck) => {
+    // Close the other deck's dropdown when opening this one
+    const otherDeck = deck === "left" ? "right" : "left";
     setDropdownOpen((prev) => ({
-      ...prev,
       [deck]: !prev[deck],
+      [otherDeck]: false,
     }));
   };
 
@@ -931,35 +961,38 @@ const DJ = () => {
         <div className="top-bar">
           <div className="import-containers">
             <div className="import-container import-container-left">
-              <button
-                className="import-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleImportSong("left");
-                }}
-              >
-                IMPORT SONG ▼
-              </button>
-              {dropdownOpen.left && (
-                <div className="import-dropdown">
-                  {tracks.map((track) => (
-                    <button
-                      key={track.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTrackSelect("left", track);
-                      }}
-                    >
-                      <div className="song-info">
-                        <span className="song-name">{track.name}</span>
-                        <span className="song-details">
-                          {track.bpm} BPM • {track.key}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="import-btn-container">
+                <button
+                  className="import-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImportSong("left");
+                  }}
+                >
+                  IMPORT SONG ▼
+                </button>
+                {isLoading.left && <div className="track-loading-spinner left" />}
+                {dropdownOpen.left && (
+                  <div className="import-dropdown">
+                    {tracks.map((track) => (
+                      <button
+                        key={track.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTrackSelect("left", track);
+                        }}
+                      >
+                        <div className="song-info">
+                          <span className="song-name">{track.name}</span>
+                          <span className="song-details">
+                            {track.bpm} BPM • {track.key}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="track-info">
                 {leftTrack.name ? (
                   <>
@@ -975,35 +1008,38 @@ const DJ = () => {
             </div>
 
             <div className="import-container import-container-right">
-              <button
-                className="import-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleImportSong("right");
-                }}
-              >
-                IMPORT SONG ▼
-              </button>
-              {dropdownOpen.right && (
-                <div className="import-dropdown">
-                  {tracks.map((track) => (
-                    <button
-                      key={track.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleTrackSelect("right", track);
-                      }}
-                    >
-                      <div className="song-info">
-                        <span className="song-name">{track.name}</span>
-                        <span className="song-details">
-                          {track.bpm} BPM • {track.key}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}{" "}
+              <div className="import-btn-container">
+                <button
+                  className="import-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImportSong("right");
+                  }}
+                >
+                  IMPORT SONG ▼
+                </button>
+                {isLoading.right && <div className="track-loading-spinner right" />}
+                {dropdownOpen.right && (
+                  <div className="import-dropdown">
+                    {tracks.map((track) => (
+                      <button
+                        key={track.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTrackSelect("right", track);
+                        }}
+                      >
+                        <div className="song-info">
+                          <span className="song-name">{track.name}</span>
+                          <span className="song-details">
+                            {track.bpm} BPM • {track.key}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="track-info">
                 {rightTrack.name ? (
                   <>
@@ -1037,7 +1073,7 @@ const DJ = () => {
                   value={leftTrack.bpm}
                   onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
                   onMouseUp={(e) => e.target.blur()}
-                  disabled={!leftTrack.name}
+                  disabled={!leftTrack.name || isLoading.left}
                 />
                 <div className="bpm-display">{leftTrack.bpm} BPM</div>
               </div>
@@ -1057,7 +1093,7 @@ const DJ = () => {
                   className="volume-slider"
                   onChange={(e) => handleVolumeChange("left", e.target.value)}
                   onMouseUp={(e) => e.target.blur()}
-                  disabled={!leftTrack.name}
+                  disabled={!leftTrack.name || isLoading.left}
                 />
                 <div className="volume-display">VOL</div>
               </div>
@@ -1068,7 +1104,7 @@ const DJ = () => {
                 <div className="playback-controls">
                   <button
                     className={`cue-btn cue-btn-left ${isCueing.left ? "active" : ""} ${
-                      !leftTrack.name ? "disabled" : ""
+                      !leftTrack.name || isLoading.left ? "disabled" : ""
                     }`}
                     onMouseDown={() => handleCue("left")}
                     onMouseUp={() => handleCueEnd("left")}
@@ -1079,10 +1115,10 @@ const DJ = () => {
                   </button>
                   <button
                     className={`play-btn play-btn-left ${playing.left ? "playing" : ""} ${
-                      !leftTrack.name ? "disabled" : ""
+                      !leftTrack.name || isLoading.left ? "disabled" : ""
                     }`}
                     onClick={() => handlePlayPause("left")}
-                    disabled={!leftTrack.name}
+                    disabled={!leftTrack.name || isLoading.left}
                   >
                     {playing.left ? (
                       <span className="pause-symbol">
@@ -1134,7 +1170,7 @@ const DJ = () => {
                 e.stopPropagation();
                 handleSync();
               }}
-              disabled={!leftTrack.name || !rightTrack.name}
+              disabled={!leftTrack.name || !rightTrack.name || isLoading.left || isLoading.right}
             >
               <span className="sync-text">SYNC</span>
               <span className="playback-text">(S)</span>
@@ -1162,7 +1198,7 @@ const DJ = () => {
                   className="volume-slider"
                   onChange={(e) => handleVolumeChange("right", e.target.value)}
                   onMouseUp={(e) => e.target.blur()}
-                  disabled={!rightTrack.name}
+                  disabled={!rightTrack.name || isLoading.right}
                 />
                 <div className="volume-display">VOL</div>
               </div>
@@ -1182,7 +1218,7 @@ const DJ = () => {
                   value={rightTrack.bpm}
                   onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
                   onMouseUp={(e) => e.target.blur()}
-                  disabled={!rightTrack.name}
+                  disabled={!rightTrack.name || isLoading.right}
                 />
                 <div className="bpm-display">{rightTrack.bpm} BPM</div>
               </div>
@@ -1219,7 +1255,7 @@ const DJ = () => {
                 <div className="playback-controls">
                   <button
                     className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
-                      !rightTrack.name ? "disabled" : ""
+                      !rightTrack.name || isLoading.right ? "disabled" : ""
                     }`}
                     onMouseDown={() => handleCue("right")}
                     onMouseUp={() => handleCueEnd("right")}
@@ -1230,10 +1266,10 @@ const DJ = () => {
                   </button>
                   <button
                     className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
-                      !rightTrack.name ? "disabled" : ""
+                      !rightTrack.name || isLoading.right ? "disabled" : ""
                     }`}
                     onClick={() => handlePlayPause("right")}
-                    disabled={!rightTrack.name}
+                    disabled={!rightTrack.name || isLoading.right}
                   >
                     {playing.right ? (
                       <span className="pause-symbol">
