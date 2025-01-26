@@ -24,7 +24,7 @@
   justify-content: center;
   gap: 2rem;
   flex-direction: column;
-  padding-top: calc(8vh + 1rem);
+  padding-top: calc(3vh + 1rem);
 }
 
 .avatar-wrapper {
