@@ -188,8 +188,8 @@ const DJ = () => {
       const wavesurfer = wavesurfers.current[stem];
       const currentTime = wavesurfer.getCurrentTime();
 
-      // Only adjust if drift is more than 5ms
-      if (Math.abs(currentTime - referenceTime) > 0) {
+      // Only adjust if drift is more than 10ms
+      if (Math.abs(currentTime - referenceTime) > 0.01) {
         wavesurfer.setTime(referenceTime);
       }
     });
@@ -199,11 +199,11 @@ const DJ = () => {
     let syncInterval;
 
     if (playing.left || playing.right) {
-      // Check sync every 1 second
+      // Check sync every 100ms for more precise synchronization
       syncInterval = setInterval(() => {
         if (playing.left) syncWavesurfers("left");
         if (playing.right) syncWavesurfers("right");
-      }, 1000);
+      }, 100);
     }
 
     return () => {
@@ -341,18 +341,20 @@ const DJ = () => {
       // Then load waveforms
       if (Object.keys(wavesurfers.current).length > 0) {
         await Promise.all(
-          [...STEM_TYPES, 'timeline'].map(async (stem) => {
+          [...STEM_TYPES, "timeline"].map(async (stem) => {
             try {
               const wavesurfer = wavesurfers.current[stem];
               // Use bass stem for timeline wavesurfer
-              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem === 'timeline' ? 'bass' : stem}.mp3`;
-              
+              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${
+                stem === "timeline" ? "bass" : stem
+              }.mp3`;
+
               // Create a promise that resolves when the waveform is fully rendered
               const loadPromise = new Promise((resolve, reject) => {
                 wavesurfer.load(audioPath);
-                
+
                 // Listen for the waveform ready event
-                wavesurfer.once('ready', () => {
+                wavesurfer.once("ready", () => {
                   // Configure wavesurfer and its media element
                   wavesurfer.setVolume(0);
                   wavesurfer.setPlaybackRate(newRate);
@@ -367,7 +369,7 @@ const DJ = () => {
                   resolve();
                 });
 
-                wavesurfer.once('error', reject);
+                wavesurfer.once("error", reject);
               });
 
               await loadPromise;
@@ -967,7 +969,7 @@ const DJ = () => {
           <div className="top-bar">
             <div className="import-containers">
               <div className="import-container import-container-left">
-              <div className="import-btn-container">
+                <div className="import-btn-container">
                   <button
                     className="import-btn"
                     onClick={(e) => {
@@ -977,7 +979,7 @@ const DJ = () => {
                   >
                     IMPORT SONG ▼
                   </button>
-                {isLoading.left && <div className="track-loading-spinner left" />}
+                  {isLoading.left && <div className="track-loading-spinner left" />}
                   {dropdownOpen.left && (
                     <div className="import-dropdown">
                       {tracks.map((track) => (
@@ -998,7 +1000,7 @@ const DJ = () => {
                       ))}
                     </div>
                   )}
-              </div>
+                </div>
                 <div className="track-info">
                   {leftTrack.name ? (
                     <>
@@ -1014,7 +1016,7 @@ const DJ = () => {
               </div>
 
               <div className="import-container import-container-right">
-              <div className="import-btn-container">
+                <div className="import-btn-container">
                   <button
                     className="import-btn"
                     onClick={(e) => {
@@ -1024,7 +1026,7 @@ const DJ = () => {
                   >
                     IMPORT SONG ▼
                   </button>
-                {isLoading.right && <div className="track-loading-spinner right" />}
+                  {isLoading.right && <div className="track-loading-spinner right" />}
                   {dropdownOpen.right && (
                     <div className="import-dropdown">
                       {tracks.map((track) => (
@@ -1045,7 +1047,7 @@ const DJ = () => {
                       ))}
                     </div>
                   )}
-              </div>
+                </div>
                 <div className="track-info">
                   {rightTrack.name ? (
                     <>

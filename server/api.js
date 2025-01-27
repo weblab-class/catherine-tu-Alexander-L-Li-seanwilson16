@@ -35,12 +35,12 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     // Generate unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
     const allowedTypes = ["audio/mpeg", "audio/wav"];
@@ -52,7 +52,7 @@ const upload = multer({
   },
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB limit
-  }
+  },
 });
 
 // api endpoints: all these paths will be prefixed with "/api/"
