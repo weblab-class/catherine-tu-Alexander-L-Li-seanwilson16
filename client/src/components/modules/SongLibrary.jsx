@@ -11,6 +11,24 @@ const SongLibrary = ({ onUploadSuccess }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return "No date";
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid date";
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (err) {
+      console.error("Error formatting date:", err);
+      return "Error";
+    }
+  };
+
   const fetchSongs = async () => {
     if (!isLoggedIn) {
       setLoading(false);
@@ -19,6 +37,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
 
     try {
       const response = await get("/api/songs");
+      console.log("Fetched songs:", response);
       setSongs(response || []);
     } catch (err) {
       console.log("Error fetching songs:", err);
@@ -55,9 +74,12 @@ const SongLibrary = ({ onUploadSuccess }) => {
   };
 
   const handleUploadSuccess = (newSong) => {
-    setSongs((prevSongs) => [...prevSongs, newSong]);
-    if (onUploadSuccess) {
-      onUploadSuccess(newSong);
+    console.log("New song uploaded:", newSong);
+    if (newSong) {
+      setSongs((prevSongs) => [...prevSongs, newSong]);
+      if (onUploadSuccess) {
+        onUploadSuccess(newSong);
+      }
     }
   };
 
@@ -94,17 +116,20 @@ const SongLibrary = ({ onUploadSuccess }) => {
                     No songs in your library yet
                   </li>
                 ) : (
-                  songs.map((song) => (
-                    <li key={song._id} className="song-item">
-                      <span className="song-name">{song.title}</span>
-                      <span className="song-date">{new Date(song.uploadDate).toLocaleDateString()}</span>
-                      <div className="song-actions">
-                        <button className="u-link delete" onClick={() => handleDelete(song._id)}>
-                          Delete
-                        </button>
-                      </div>
-                    </li>
-                  ))
+                  songs.map((song) => {
+                    console.log("Rendering song:", song);
+                    return (
+                      <li key={song._id} className="song-item">
+                        <span className="song-name">{song.title}</span>
+                        <span className="song-date">{formatDate(song.uploadDate)}</span>
+                        <div className="song-actions">
+                          <button className="u-link delete" onClick={() => handleDelete(song._id)}>
+                            Delete
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })
                 )}
               </ul>
             )}

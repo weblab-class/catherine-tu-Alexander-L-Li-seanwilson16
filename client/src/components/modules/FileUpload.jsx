@@ -31,7 +31,7 @@ const FileUpload = ({ onUploadSuccess }) => {
     try {
       const formData = new FormData();
       formData.append("audio", file);
-      formData.append("title", file.name); // You can add a title input field later
+      formData.append("title", file.name);
 
       const response = await fetch("/api/song", {
         method: "POST",
@@ -49,12 +49,12 @@ const FileUpload = ({ onUploadSuccess }) => {
       setUploadedFile(null);
       setFileError("");
 
-      // Notify parent component of successful upload
+      // Pass the song object directly to parent
       if (onUploadSuccess) {
-        onUploadSuccess(result);
+        onUploadSuccess(result); // result is now the song object directly
       }
     } catch (error) {
-      console.error("rror uploading file:", error);
+      console.error("Error uploading file:", error);
       setFileError("error uploading file");
     } finally {
       setIsUploading(false);

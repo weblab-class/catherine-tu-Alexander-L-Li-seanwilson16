@@ -33,6 +33,13 @@ const AVAILABLE_TRACKS = [
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
+const STEM_TYPE_MAP = {
+  bass: "bass",
+  drums: "drums",
+  melody: "other",
+  vocals: "vocals",
+};
+
 const createWaveSurfer = (container, options = {}) => {
   const timeline = TimelinePlugin.create({
     height: 20,
@@ -80,7 +87,8 @@ const createWaveSurfer = (container, options = {}) => {
 
 const DJ = () => {
   const isLoggedIn = useRequireLogin();
-  const [tracks] = useState(AVAILABLE_TRACKS);
+  const [tracks, setTracks] = useState(AVAILABLE_TRACKS);
+  const [userSongs, setUserSongs] = useState([]);
   const [isLoading, setIsLoading] = useState({
     left: false,
     right: false,
@@ -286,115 +294,157 @@ const DJ = () => {
     });
   };
 
+  // Helper function to get file URL for user uploads only
+  const getUserFileUrl = (track, stemType = null) => {
+    if (stemType) {
+      // Map frontend stem type to AudioShake stem type
+      const apiStemType = STEM_TYPE_MAP[stemType];
+      return `/api/stems/file/${track.id}/${apiStemType}`;
+    }
+    // Get filename from the full path
+    const filename = track.path.split('/').pop();
+    return `/api/uploads/${filename}`;
+  };
+
+  // Helper function to get file URL for default tracks
+  const getDefaultFileUrl = (track, stemType) => {
+    return `/assets/processed/${track.path}/${track.path}_${stemType}.mp3`;
+  };
+
+  const loadTrack = async (side, track) => {
+    setIsLoading((prev) => ({ ...prev, [side]: true }));
+    try {
+      const audioElements = {};
+      let stemResponse = null;
+
+      if (track.isUserSong) {
+        // For user-uploaded songs, check if stems are processed
+        stemResponse = await get("/api/stems/" + track.id);
+        if (stemResponse.processed) {
+          // Load stems if they're ready
+          for (const stemType of STEM_TYPES) {
+            const audio = new Audio(getUserFileUrl(track, stemType));
+            audio.preload = "auto";
+            audioElements[stemType] = audio;
+          }
+        } else {
+          // If stems aren't ready, just load the main file
+          const audio = new Audio(getUserFileUrl(track));
+          audio.preload = "auto";
+          audioElements.main = audio;
+        }
+      } else {
+        // Original logic for default tracks
+        for (const stemType of STEM_TYPES) {
+          const audio = new Audio(getDefaultFileUrl(track, stemType));
+          audio.preload = "auto";
+          audioElements[stemType] = audio;
+        }
+      }
+
+      // Update track state
+      const trackState = {
+        ...track,
+        audioElements,
+        originalBpm: track.bpm,
+        bpm: track.bpm,
+        effectsEnabled: Object.fromEntries(
+          Object.keys(audioElements).map((key) => [key, true])
+        ),
+      };
+
+      if (side === "left") {
+        setLeftTrack(trackState);
+      } else {
+        setRightTrack(trackState);
+      }
+
+      // Update wavesurfers
+      const wavesurfers = side === "left" ? leftWavesurfers : rightWavesurfers;
+
+      // Load audio into wavesurfers
+      await Promise.all(
+        Object.entries(wavesurfers.current).map(async ([stemType, wavesurfer]) => {
+          if (wavesurfer && stemType !== 'timeline') { // Skip loading audio for timeline
+            try {
+              let audioPath;
+              if (track.isUserSong) {
+                // Always use stems for user songs if they're processed
+                audioPath = stemResponse?.processed 
+                  ? getUserFileUrl(track, stemType)
+                  : getUserFileUrl(track);
+              } else {
+                // For default tracks, use the original path format
+                audioPath = getDefaultFileUrl(track, stemType);
+              }
+
+              await new Promise((resolve, reject) => {
+                wavesurfer.once('ready', resolve);
+                wavesurfer.once('error', reject);
+                wavesurfer.load(audioPath);
+              });
+
+              // Set playback rate
+              if (track.bpm && track.originalBpm) {
+                wavesurfer.setPlaybackRate(track.bpm / track.originalBpm);
+              }
+
+              // Ensure waveform starts at beginning
+              wavesurfer.seekTo(0);
+            } catch (error) {
+              console.error(`Error loading waveform for ${stemType}:`, error);
+            }
+          }
+        })
+      );
+
+    } catch (error) {
+      console.error("Error loading track:", error);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, [side]: false }));
+    }
+  };
+
   const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
     // Close the dropdown immediately when a track is selected
     setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
 
-    const audioElements = {};
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-    const otherDeck = deck === "left" ? "right" : "left";
-    const otherTrackState = deck === "left" ? rightTrack : leftTrack;
-
-    // Find the track in AVAILABLE_TRACKS to get the correct BPM
-    const trackInfo = AVAILABLE_TRACKS.find((t) => t.path === track.path);
-    if (!trackInfo) return;
-
-    setPlaying((prev) => ({ ...prev, [deck]: false }));
-    const turntable = document.querySelector(`.${deck}-deck .turntable`);
-    if (turntable) turntable.classList.remove("playing");
-
     // Clean up existing resources
-    if (trackState.audioElements) {
-      Object.values(trackState.audioElements).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
+    if (deck === "left") {
+      if (leftTrack.audioElements) {
+        Object.values(leftTrack.audioElements).forEach((audio) => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
+      }
+
+      Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          wavesurfer.pause();
+          wavesurfer.seekTo(0);
+        }
+      });
+    } else {
+      if (rightTrack.audioElements) {
+        Object.values(rightTrack.audioElements).forEach((audio) => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
+      }
+
+      Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          wavesurfer.pause();
+          wavesurfer.seekTo(0);
+        }
       });
     }
 
-    Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-      if (wavesurfer) {
-        wavesurfer.pause();
-        wavesurfer.seekTo(0);
-      }
-    });
+    await loadTrack(deck, track);
 
-    const currentBPM = trackState.bpm || trackInfo.bpm;
-    const newRate = currentBPM / trackInfo.bpm;
-
-    setIsLoading((prev) => ({ ...prev, [deck]: true }));
-
-    try {
-      // Load audio elements first
-      for (const stem of STEM_TYPES) {
-        const audio = new Audio();
-        audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
-        audio.volume = 1;
-        audio.preservesPitch = true;
-        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-        audio.playbackRate = newRate;
-        audioElements[stem] = audio;
-        await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-      }
-
-      // Then load waveforms
-      if (Object.keys(wavesurfers.current).length > 0) {
-        await Promise.all(
-          [...STEM_TYPES, 'timeline'].map(async (stem) => {
-            try {
-              const wavesurfer = wavesurfers.current[stem];
-              // Use bass stem for timeline wavesurfer
-              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem === 'timeline' ? 'bass' : stem}.mp3`;
-              
-              // Create a promise that resolves when the waveform is fully rendered
-              const loadPromise = new Promise((resolve, reject) => {
-                wavesurfer.load(audioPath);
-                
-                // Listen for the waveform ready event
-                wavesurfer.once('ready', () => {
-                  // Configure wavesurfer and its media element
-                  wavesurfer.setVolume(0);
-                  wavesurfer.setPlaybackRate(newRate);
-
-                  const mediaElement = wavesurfer.getMediaElement();
-                  if (mediaElement) {
-                    mediaElement.preservesPitch = true;
-                    mediaElement.volume = 0;
-                    mediaElement.muted = true;
-                    mediaElement.playbackRate = newRate;
-                  }
-                  resolve();
-                });
-
-                wavesurfer.once('error', reject);
-              });
-
-              await loadPromise;
-            } catch (error) {
-              console.error(`Error loading waveform for ${stem}:`, error);
-              throw error;
-            }
-          })
-        );
-      }
-
-      // Update track state with new info and audio elements
-      setTrackState((prev) => ({
-        ...prev,
-        ...trackInfo,
-        audioElements,
-        originalBpm: trackInfo.bpm,
-      }));
-
-      // Only start playing if explicitly requested
-      if (shouldAutoPlay) {
-        handlePlayPause(deck);
-      }
-    } catch (error) {
-      console.error("Error loading track:", error);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, [deck]: false }));
+    // Only start playing if explicitly requested
+    if (shouldAutoPlay) {
+      handlePlayPause(deck);
     }
   };
 
@@ -924,6 +974,24 @@ const DJ = () => {
   }, [leftTrack.audioElements, rightTrack.audioElements]);
 
   useEffect(() => {
+    // Fetch user's songs
+    if (isLoggedIn) {
+      get("/api/songs").then((songs) => {
+        const formattedSongs = songs.map((song) => ({
+          id: song._id,
+          name: song.title,
+          path: song.filePath,
+          isUserSong: true,
+          stems: song.stems,
+          bpm: 0, // You might want to extract BPM from the audio file
+          key: "Unknown",
+        }));
+        setTracks([...AVAILABLE_TRACKS, ...formattedSongs]);
+      });
+    }
+  }, [isLoggedIn]);
+
+  useEffect(() => {
     // Load default tracks on mount
     const loadDefaultTracks = async () => {
       // Load left track (Chill Guy Remix)
@@ -967,7 +1035,7 @@ const DJ = () => {
           <div className="top-bar">
             <div className="import-containers">
               <div className="import-container import-container-left">
-              <div className="import-btn-container">
+                <div className="import-btn-container">
                   <button
                     className="import-btn"
                     onClick={(e) => {
@@ -977,44 +1045,37 @@ const DJ = () => {
                   >
                     IMPORT SONG ▼
                   </button>
-                {isLoading.left && <div className="track-loading-spinner left" />}
+                  {isLoading.left && <div className="track-loading-spinner left" />}
                   {dropdownOpen.left && (
                     <div className="import-dropdown">
                       {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelect("left", track);
-                          }}
+                        <div
+                          key={track.id || track.path}
+                          className="import-option"
+                          onClick={() => handleTrackSelect("left", track)}
                         >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
+                          {track.name}
+                        </div>
                       ))}
                     </div>
                   )}
-              </div>
+                </div>
                 <div className="track-info">
                   {leftTrack.name ? (
                     <>
-                      <div className="track-name-left">{leftTrack.name}</div>
-                      <div className="track-details-left">
-                        {leftTrack.bpm + " BPM • " + leftTrack.key}
+                      <div className="track-name">{leftTrack.name}</div>
+                      <div className="track-details">
+                        BPM: {leftTrack.bpm} | Key: {leftTrack.key}
                       </div>
                     </>
                   ) : (
-                    <div className="no-track-left">NO TRACK LOADED</div>
+                    <div className="no-track">No track loaded</div>
                   )}
                 </div>
               </div>
 
               <div className="import-container import-container-right">
-              <div className="import-btn-container">
+                <div className="import-btn-container">
                   <button
                     className="import-btn"
                     onClick={(e) => {
@@ -1024,38 +1085,31 @@ const DJ = () => {
                   >
                     IMPORT SONG ▼
                   </button>
-                {isLoading.right && <div className="track-loading-spinner right" />}
+                  {isLoading.right && <div className="track-loading-spinner right" />}
                   {dropdownOpen.right && (
                     <div className="import-dropdown">
                       {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelect("right", track);
-                          }}
+                        <div
+                          key={track.id || track.path}
+                          className="import-option"
+                          onClick={() => handleTrackSelect("right", track)}
                         >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
+                          {track.name}
+                        </div>
                       ))}
                     </div>
                   )}
-              </div>
+                </div>
                 <div className="track-info">
                   {rightTrack.name ? (
                     <>
-                      <div className="track-name-right">{rightTrack.name}</div>
-                      <div className="track-details-right">
-                        {rightTrack.bpm + " BPM • " + rightTrack.key}
+                      <div className="track-name">{rightTrack.name}</div>
+                      <div className="track-details">
+                        BPM: {rightTrack.bpm} | Key: {rightTrack.key}
                       </div>
                     </>
                   ) : (
-                    <div className="no-track-right">NO TRACK LOADED</div>
+                    <div className="no-track">No track loaded</div>
                   )}
                 </div>
               </div>
