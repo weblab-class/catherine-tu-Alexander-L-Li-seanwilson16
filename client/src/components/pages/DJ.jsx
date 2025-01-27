@@ -52,7 +52,7 @@ const createWaveSurfer = (container, options = {}) => {
     height: 70,
     responsive: true,
     normalize: true,
-    minPxPerSec: 50,
+    minPxPerSec: 200,
     fillParent: true,
     scrollParent: true,
     autoCenter: true,
