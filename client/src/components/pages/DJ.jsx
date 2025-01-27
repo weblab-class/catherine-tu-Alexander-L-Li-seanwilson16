@@ -157,6 +157,8 @@ const DJ = () => {
 
   const [volume, setVolume] = useState({ left: 1, right: 1 });
 
+  const [syncEnabled, setSyncEnabled] = useState(false);
+
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return "0:00";
     const minutes = Math.floor(seconds / 60);
@@ -226,10 +228,8 @@ const DJ = () => {
       }
 
       if (newPlaying) {
-        // Get current position - if we're cueing, use current position, otherwise use wavesurfer position
-        const currentTime = isCueing[deck]
-          ? wavesurfers.current.bass.getCurrentTime()
-          : wavesurfers.current.bass.getCurrentTime();
+        // Get current position
+        const currentTime = wavesurfers.current.bass.getCurrentTime();
 
         // First sync all waveforms to the exact same position
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
@@ -243,10 +243,15 @@ const DJ = () => {
           }
         });
 
-        // Now play everything together
+        // Calculate the correct playback rate based on current BPM
+        const playbackRate = trackState.bpm / trackState.originalBpm;
+
+        // Now play everything together with the correct rate
         const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
           if (audio) {
             audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+            audio.preservesPitch = true;
+            audio.playbackRate = playbackRate;
             return audio.play();
           }
           return Promise.resolve();
@@ -260,7 +265,10 @@ const DJ = () => {
               if (mediaElement) {
                 mediaElement.volume = 0;
                 mediaElement.muted = true;
+                mediaElement.preservesPitch = true;
+                mediaElement.playbackRate = playbackRate;
               }
+              wavesurfer.setPlaybackRate(playbackRate);
               wavesurfer.play();
             });
           })
@@ -286,120 +294,6 @@ const DJ = () => {
     });
   };
 
-  const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
-    // Close the dropdown immediately when a track is selected
-    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
-
-    const audioElements = {};
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-    const otherDeck = deck === "left" ? "right" : "left";
-    const otherTrackState = deck === "left" ? rightTrack : leftTrack;
-
-    // Find the track in AVAILABLE_TRACKS to get the correct BPM
-    const trackInfo = AVAILABLE_TRACKS.find((t) => t.path === track.path);
-    if (!trackInfo) return;
-
-    setPlaying((prev) => ({ ...prev, [deck]: false }));
-    const turntable = document.querySelector(`.${deck}-deck .turntable`);
-    if (turntable) turntable.classList.remove("playing");
-
-    // Clean up existing resources
-    if (trackState.audioElements) {
-      Object.values(trackState.audioElements).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    }
-
-    Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-      if (wavesurfer) {
-        wavesurfer.pause();
-        wavesurfer.seekTo(0);
-      }
-    });
-
-    const currentBPM = trackState.bpm || trackInfo.bpm;
-    const newRate = currentBPM / trackInfo.bpm;
-
-    setIsLoading((prev) => ({ ...prev, [deck]: true }));
-
-    try {
-      // Load audio elements first
-      for (const stem of STEM_TYPES) {
-        const audio = new Audio();
-        audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
-        audio.volume = 1;
-        audio.preservesPitch = true;
-        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-        audio.playbackRate = newRate;
-        audioElements[stem] = audio;
-        await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-      }
-
-      // Then load waveforms
-      if (Object.keys(wavesurfers.current).length > 0) {
-        await Promise.all(
-          [...STEM_TYPES, "timeline"].map(async (stem) => {
-            try {
-              const wavesurfer = wavesurfers.current[stem];
-              // Use bass stem for timeline wavesurfer
-              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${
-                stem === "timeline" ? "bass" : stem
-              }.mp3`;
-
-              // Create a promise that resolves when the waveform is fully rendered
-              const loadPromise = new Promise((resolve, reject) => {
-                wavesurfer.load(audioPath);
-
-                // Listen for the waveform ready event
-                wavesurfer.once("ready", () => {
-                  // Configure wavesurfer and its media element
-                  wavesurfer.setVolume(0);
-                  wavesurfer.setPlaybackRate(newRate);
-
-                  const mediaElement = wavesurfer.getMediaElement();
-                  if (mediaElement) {
-                    mediaElement.preservesPitch = true;
-                    mediaElement.volume = 0;
-                    mediaElement.muted = true;
-                    mediaElement.playbackRate = newRate;
-                  }
-                  resolve();
-                });
-
-                wavesurfer.once("error", reject);
-              });
-
-              await loadPromise;
-            } catch (error) {
-              console.error(`Error loading waveform for ${stem}:`, error);
-              throw error;
-            }
-          })
-        );
-      }
-
-      // Update track state with new info and audio elements
-      setTrackState((prev) => ({
-        ...prev,
-        ...trackInfo,
-        audioElements,
-        originalBpm: trackInfo.bpm,
-      }));
-
-      // Only start playing if explicitly requested
-      if (shouldAutoPlay) {
-        handlePlayPause(deck);
-      }
-    } catch (error) {
-      console.error("Error loading track:", error);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, [deck]: false }));
-    }
-  };
-
   const handleBPMChange = (deck, value) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -407,51 +301,99 @@ const DJ = () => {
 
     if (!trackState.name) return;
 
-    const newRate = value / trackState.originalBpm;
+    // Update the current deck
+    const updateDeck = (deckToUpdate, newBpm) => {
+      const state = deckToUpdate === "left" ? leftTrack : rightTrack;
+      const setState = deckToUpdate === "left" ? setLeftTrack : setRightTrack;
+      const deckWavesurfers = deckToUpdate === "left" ? leftWavesurfers : rightWavesurfers;
 
-    // Store current position before changing rates
-    const currentTime = Object.values(wavesurfers.current)[0].getCurrentTime();
+      if (!state.name) return;
 
-    // Update audio elements playback rate
-    Object.values(trackState.audioElements || {}).forEach((audio) => {
-      if (audio) {
-        audio.preservesPitch = true;
-        audio.playbackRate = newRate;
-      }
-    });
+      // Calculate the playback rate based on the original BPM
+      const newRate = newBpm / state.originalBpm;
 
-    // Update wavesurfer playback rates and ensure synchronization
-    const updatePromises = Object.values(wavesurfers.current || {}).map(async (wavesurfer) => {
-      if (wavesurfer) {
-        const mediaElement = wavesurfer.getMediaElement();
-        if (mediaElement) {
-          mediaElement.preservesPitch = true;
-          mediaElement.playbackRate = newRate;
+      // Store current position before changing rates
+      const currentTime = Object.values(deckWavesurfers.current)[0]?.getCurrentTime() || 0;
+
+      // Update audio elements playback rate
+      Object.values(state.audioElements || {}).forEach((audio) => {
+        if (audio) {
+          audio.preservesPitch = true;
+          audio.playbackRate = newRate;
         }
-        wavesurfer.setPlaybackRate(newRate);
-        // Ensure all waveforms are at the same position
-        wavesurfer.setTime(currentTime);
-      }
-    });
-
-    Promise.all(updatePromises).then(() => {
-      // After all updates are complete, ensure waveforms stay in sync
-      requestAnimationFrame(() => {
-        Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-          if (wavesurfer && Math.abs(wavesurfer.getCurrentTime() - currentTime) > 0) {
-            wavesurfer.setTime(currentTime);
-          }
-        });
       });
-    });
 
-    setTrackState((prev) => ({
-      ...prev,
-      bpm: value,
-    }));
+      // Update wavesurfer playback rates and ensure synchronization
+      Object.values(deckWavesurfers.current || {}).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          const mediaElement = wavesurfer.getMediaElement();
+          if (mediaElement) {
+            mediaElement.preservesPitch = true;
+            mediaElement.playbackRate = newRate;
+          }
+          wavesurfer.setPlaybackRate(newRate);
+          wavesurfer.setTime(currentTime);
+        }
+      });
+
+      setState((prev) => ({
+        ...prev,
+        bpm: newBpm,
+      }));
+    };
+
+    // Update the current deck
+    updateDeck(deck, value);
+
+    // If sync is enabled, update the other deck with the exact same BPM
+    if (syncEnabled) {
+      const otherDeck = deck === "left" ? "right" : "left";
+      updateDeck(otherDeck, value);
+    }
 
     // Blur the slider to restore keyboard event handling
     document.activeElement.blur();
+  };
+
+  const handleSync = () => {
+    // Don't sync if either track is not loaded
+    if (!leftTrack.name || !rightTrack.name) return;
+
+    // Toggle sync mode
+    setSyncEnabled((prevSync) => {
+      const newSyncEnabled = !prevSync;
+
+      // If enabling sync, set both BPMs to the higher one
+      if (newSyncEnabled) {
+        const leftBPM = leftTrack.bpm;
+        const rightBPM = rightTrack.bpm;
+
+        // Use the higher BPM
+        const targetBPM = Math.max(leftBPM, rightBPM);
+
+        // If tracks are playing, pause them before syncing
+        if (playing.left) {
+          handlePlayPause("left");
+        }
+        if (playing.right) {
+          handlePlayPause("right");
+        }
+
+        // Update both decks to the exact same BPM
+        handleBPMChange("left", targetBPM);
+        handleBPMChange("right", targetBPM);
+
+        // Resume playback if tracks were playing
+        if (playing.left) {
+          handlePlayPause("left");
+        }
+        if (playing.right) {
+          handlePlayPause("right");
+        }
+      }
+
+      return newSyncEnabled;
+    });
   };
 
   const handleEffectToggle = useCallback(
@@ -534,18 +476,6 @@ const DJ = () => {
     document.activeElement.blur();
   };
 
-  const handleSync = () => {
-    // Don't sync if either track is not loaded
-    if (!leftTrack.name || !rightTrack.name) return;
-
-    // Get the current BPM of both tracks
-    const leftBPM = leftTrack.bpm;
-    const rightBPM = rightTrack.bpm;
-
-    // Use the left track's BPM as the sync target
-    handleBPMChange("right", leftBPM);
-  };
-
   const handleReset = () => {
     // Stop any playing audio and reset wavesurfers
     Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
@@ -573,8 +503,8 @@ const DJ = () => {
     setLeftTrack({
       name: "",
       key: "",
-      bpm: 120,
-      originalBpm: 120,
+      bpm: trackInfo.BPM,
+      originalBpm: trackInfo.BPM,
       audioElements: null,
       effectsEnabled: {
         bass: true,
@@ -586,8 +516,8 @@ const DJ = () => {
     setRightTrack({
       name: "",
       key: "",
-      bpm: 120,
-      originalBpm: 120,
+      bpm: trackInfo.BPM,
+      originalBpm: trackInfo.BPM,
       audioElements: null,
       effectsEnabled: {
         bass: true,
@@ -953,6 +883,126 @@ const DJ = () => {
     }));
   };
 
+  const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
+    // Close the dropdown immediately when a track is selected
+    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
+
+    const audioElements = {};
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+    const otherDeck = deck === "left" ? "right" : "left";
+    const otherTrackState = deck === "left" ? rightTrack : leftTrack;
+
+    // Find the track in AVAILABLE_TRACKS to get the correct BPM
+    const trackInfo = AVAILABLE_TRACKS.find((t) => t.path === track.path);
+    if (!trackInfo) return;
+
+    setPlaying((prev) => ({ ...prev, [deck]: false }));
+    const turntable = document.querySelector(`.${deck}-deck .turntable`);
+    if (turntable) turntable.classList.remove("playing");
+
+    // Clean up existing resources
+    if (trackState.audioElements) {
+      Object.values(trackState.audioElements).forEach((audio) => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
+
+    Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.pause();
+        wavesurfer.seekTo(0);
+      }
+    });
+
+    const currentBPM = trackState.bpm || trackInfo.bpm;
+    const newRate = currentBPM / trackInfo.bpm;
+
+    setIsLoading((prev) => ({ ...prev, [deck]: true }));
+
+    try {
+      // Load audio elements first
+      for (const stem of STEM_TYPES) {
+        const audio = new Audio();
+        audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
+        audio.volume = 1;
+        audio.preservesPitch = true;
+        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+        audio.playbackRate = newRate;
+        audioElements[stem] = audio;
+        await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
+      }
+
+      // Then load waveforms
+      if (Object.keys(wavesurfers.current).length > 0) {
+        await Promise.all(
+          [...STEM_TYPES, "timeline"].map(async (stem) => {
+            try {
+              const wavesurfer = wavesurfers.current[stem];
+              // Use bass stem for timeline wavesurfer
+              const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${
+                stem === "timeline" ? "bass" : stem
+              }.mp3`;
+
+              // Create a promise that resolves when the waveform is fully rendered
+              const loadPromise = new Promise((resolve, reject) => {
+                wavesurfer.load(audioPath);
+
+                // Listen for the waveform ready event
+                wavesurfer.once("ready", () => {
+                  // Configure wavesurfer and its media element
+                  wavesurfer.setVolume(0);
+                  wavesurfer.setPlaybackRate(newRate);
+
+                  const mediaElement = wavesurfer.getMediaElement();
+                  if (mediaElement) {
+                    mediaElement.preservesPitch = true;
+                    mediaElement.volume = 0;
+                    mediaElement.muted = true;
+                    mediaElement.playbackRate = newRate;
+                  }
+                  resolve();
+                });
+
+                wavesurfer.once("error", reject);
+              });
+
+              await loadPromise;
+            } catch (error) {
+              console.error(`Error loading waveform for ${stem}:`, error);
+              throw error;
+            }
+          })
+        );
+      }
+
+      // Update track state with new info and audio elements
+      setTrackState((prev) => ({
+        ...prev,
+        ...trackInfo,
+        audioElements,
+        originalBpm: trackInfo.bpm,
+        bpm: currentBPM,
+      }));
+
+      // If sync is enabled, update this deck's BPM to match the other deck
+      if (syncEnabled && otherTrackState.name) {
+        handleBPMChange(deck, otherTrackState.bpm);
+      }
+
+      // Only start playing if explicitly requested
+      if (shouldAutoPlay) {
+        handlePlayPause(deck);
+      }
+    } catch (error) {
+      console.error("Error loading track:", error);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, [deck]: false }));
+    }
+  };
+
   return (
     <>
       {!isLoggedIn && <LoginOverlay />}
@@ -1173,7 +1223,7 @@ const DJ = () => {
 
             <div className="deck-controls">
               <button
-                className="sync-btn"
+                className={`sync-btn ${syncEnabled ? "active" : ""}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSync();

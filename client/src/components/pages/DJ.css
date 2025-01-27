@@ -640,6 +640,18 @@ body {
   transform: scale(1.05);
 }
 
+.sync-btn.active {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.sync-btn.active:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.sync-btn.active:disabled {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 .effect-buttons {
   display: flex;
   /* grid-template-columns: repeat(4, 1fr); */
@@ -1400,8 +1412,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .deck-controls:last-child {
