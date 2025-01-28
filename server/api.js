@@ -9,7 +9,6 @@
 
 const express = require("express");
 const router = express.Router();
-const fileUpload = require('express-fileupload');
 const FormData = require('form-data');
 const axios = require('axios');
 
@@ -47,7 +46,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["audio/mpeg", "audio/wav"];
+    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -58,8 +57,6 @@ const upload = multer({
     fileSize: 50 * 1024 * 1024, // 50MB limit
   },
 });
-
-router.use(fileUpload());
 
 // api endpoints: all these paths will be prefixed with "/api/"
 router.post("/login", auth.login);
@@ -154,6 +151,11 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    console.log("File upload request:", {
+      file: req.file,
+      body: req.body
+    });
+
     const song = new Song({
       creator_id: req.user._id,
       title: req.body.title || req.file.originalname,
@@ -167,7 +169,7 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
     res.json(song);
   } catch (err) {
     console.error("Error uploading song:", err);
-    res.status(500).json({ error: "Error uploading song" });
+    res.status(500).json({ error: "Error uploading song: " + err.message });
   }
 });
 
