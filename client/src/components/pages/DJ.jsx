@@ -256,85 +256,61 @@ const DJ = () => {
   }, [playing, syncWavesurfers]);
 
   const handlePlayPause = (deck) => {
+    console.log("Play/Pause clicked for deck:", deck);
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
     if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
 
     setPlaying((prev) => {
-      const newPlaying = !prev[deck];
+      const newPlaying = { ...prev, [deck]: !prev[deck] };
+      console.log("New playing state:", newPlaying);
 
-      const turntable = document.querySelector(`.${deck}-deck .turntable`);
-      if (turntable) {
-        turntable.classList.toggle("playing", newPlaying);
-      }
+      // Get all audio elements for this deck
+      const audioElements = trackState.audioElements;
+      console.log("Audio elements:", audioElements);
 
-      if (newPlaying) {
-        // Get current position
-        const currentTime = wavesurfers.current.bass.getCurrentTime();
-
-        // Calculate audio playback rate based on BPM change from original
-        const audioRate = trackState.bpm / trackState.originalBpm;
-        
-        // Calculate wavesurfer playback rate based on current BPM
-        const wavesurferRate = trackState.bpm / 100;
-
-        // First sync all waveforms to the exact same position
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
-          wavesurfer.setTime(currentTime);
-          // Set wavesurfer rate proportional to BPM for visual sync
-          wavesurfer.setPlaybackRate(wavesurferRate);
-        });
-
-        // Then sync all audio elements
-        Object.values(trackState.audioElements || {}).forEach((audio) => {
-          if (audio) {
-            audio.currentTime = currentTime;
-            audio.preservesPitch = true;
-            audio.playbackRate = audioRate;
+      if (newPlaying[deck]) {
+        // Play all enabled stems
+        Object.entries(audioElements).forEach(([stem, audio]) => {
+          if (trackState.effectsEnabled[stem]) {
+            console.log(`Playing ${stem}`);
+            audio.play().catch(err => console.error(`Error playing ${stem}:`, err));
           }
         });
 
-        // Now play everything together
-        const playPromises = Object.entries(trackState.audioElements || {}).map(([stem, audio]) => {
-          if (audio) {
-            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-            return audio.play();
+        // Start wavesurfer
+        Object.values(wavesurfers.current).forEach(ws => {
+          if (ws) {
+            console.log("Starting wavesurfer");
+            ws.play();
           }
-          return Promise.resolve();
         });
 
-        Promise.all(playPromises)
-          .then(() => {
-            Object.values(wavesurfers.current).forEach((wavesurfer) => {
-              wavesurfer.setVolume(0);
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.volume = 0;
-                mediaElement.muted = true;
-              }
-              wavesurfer.play();
-            });
-          })
-          .catch((e) => console.error("Error playing audio:", e));
+        // Add playing class to turntable
+        const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
+        if (turntable) turntable.classList.add("playing");
       } else {
-        // When pausing, make sure everything stops at the exact same position
-        const currentTime = wavesurfers.current.bass.getCurrentTime();
+        // Pause all stems
+        Object.entries(audioElements).forEach(([stem, audio]) => {
+          console.log(`Pausing ${stem}`);
+          audio.pause();
+        });
 
-        Object.values(trackState.audioElements || {}).forEach((audio) => {
-          if (audio) {
-            audio.pause();
-            audio.currentTime = currentTime;
+        // Pause wavesurfer
+        Object.values(wavesurfers.current).forEach(ws => {
+          if (ws) {
+            console.log("Pausing wavesurfer");
+            ws.pause();
           }
         });
 
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
-          wavesurfer.pause();
-          wavesurfer.setTime(currentTime);
-        });
+        // Remove playing class from turntable
+        const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
+        if (turntable) turntable.classList.remove("playing");
       }
 
-      return { ...prev, [deck]: newPlaying };
+      return newPlaying;
     });
   };
 
@@ -964,7 +940,7 @@ const DJ = () => {
     const otherTrackState = deck === "left" ? rightTrack : leftTrack;
 
     setPlaying((prev) => ({ ...prev, [deck]: false }));
-    const turntable = document.querySelector(`.${deck}-deck .turntable`);
+    const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
     if (turntable) turntable.classList.remove("playing");
 
     // Clean up existing resources
@@ -988,74 +964,67 @@ const DJ = () => {
       if (track.isUserSong) {
         // Handle user-uploaded song
         const container = deck === "left" ? leftContainerRef.current : rightContainerRef.current;
+        console.log("Loading user song:", track);
+        console.log("Audio path:", track.path);
 
         try {
-          // Check stem processing status
-          const statusResponse = await fetch(`/api/song/${track.id}/stems/status`);
-          if (!statusResponse.ok) {
-            throw new Error('Failed to check stem status');
-          }
-          const status = await statusResponse.json();
-          
-          if (status.status !== 'complete') {
-            console.log("Stems are still processing. Please wait...");
-            setIsLoading((prev) => ({ ...prev, [deck]: false }));
-            return;
-          }
+          // Create a single wavesurfer instance for now
+          console.log("Creating wavesurfer");
+          const ws = createWaveSurfer(container, {
+            waveColor: "rgba(255, 49, 140, 0.5)",
+            progressColor: "rgba(255, 49, 140, 0.5)",
+            height: 70,
+          });
 
-          // Fetch the full song data including stems from MongoDB
-          const response = await get(`/api/song/${track.id}`);
-          const songData = response;
+          wavesurfers.current.bass = ws;
 
-          if (songData.stems && Object.keys(songData.stems).length > 0) {
-            // Create wavesurfers for each stem
-            const stemPromises = STEM_TYPES.map(async (stem) => {
-              const ws = createWaveSurfer(container, {
-                showTimeline: stem === "drums",
-                waveColor: getWaveformColor(stem),
-                progressColor: getProgressColor(stem),
-              });
+          // Create audio element
+          const audio = new Audio();
+          audio.crossOrigin = "anonymous";
+          audio.src = track.path;
+          audio.preload = "auto";
+          audioElements.bass = audio;
+          audioElements.drums = audio;
+          audioElements.melody = audio;
+          audioElements.vocals = audio;
 
-              wavesurfers.current[stem] = ws;
-
-              // Create audio element for the stem
-              const audio = new Audio();
-              audio.crossOrigin = "anonymous";
-              const stemUrl = `http://localhost:3000/uploads/${path.basename(songData.stems[stem])}`;
-              audio.src = stemUrl;
-              audio.preload = "auto";
-              audioElements[stem] = audio;
-
-              // Load audio into wavesurfer
-              ws.setMediaElement(audio);
-              return new Promise((resolve) => {
-                ws.once("ready", resolve);
-              });
+          // Load audio into wavesurfer
+          ws.setMediaElement(audio);
+          await new Promise((resolve, reject) => {
+            ws.once("ready", () => {
+              console.log("Wavesurfer ready");
+              resolve();
             });
+            ws.once("error", reject);
+            
+            // Add a timeout just in case
+            setTimeout(() => {
+              console.log("Wavesurfer timed out, continuing anyway");
+              resolve();
+            }, 5000);
+          });
 
-            await Promise.all(stemPromises);
+          console.log("Setting track state");
+          // Update track state with new audio elements and metadata
+          setTrackState((prev) => ({
+            ...prev,
+            name: track.name,
+            path: track.path,
+            key: track.key || "1A",
+            bpm: track.bpm || 120,
+            originalBpm: track.bpm || 120,
+            audioElements,
+            effectsEnabled: {
+              bass: true,
+              drums: true,
+              melody: true,
+              vocals: true,
+            },
+          }));
 
-            // Update track state with new audio elements and metadata
-            setTrackState((prev) => ({
-              ...prev,
-              name: track.name,
-              path: track.path,
-              key: track.key || "1A",
-              bpm: track.bpm || 120,
-              originalBpm: track.bpm || 120,
-              audioElements,
-              effectsEnabled: {
-                bass: true,
-                drums: true,
-                melody: true,
-                vocals: true,
-              },
-            }));
-
-            if (shouldAutoPlay) {
-              setPlaying((prev) => ({ ...prev, [deck]: true }));
-              if (turntable) turntable.classList.add("playing");
-            }
+          if (shouldAutoPlay) {
+            setPlaying((prev) => ({ ...prev, [deck]: true }));
+            if (turntable) turntable.classList.add("playing");
           }
         } catch (error) {
           console.error("Error loading user song:", error);

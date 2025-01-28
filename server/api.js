@@ -29,14 +29,12 @@ const socketManager = require("./server-socket");
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Determine if this is a stem or main audio file
-    const isStem = file.fieldname.startsWith('stem_');
-    const uploadPath = isStem 
-      ? path.join(__dirname, "../uploads/stems")
-      : path.join(__dirname, "../uploads");
+    const uploadPath = path.join(__dirname, "../uploads");
+    console.log("Upload path:", uploadPath);
     
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadPath)) {
+      console.log("Creating upload directory");
       fs.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
@@ -44,7 +42,9 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     // Generate unique filename
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const filename = uniqueSuffix + path.extname(file.originalname);
+    console.log("Generated filename:", filename);
+    cb(null, filename);
   },
 });
 
@@ -154,10 +154,13 @@ router.get("/whoami", (req, res) => {
 // song-related API endpoints
 router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, res) => {
   try {
+    console.log("Received song upload request");
     if (!req.file) {
+      console.log("No file uploaded");
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    console.log("File uploaded:", req.file);
     const song = new Song({
       creator_id: req.user._id,
       title: req.body.title || req.file.originalname,
@@ -165,64 +168,16 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       filePath: req.file.path,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      processed: false
+      processed: true
     });
 
+    console.log("Saving song to database:", song);
     await song.save();
-
-    // Start AudioShake stem separation process
-    try {
-      // Upload to AudioShake
-      const formData = new FormData();
-      formData.append('audio', fs.createReadStream(req.file.path));
-      
-      const uploadResponse = await fetch('https://api.audioshake.ai/v1/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
-        },
-        body: formData
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload to AudioShake');
-      }
-
-      const { track_id } = await uploadResponse.json();
-
-      // Start stem separation
-      const separationResponse = await fetch('https://api.audioshake.ai/v1/separate', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          track_id: track_id,
-          stems: ['vocals', 'drums', 'bass', 'other']
-        })
-      });
-
-      if (!separationResponse.ok) {
-        throw new Error('Failed to start stem separation');
-      }
-
-      const { job_id } = await separationResponse.json();
-
-      // Update song with AudioShake IDs
-      song.audioShakeTrackId = track_id;
-      song.audioShakeJobId = job_id;
-      await song.save();
-
-      res.json(song);
-    } catch (audioShakeError) {
-      console.error("Error with AudioShake processing:", audioShakeError);
-      // We still return the song object since it was saved
-      res.json(song);
-    }
-  } catch (err) {
-    console.error("Error uploading song:", err);
-    res.status(500).json({ error: "Error uploading song" });
+    console.log("Song saved successfully");
+    res.status(200).json(song);
+  } catch (error) {
+    console.error("Error uploading song:", error);
+    res.status(500).json({ error: "Failed to upload song" });
   }
 });
 

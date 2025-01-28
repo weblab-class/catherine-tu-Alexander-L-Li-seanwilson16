@@ -78,7 +78,11 @@ app.use(auth.populateCurrentUser);
 app.use("/api", api);
 
 // Serve uploaded files
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:5174");
+  res.header("Access-Control-Allow-Methods", "GET");
+  next();
+}, express.static(path.join(__dirname, "../uploads")));
 
 // load the compiled react files, which will serve /index.html and /bundle.js
 const reactPath = path.resolve(__dirname, "..", "client", "dist");
