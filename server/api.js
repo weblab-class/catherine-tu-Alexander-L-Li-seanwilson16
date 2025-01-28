@@ -365,14 +365,45 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
   }
 });
 
-router.get("/songs", auth.ensureLoggedIn, async (req, res) => {
-  try {
-    const songs = await Song.find({ creator_id: req.user._id }).sort({ uploadDate: -1 });
-    res.json(songs);
-  } catch (err) {
-    console.error("Error fetching songs:", err);
-    res.status(500).json({ error: "Error fetching songs" });
-  }
+router.get("/songs", (req, res) => {
+  Song.find({}).then((songs) => {
+    // Transform songs to include full paths for stems
+    const songsWithStems = songs.map(song => {
+      const songObj = song.toObject();
+      songObj.id = song._id.toString(); // Add id field
+      
+      // Initialize stems object if it doesn't exist
+      if (!songObj.stems) {
+        songObj.stems = {};
+      }
+
+      // Check for stem files in the stems directory
+      const stemTypes = ['bass', 'drums', 'vocals', 'other'];
+      const stemDir = path.join(__dirname, '../stems', song._id.toString());
+      
+      if (fs.existsSync(stemDir)) {
+        stemTypes.forEach(stemType => {
+          const displayType = stemType === 'other' ? 'melody' : stemType;
+          const stemFile = `${stemType}_stem.wav`;
+          const stemPath = path.join(stemDir, stemFile);
+          
+          if (fs.existsSync(stemPath)) {
+            console.log(`Found stem file: ${stemPath}`);
+            // Use relative URL for stems
+            songObj.stems[displayType] = `/stems/${song._id.toString()}/${stemFile}`;
+          } else {
+            console.log(`No stem file found at: ${stemPath}`);
+          }
+        });
+      } else {
+        console.log(`No stem directory found at: ${stemDir}`);
+      }
+
+      console.log(`Stems for song ${song._id}:`, songObj.stems);
+      return songObj;
+    });
+    res.send(songsWithStems);
+  });
 });
 
 router.get("/song/:id", auth.ensureLoggedIn, async (req, res) => {

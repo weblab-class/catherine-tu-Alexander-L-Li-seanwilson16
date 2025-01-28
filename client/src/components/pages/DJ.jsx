@@ -32,7 +32,7 @@ const AVAILABLE_TRACKS = [
   },
 ];
 
-const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
+const STEM_TYPES = ["bass", "drums", "vocals", "melody"];
 
 const stemColors = {
   bass: {
@@ -948,118 +948,91 @@ const DJ = () => {
     };
   }, [leftTrack.audioElements, rightTrack.audioElements]);
 
-  const handleTrackSelect = async (deck, track, shouldAutoPlay = false) => {
-    // Close the dropdown immediately when a track is selected
-    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
-
-    // If user is not logged in and trying to load a user song, show login overlay
-    if (track.isUserSong && !isLoggedIn) {
-      console.log("User must be logged in to load their songs");
-      return;
-    }
-
-    const audioElements = {};
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-    const otherDeck = deck === "left" ? "right" : "left";
-    const otherTrackState = deck === "left" ? rightTrack : leftTrack;
-
-    setPlaying((prev) => ({ ...prev, [deck]: false }));
-    const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
-    if (turntable) turntable.classList.remove("playing");
-
-    // Clean up existing resources
-    if (trackState.audioElements) {
-      Object.values(trackState.audioElements).forEach((audio) => {
-        audio.pause();
-        audio.currentTime = 0;
-      });
-    }
-
-    Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-      if (wavesurfer) {
-        wavesurfer.pause();
-        wavesurfer.seekTo(0);
-      }
-    });
-
-    setIsLoading((prev) => ({ ...prev, [deck]: true }));
-
+  const handleTrackSelect = async (track, deck) => {
+    console.log(`Loading track for ${deck} deck:`, track);
+    
     try {
+      const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+      const trackState = deck === "left" ? leftTrack : rightTrack;
+      const audioElements = {};
+
       if (track.isUserSong) {
-        // Handle user-uploaded song
-        const container = deck === "left" ? leftContainerRef.current : rightContainerRef.current;
-        console.log("Loading user song:", track);
-        console.log("Audio path:", track.path);
-
-        try {
-          // Create separate wavesurfers and audio elements for each stem
-          const stemPromises = STEM_TYPES.map(async (stem) => {
-            console.log(`Creating wavesurfer for ${stem}`);
-            const ws = createWaveSurfer(container, {
-              showTimeline: stem === "drums",
-              waveColor: stemColors[stem].waveColor,
-              progressColor: stemColors[stem].progressColor,
-              height: 70,
-            });
-
-            wavesurfers.current[stem] = ws;
-
-            // Create separate audio element for each stem
-            const audio = new Audio();
-            audio.crossOrigin = "anonymous";
-            audio.src = track.path;
-            audio.preload = "auto";
-            audioElements[stem] = audio;
-
-            // Load audio into wavesurfer
-            ws.setMediaElement(audio);
-            return new Promise((resolve, reject) => {
-              ws.once("ready", () => {
-                console.log(`Wavesurfer ready for ${stem}`);
-                resolve();
-              });
-              ws.once("error", reject);
-              
-              // Add a timeout just in case
-              setTimeout(() => {
-                console.log("Wavesurfer timed out, continuing anyway");
-                resolve();
-              }, 5000);
-            });
-          });
-
-          await Promise.all(stemPromises);
-          console.log("All wavesurfers loaded");
-
-          // Update track state with new audio elements and metadata
-          setTrackState((prev) => ({
-            ...prev,
-            name: track.name,
-            path: track.path,
-            key: track.key || "1A",
-            bpm: track.bpm || 120,
-            originalBpm: track.bpm || 120,
-            audioElements,
-            effectsEnabled: {
-              bass: true,
-              drums: true,
-              melody: true,
-              vocals: true,
-            },
-          }));
-
-          if (shouldAutoPlay) {
-            setPlaying((prev) => ({ ...prev, [deck]: true }));
-            if (turntable) turntable.classList.add("playing");
+        // Handle user-uploaded song with stems
+        const stemPromises = STEM_TYPES.map(async (stem) => {
+          console.log(`Creating wavesurfer for ${stem}`);
+          const ws = wavesurfers.current[stem];
+          if (!ws) {
+            console.error(`No wavesurfer found for ${stem}`);
+            return;
           }
-        } catch (error) {
-          console.error("Error loading user song:", error);
+
+          // For user songs, stems are in /stems/{songId}/{type}_stem.wav
+          // Map UI stem types to file stem types
+          const stemFileType = stem === 'melody' ? 'other' : stem;
+          const stemUrl = `${window.location.protocol}//${window.location.hostname}:3000/stems/${track.id}/${stemFileType}_stem.wav`;
+          console.log(`Loading ${stem} stem from:`, stemUrl);
+
+          // Create audio element for this stem
+          const audio = new Audio();
+          audio.crossOrigin = "anonymous";
+          audio.src = stemUrl;
+          audio.preload = "auto";
+          audio.preservesPitch = true;
+          
+          // Set initial volume and mute state
+          audio.volume = volume[deck];
+          audio.muted = !trackState.effectsEnabled?.[stem];
+          
+          audioElements[stem] = audio;
+
+          // Load the stem into wavesurfer
+          try {
+            await new Promise((resolve, reject) => {
+              const loadHandler = () => {
+                console.log(`${stem} audio loaded successfully`);
+                audio.removeEventListener('canplaythrough', loadHandler);
+                resolve();
+              };
+              const errorHandler = (error) => {
+                console.error(`Error loading ${stem} audio:`, error);
+                console.error(`Failed URL: ${audio.src}`);
+                audio.removeEventListener('error', errorHandler);
+                reject(error);
+              };
+              audio.addEventListener('canplaythrough', loadHandler);
+              audio.addEventListener('error', errorHandler);
+            });
+
+            await ws.load(audio);
+            console.log(`Successfully loaded ${stem} stem into wavesurfer`);
+          } catch (error) {
+            console.error(`Error loading ${stem} stem:`, error);
+            // Remove the failed audio element
+            delete audioElements[stem];
+          }
+        });
+
+        // Wait for all stems to load
+        await Promise.allSettled(stemPromises);
+        console.log('All stems loaded');
+
+        // Only proceed if we have at least one stem loaded
+        if (Object.keys(audioElements).length === 0) {
+          console.error('No stems were loaded successfully');
+          throw new Error('Failed to load any stems');
         }
+
+        // Update track state with loaded audio elements
+        const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+        setTrackState((prev) => ({
+          ...prev,
+          name: track.name,
+          bpm: track.bpm || prev.bpm,
+          audioElements,
+          effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {})
+        }));
       } else {
-        // Handle default track loading (no changes needed here)
-        // Find the track in AVAILABLE_TRACKS to get the correct BPM
+        // Handle default track (existing logic)
         const trackInfo = tracks.find((t) => t.path === track.path);
         if (!trackInfo) return;
 
@@ -1069,7 +1042,8 @@ const DJ = () => {
         // Load audio elements first
         for (const stem of STEM_TYPES) {
           const audio = new Audio();
-          audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stem}.mp3`;
+          const stemName = stem;
+          audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stemName}.mp3`;
           audio.volume = 1;
           audio.preservesPitch = true;
           audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
@@ -1084,21 +1058,16 @@ const DJ = () => {
             [...STEM_TYPES, "timeline"].map(async (stem) => {
               try {
                 const wavesurfer = wavesurfers.current[stem];
-                // Use bass stem for timeline wavesurfer
+                const stemName = stem;
                 const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${
-                  stem === "timeline" ? "bass" : stem
+                  stem === "timeline" ? "bass" : stemName
                 }.mp3`;
 
-                // Create a promise that resolves when the waveform is fully rendered
-                const loadPromise = new Promise((resolve, reject) => {
+                await new Promise((resolve, reject) => {
                   wavesurfer.load(audioPath);
-
-                  // Listen for the waveform ready event
                   wavesurfer.once("ready", () => {
-                    // Configure wavesurfer and its media element
                     wavesurfer.setVolume(0);
                     wavesurfer.setPlaybackRate(newRate);
-
                     const mediaElement = wavesurfer.getMediaElement();
                     if (mediaElement) {
                       mediaElement.preservesPitch = true;
@@ -1108,17 +1077,8 @@ const DJ = () => {
                     }
                     resolve();
                   });
-
                   wavesurfer.once("error", reject);
-                  
-                  // Add a timeout just in case
-                  setTimeout(() => {
-                    console.log("Wavesurfer timed out, continuing anyway");
-                    resolve();
-                  }, 5000);
                 });
-
-                await loadPromise;
               } catch (error) {
                 console.error(`Error loading waveform for ${stem}:`, error);
                 throw error;
@@ -1127,7 +1087,8 @@ const DJ = () => {
           );
         }
 
-        // Update track state with new info and audio elements
+        // Update track state
+        const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
         setTrackState((prev) => ({
           ...prev,
           ...trackInfo,
@@ -1135,21 +1096,19 @@ const DJ = () => {
           originalBpm: trackInfo.bpm,
           bpm: currentBPM,
         }));
-
-        // If sync is enabled, update this deck's BPM to match the other deck
-        if (syncEnabled && otherTrackState.name) {
-          handleBPMChange(deck, otherTrackState.bpm);
-        }
       }
 
-      // Only start playing if explicitly requested
-      if (shouldAutoPlay) {
-        handlePlayPause(deck);
-      }
     } catch (error) {
       console.error("Error loading track:", error);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, [deck]: false }));
+      // Reset track state on error
+      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+      setTrackState((prev) => ({
+        ...prev,
+        name: "",
+        audioElements: {},
+        effectsEnabled: {}
+      }));
+      throw error;
     }
   };
 
@@ -1159,18 +1118,22 @@ const DJ = () => {
       // Load left track (Chill Guy Remix)
       const leftTrackInfo = tracks.find((t) => t.path === "chill-guy-remix");
       if (leftTrackInfo) {
-        await handleTrackSelect("left", leftTrackInfo); 
+        await handleTrackSelect(leftTrackInfo, "left");
       }
 
       // Load right track (On & On)
       const rightTrackInfo = tracks.find((t) => t.path === "NCS_On&On");
       if (rightTrackInfo) {
-        await handleTrackSelect("right", rightTrackInfo); 
+        await handleTrackSelect(rightTrackInfo, "right");
       }
     };
 
     loadDefaultTracks();
   }, []); // Empty dependency array means this runs once on mount
+
+  const handleTrackSelectWrapper = (deck, track) => {
+    handleTrackSelect(track, deck);
+  };
 
   const handleImportSong = (deck) => {
     // Close the other deck's dropdown when opening this one
@@ -1179,10 +1142,6 @@ const DJ = () => {
       [deck]: !prev[deck],
       [otherDeck]: false,
     }));
-  };
-
-  const handleTrackSelectWrapper = (deck, track) => {
-    handleTrackSelect(deck, track, false);
   };
 
   return (

@@ -27,6 +27,7 @@ const express = require("express"); // backend framework for our node server.
 const session = require("express-session"); // library that stores info about each connected user
 const mongoose = require("mongoose"); // library to connect to MongoDB
 const path = require("path"); // provide utilities for working with file and directory paths
+const cors = require("cors");
 
 const api = require("./api");
 const auth = require("./auth");
@@ -77,15 +78,29 @@ app.use(auth.populateCurrentUser);
 // connect user-defined routes
 app.use("/api", api);
 
-// Set up serving of static files
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Set up cors middleware
+app.use(cors({ 
+  origin: ["http://localhost:5173", "http://localhost:5174"],
+  credentials: true 
+}));
 
-// Serve uploaded files
+// Set up middleware for uploads directory with CORS headers
 app.use("/uploads", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5174");
-  res.header("Access-Control-Allow-Methods", "GET");
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
+  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
   next();
 }, express.static(path.join(__dirname, "../uploads")));
+
+// Set up middleware for stems directory with CORS headers
+app.use("/stems", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
+  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
+  next();
+}, express.static(path.resolve(__dirname, "..", "stems")));
 
 // load the compiled react files, which will serve /index.html and /bundle.js
 const reactPath = path.resolve(__dirname, "..", "client", "dist");
