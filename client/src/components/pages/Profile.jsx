@@ -74,7 +74,7 @@ const Profile = () => {
         />
         <TimeOfDay name={user.name} />
         <div className="upload-library-container">
-          {/* <FileUpload onUploadSuccess={handleUploadSuccess} /> */}
+          <FileUpload onUploadSuccess={handleUploadSuccess} />
           <div className="song-library-wrapper">
             <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} />
           </div>
