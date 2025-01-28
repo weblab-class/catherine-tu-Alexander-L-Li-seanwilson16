@@ -8,6 +8,13 @@
 */
 
 const express = require("express");
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
+const FormData = require('form-data');
+const fetch = require('node-fetch');
+
+const exec = require('child_process').exec;
 
 // import models so we can interact with the database
 const User = require("./models/user");
@@ -20,13 +27,14 @@ const auth = require("./auth");
 const socketManager = require("./server-socket");
 
 // Configure multer for handling file uploads
-const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "../uploads");
+    // Determine if this is a stem or main audio file
+    const isStem = file.fieldname.startsWith('stem_');
+    const uploadPath = isStem 
+      ? path.join(__dirname, "../uploads/stems")
+      : path.join(__dirname, "../uploads");
+    
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
@@ -43,7 +51,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["audio/mpeg", "audio/wav"];
+    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -57,9 +65,6 @@ const upload = multer({
 
 // api endpoints: all these paths will be prefixed with "/api/"
 const router = express.Router();
-
-// Serve static files from the uploads directory
-router.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
@@ -160,10 +165,61 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       filePath: req.file.path,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
+      processed: false
     });
 
     await song.save();
-    res.json(song);
+
+    // Start AudioShake stem separation process
+    try {
+      // Upload to AudioShake
+      const formData = new FormData();
+      formData.append('audio', fs.createReadStream(req.file.path));
+      
+      const uploadResponse = await fetch('https://api.audioshake.ai/v1/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+        },
+        body: formData
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload to AudioShake');
+      }
+
+      const { track_id } = await uploadResponse.json();
+
+      // Start stem separation
+      const separationResponse = await fetch('https://api.audioshake.ai/v1/separate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          track_id: track_id,
+          stems: ['vocals', 'drums', 'bass', 'other']
+        })
+      });
+
+      if (!separationResponse.ok) {
+        throw new Error('Failed to start stem separation');
+      }
+
+      const { job_id } = await separationResponse.json();
+
+      // Update song with AudioShake IDs
+      song.audioShakeTrackId = track_id;
+      song.audioShakeJobId = job_id;
+      await song.save();
+
+      res.json(song);
+    } catch (audioShakeError) {
+      console.error("Error with AudioShake processing:", audioShakeError);
+      // We still return the song object since it was saved
+      res.json(song);
+    }
   } catch (err) {
     console.error("Error uploading song:", err);
     res.status(500).json({ error: "Error uploading song" });
@@ -190,6 +246,48 @@ router.get("/song/:id", auth.ensureLoggedIn, async (req, res) => {
   } catch (err) {
     console.error("Error fetching song:", err);
     res.status(500).json({ error: "Error fetching song" });
+  }
+});
+
+router.get("/song/:id/stems/status", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    const song = await Song.findOne({ _id: req.params.id, creator_id: req.user._id });
+    if (!song) {
+      return res.status(404).json({ error: "Song not found" });
+    }
+
+    if (!song.audioShakeJobId) {
+      return res.json({ status: 'not_started' });
+    }
+
+    const statusResponse = await fetch(`https://api.audioshake.ai/v1/status/${song.audioShakeJobId}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+      }
+    });
+
+    if (!statusResponse.ok) {
+      throw new Error('Failed to check stem separation status');
+    }
+
+    const status = await statusResponse.json();
+
+    // If complete, update song with stem URLs
+    if (status.status === 'complete') {
+      song.stems = {
+        vocals: status.stems.vocals,
+        drums: status.stems.drums,
+        bass: status.stems.bass,
+        other: status.stems.other
+      };
+      song.processed = true;
+      await song.save();
+    }
+
+    res.json(status);
+  } catch (err) {
+    console.error("Error checking stem status:", err);
+    res.status(500).json({ error: "Error checking stem status" });
   }
 });
 

@@ -25,21 +25,27 @@ const SongSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  stems: {
+    type: Map,
+    of: String,
+    default: {},
+    vocals: String,
+    drums: String,
+    bass: String,
+    other: String
+  },
+  processed: {
+    type: Boolean,
+    default: false,
+  },
+  audioShakeTrackId: String,
+  audioShakeJobId: String,
   uploadDate: {
     type: Date,
     default: Date.now,
   },
   // Add any additional metadata fields you want to store
   duration: Number,
-  processed: {
-    type: Boolean,
-    default: false,
-  },
-  stems: {
-    type: Map,
-    of: String,
-    default: {},
-  },
 });
 
 module.exports = mongoose.model("song", SongSchema);

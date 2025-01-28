@@ -5,33 +5,53 @@ import musicPlusIcon from "../../../public/assets/music-plus.svg";
 import "./FileUpload.css";
 
 const FileUpload = ({ onUploadSuccess }) => {
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    audio: null,
+    stem_bass: null,
+    stem_drums: null,
+    stem_melody: null,
+    stem_vocals: null,
+  });
   const [fileError, setFileError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
-  const acceptedTypes = ["audio/mpeg", "audio/wav", "video/mp4", "audio/mp3"];
+  const acceptedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
 
-  const handleFileUpload = async (file) => {
+  const handleFileUpload = async (file, type) => {
     if (!file) {
-      setFileError("");
-      setUploadedFile(null);
+      setUploadedFiles(prev => ({ ...prev, [type]: null }));
       return;
     }
 
     if (!acceptedTypes.includes(file.type)) {
-      setFileError("please upload an MP3 or WAV file");
-      setUploadedFile(null);
+      setFileError(`Please upload an MP3 or WAV file for ${type}`);
+      setUploadedFiles(prev => ({ ...prev, [type]: null }));
       return;
     }
 
     setFileError("");
-    setUploadedFile(file);
+    setUploadedFiles(prev => ({ ...prev, [type]: file }));
+  };
+
+  const handleSubmit = async () => {
+    if (!uploadedFiles.audio) {
+      setFileError("Please upload a main audio file");
+      return;
+    }
+
     setIsUploading(true);
 
     try {
       const formData = new FormData();
-      formData.append("audio", file);
-      formData.append("title", file.name); // You can add a title input field later
+      formData.append("audio", uploadedFiles.audio);
+      formData.append("title", uploadedFiles.audio.name);
+
+      // Append stems if they exist
+      Object.entries(uploadedFiles).forEach(([type, file]) => {
+        if (type !== 'audio' && file) {
+          formData.append(type, file);
+        }
+      });
 
       const response = await fetch("/api/song", {
         method: "POST",
@@ -46,7 +66,13 @@ const FileUpload = ({ onUploadSuccess }) => {
       console.log("Upload successful:", result);
 
       // Clear the upload state
-      setUploadedFile(null);
+      setUploadedFiles({
+        audio: null,
+        stem_bass: null,
+        stem_drums: null,
+        stem_melody: null,
+        stem_vocals: null,
+      });
       setFileError("");
 
       // Notify parent component of successful upload
@@ -54,8 +80,8 @@ const FileUpload = ({ onUploadSuccess }) => {
         onUploadSuccess(result);
       }
     } catch (error) {
-      console.error("rror uploading file:", error);
-      setFileError("error uploading file");
+      console.error("Error uploading files:", error);
+      setFileError("Error uploading files");
     } finally {
       setIsUploading(false);
     }
@@ -65,17 +91,24 @@ const FileUpload = ({ onUploadSuccess }) => {
     <div className="file-upload-container">
       <FileInput
         className="file-input"
-        label="upload your own song"
-        description="acceptable types: .mp4, .mp3, .wav, .mpeg"
-        placeholder="upload song here"
+        label="upload your song"
+        description="acceptable types: .mp3, .wav"
+        placeholder="upload main song file"
         rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
         accept={acceptedTypes.join(",")}
-        onChange={handleFileUpload}
+        onChange={(file) => handleFileUpload(file, 'audio')}
         error={fileError}
         disabled={isUploading}
-        value={uploadedFile}
+        value={uploadedFiles.audio}
       />
-      {isUploading && <div className="upload-status">uploading...</div>}
+
+      <button 
+        className="submit-button" 
+        onClick={handleSubmit}
+        disabled={isUploading || !uploadedFiles.audio}
+      >
+        {isUploading ? "uploading..." : "upload"}
+      </button>
     </div>
   );
 };

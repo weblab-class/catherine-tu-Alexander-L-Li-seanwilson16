@@ -89,7 +89,10 @@ const DJ = () => {
 
   // Fetch user songs function
   const fetchUserSongs = useCallback(async () => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) {
+      console.log("User not logged in, skipping user songs fetch");
+      return;
+    }
     
     try {
       const response = await get("/api/songs");
@@ -98,26 +101,31 @@ const DJ = () => {
         id: song._id,
         name: song.title,
         title: song.title,
-        path: `/api/uploads/${path.basename(song.filePath)}`,
+        path: `http://localhost:3000/uploads/${path.basename(song.filePath)}`,
         stems: song.stems ? Object.fromEntries(
           Object.entries(song.stems).map(([stem, stemPath]) => [
             stem,
-            `/api/uploads/${path.basename(stemPath)}`
+            `http://localhost:3000/uploads/${path.basename(stemPath)}`
           ])
         ) : {},
         bpm: song.bpm || 120,
-        key: song.key || "Unknown",
+        key: song.key || "1A",
       }));
-      setTracks((prevTracks) => [...userSongs, ...AVAILABLE_TRACKS]);
-    } catch (error) {
-      console.error("Error fetching user songs:", error);
+      setTracks((prevTracks) => [...AVAILABLE_TRACKS, ...userSongs]);
+    } catch (err) {
+      console.error("Error fetching user songs:", err);
     }
   }, [isLoggedIn]);
 
-  // Fetch user's songs when component mounts
+  // Fetch user songs when component mounts or login state changes
   useEffect(() => {
+    // Reset tracks to default tracks when logged out
+    if (!isLoggedIn) {
+      setTracks(AVAILABLE_TRACKS);
+    }
+    // Fetch user songs when logged in
     fetchUserSongs();
-  }, [fetchUserSongs]);
+  }, [isLoggedIn, fetchUserSongs]);
 
   const [leftTrack, setLeftTrack] = useState({
     name: "",
@@ -942,6 +950,12 @@ const DJ = () => {
     // Close the dropdown immediately when a track is selected
     setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
 
+    // If user is not logged in and trying to load a user song, show login overlay
+    if (track.isUserSong && !isLoggedIn) {
+      console.log("User must be logged in to load their songs");
+      return;
+    }
+
     const audioElements = {};
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -976,6 +990,19 @@ const DJ = () => {
         const container = deck === "left" ? leftContainerRef.current : rightContainerRef.current;
 
         try {
+          // Check stem processing status
+          const statusResponse = await fetch(`/api/song/${track.id}/stems/status`);
+          if (!statusResponse.ok) {
+            throw new Error('Failed to check stem status');
+          }
+          const status = await statusResponse.json();
+          
+          if (status.status !== 'complete') {
+            console.log("Stems are still processing. Please wait...");
+            setIsLoading((prev) => ({ ...prev, [deck]: false }));
+            return;
+          }
+
           // Fetch the full song data including stems from MongoDB
           const response = await get(`/api/song/${track.id}`);
           const songData = response;
@@ -985,44 +1012,35 @@ const DJ = () => {
             const stemPromises = STEM_TYPES.map(async (stem) => {
               const ws = createWaveSurfer(container, {
                 showTimeline: stem === "drums",
-                waveColor: deck === "left" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
-                progressColor: deck === "left" ? "#ff0000" : "#0000ff",
-                hideWaveform: stem !== "drums",
+                waveColor: getWaveformColor(stem),
+                progressColor: getProgressColor(stem),
               });
 
-              // Get stem path from MongoDB data and convert to URL
-              const stemPath = `/api/uploads/${path.basename(songData.stems[stem])}`;
-              if (!stemPath) {
-                console.warn(`No stem found for ${stem}`);
-                return null;
-              }
+              wavesurfers.current[stem] = ws;
 
               // Create audio element for the stem
               const audio = new Audio();
-              audio.src = stemPath;
-              audio.volume = 1;
-              audio.preservesPitch = true;
-              audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+              audio.crossOrigin = "anonymous";
+              const stemUrl = `http://localhost:3000/uploads/${path.basename(songData.stems[stem])}`;
+              audio.src = stemUrl;
+              audio.preload = "auto";
               audioElements[stem] = audio;
-              await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
 
-              // Load waveform
-              await ws.load(stemPath);
-              return { stem, ws };
+              // Load audio into wavesurfer
+              ws.setMediaElement(audio);
+              return new Promise((resolve) => {
+                ws.once("ready", resolve);
+              });
             });
 
-            // Wait for all stems to load
-            const loadedStems = (await Promise.all(stemPromises)).filter(Boolean);
-            loadedStems.forEach(({ stem, ws }) => {
-              wavesurfers.current[stem] = ws;
-            });
+            await Promise.all(stemPromises);
 
-            // Update track state with stems
+            // Update track state with new audio elements and metadata
             setTrackState((prev) => ({
               ...prev,
-              name: track.title,
+              name: track.name,
               path: track.path,
-              key: track.key || "Unknown",
+              key: track.key || "1A",
               bpm: track.bpm || 120,
               originalBpm: track.bpm || 120,
               audioElements,
@@ -1033,49 +1051,17 @@ const DJ = () => {
                 vocals: true,
               },
             }));
-          } else {
-            // Fallback to single track if no stems
-            const ws = createWaveSurfer(container, {
-              showTimeline: true,
-              waveColor: deck === "left" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
-              progressColor: deck === "left" ? "#ff0000" : "#0000ff",
-            });
 
-            // Convert file path to URL
-            const audioPath = `/api/uploads/${path.basename(track.path)}`;
-            
-            const audio = new Audio();
-            audio.src = audioPath;
-            audio.volume = 1;
-            audio.preservesPitch = true;
-            await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-            audioElements.main = audio;
-
-            await ws.load(audioPath);
-            wavesurfers.current.main = ws;
-
-            setTrackState((prev) => ({
-              ...prev,
-              name: track.title,
-              path: audioPath,
-              key: track.key || "Unknown",
-              bpm: track.bpm || 120,
-              originalBpm: track.bpm || 120,
-              audioElements,
-              effectsEnabled: {
-                bass: true,
-                drums: true,
-                melody: true,
-                vocals: true,
-              },
-            }));
+            if (shouldAutoPlay) {
+              setPlaying((prev) => ({ ...prev, [deck]: true }));
+              if (turntable) turntable.classList.add("playing");
+            }
           }
         } catch (error) {
           console.error("Error loading user song:", error);
-          throw error;
         }
       } else {
-        // Handle default tracks with stems
+        // Handle default track loading (no changes needed here)
         // Find the track in AVAILABLE_TRACKS to get the correct BPM
         const trackInfo = tracks.find((t) => t.path === track.path);
         if (!trackInfo) return;
