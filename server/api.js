@@ -58,6 +58,9 @@ const upload = multer({
 // api endpoints: all these paths will be prefixed with "/api/"
 const router = express.Router();
 
+// Serve static files from the uploads directory
+router.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
 router.get("/whoami", (req, res) => {

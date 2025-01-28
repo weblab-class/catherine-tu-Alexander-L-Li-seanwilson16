@@ -6,6 +6,7 @@ import "./DJ.css";
 import { get } from "../../utilities";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import LoginOverlay from "../modules/LoginOverlay";
+import path from 'path-browserify';
 
 const AVAILABLE_TRACKS = [
   {
@@ -97,8 +98,13 @@ const DJ = () => {
         id: song._id,
         name: song.title,
         title: song.title,
-        path: song.filePath,
-        stems: song.stems || {}, // Include stems if available
+        path: `/api/uploads/${path.basename(song.filePath)}`,
+        stems: song.stems ? Object.fromEntries(
+          Object.entries(song.stems).map(([stem, stemPath]) => [
+            stem,
+            `/api/uploads/${path.basename(stemPath)}`
+          ])
+        ) : {},
         bpm: song.bpm || 120,
         key: song.key || "Unknown",
       }));
@@ -966,108 +972,112 @@ const DJ = () => {
 
     try {
       if (track.isUserSong) {
-        // Handle user-uploaded song with stems
+        // Handle user-uploaded song
         const container = deck === "left" ? leftContainerRef.current : rightContainerRef.current;
 
-        if (track.stems && Object.keys(track.stems).length > 0) {
-          // Handle stems similar to default tracks
-          for (const stem of STEM_TYPES) {
+        try {
+          // Fetch the full song data including stems from MongoDB
+          const response = await get(`/api/song/${track.id}`);
+          const songData = response;
+
+          if (songData.stems && Object.keys(songData.stems).length > 0) {
+            // Create wavesurfers for each stem
+            const stemPromises = STEM_TYPES.map(async (stem) => {
+              const ws = createWaveSurfer(container, {
+                showTimeline: stem === "drums",
+                waveColor: deck === "left" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
+                progressColor: deck === "left" ? "#ff0000" : "#0000ff",
+                hideWaveform: stem !== "drums",
+              });
+
+              // Get stem path from MongoDB data and convert to URL
+              const stemPath = `/api/uploads/${path.basename(songData.stems[stem])}`;
+              if (!stemPath) {
+                console.warn(`No stem found for ${stem}`);
+                return null;
+              }
+
+              // Create audio element for the stem
+              const audio = new Audio();
+              audio.src = stemPath;
+              audio.volume = 1;
+              audio.preservesPitch = true;
+              audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+              audioElements[stem] = audio;
+              await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
+
+              // Load waveform
+              await ws.load(stemPath);
+              return { stem, ws };
+            });
+
+            // Wait for all stems to load
+            const loadedStems = (await Promise.all(stemPromises)).filter(Boolean);
+            loadedStems.forEach(({ stem, ws }) => {
+              wavesurfers.current[stem] = ws;
+            });
+
+            // Update track state with stems
+            setTrackState((prev) => ({
+              ...prev,
+              name: track.title,
+              path: track.path,
+              key: track.key || "Unknown",
+              bpm: track.bpm || 120,
+              originalBpm: track.bpm || 120,
+              audioElements,
+              effectsEnabled: {
+                bass: true,
+                drums: true,
+                melody: true,
+                vocals: true,
+              },
+            }));
+          } else {
+            // Fallback to single track if no stems
+            const ws = createWaveSurfer(container, {
+              showTimeline: true,
+              waveColor: deck === "left" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
+              progressColor: deck === "left" ? "#ff0000" : "#0000ff",
+            });
+
+            // Convert file path to URL
+            const audioPath = `/api/uploads/${path.basename(track.path)}`;
+            
             const audio = new Audio();
-            audio.src = track.stems[stem]; // Use the stem URL from MongoDB
+            audio.src = audioPath;
             audio.volume = 1;
             audio.preservesPitch = true;
-            audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-            audio.playbackRate = 1; // Start with default playback rate
-            audioElements[stem] = audio;
             await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
+            audioElements.main = audio;
+
+            await ws.load(audioPath);
+            wavesurfers.current.main = ws;
+
+            setTrackState((prev) => ({
+              ...prev,
+              name: track.title,
+              path: audioPath,
+              key: track.key || "Unknown",
+              bpm: track.bpm || 120,
+              originalBpm: track.bpm || 120,
+              audioElements,
+              effectsEnabled: {
+                bass: true,
+                drums: true,
+                melody: true,
+                vocals: true,
+              },
+            }));
           }
-
-          // Load waveforms for stems
-          if (Object.keys(wavesurfers.current).length > 0) {
-            await Promise.all(
-              [...STEM_TYPES, "timeline"].map(async (stem) => {
-                try {
-                  const wavesurfer = wavesurfers.current[stem];
-                  const audioPath = track.stems[stem === "timeline" ? "bass" : stem];
-
-                  const loadPromise = new Promise((resolve, reject) => {
-                    wavesurfer.load(audioPath);
-                    wavesurfer.once("ready", () => {
-                      wavesurfer.setVolume(0);
-                      const mediaElement = wavesurfer.getMediaElement();
-                      if (mediaElement) {
-                        mediaElement.preservesPitch = true;
-                        mediaElement.volume = 0;
-                        mediaElement.muted = true;
-                      }
-                      resolve();
-                    });
-                    wavesurfer.once("error", reject);
-                  });
-
-                  await loadPromise;
-                } catch (error) {
-                  console.error(`Error loading waveform for ${stem}:`, error);
-                  throw error;
-                }
-              })
-            );
-          }
-
-          // Update track state
-          setTrackState((prev) => ({
-            ...prev,
-            name: track.title,
-            path: track.filePath,
-            key: track.key || "Unknown",
-            bpm: track.bpm || 120,
-            originalBpm: track.bpm || 120,
-            audioElements,
-            effectsEnabled: {
-              bass: true,
-              drums: true,
-              melody: true,
-              vocals: true,
-            },
-          }));
-        } else {
-          // Fallback to original single-track handling if no stems
-          const ws = createWaveSurfer(container, {
-            showTimeline: true,
-            waveColor: deck === "left" ? "rgba(255, 0, 0, 0.5)" : "rgba(0, 0, 255, 0.5)",
-            progressColor: deck === "left" ? "#ff0000" : "#0000ff",
-          });
-
-          const audio = new Audio();
-          audio.src = track.path;
-          audio.volume = 1;
-          audio.preservesPitch = true;
-          await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-          audioElements.main = audio;
-
-          await ws.load(track.path);
-          wavesurfers.current.main = ws;
-
-          setTrackState((prev) => ({
-            ...prev,
-            name: track.title,
-            path: track.path,
-            key: track.key || "Unknown",
-            bpm: track.bpm || 120,
-            originalBpm: track.bpm || 120,
-            audioElements,
-            effectsEnabled: {
-              bass: true,
-              drums: true,
-              melody: true,
-              vocals: true,
-            },
-          }));
+        } catch (error) {
+          console.error("Error loading user song:", error);
+          throw error;
         }
       } else {
         // Handle default tracks with stems
         // Find the track in AVAILABLE_TRACKS to get the correct BPM
-        const trackInfo = AVAILABLE_TRACKS.find((t) => t.path === track.path);
+        const trackInfo = tracks.find((t) => t.path === track.path);
         if (!trackInfo) return;
 
         const currentBPM = trackState.bpm || trackInfo.bpm;
@@ -1466,6 +1476,41 @@ const DJ = () => {
               </div>
 
               <div className="deck-row right-deck-row">
+                <div className="playback-section">
+                  <div className="playback-controls">
+                    <button
+                      className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
+                      }`}
+                      onMouseDown={() => handleCue("right")}
+                      onMouseUp={() => handleCueEnd("right")}
+                      onMouseLeave={() => handleCueEnd("right")}
+                    >
+                      <span className="cue-symbol">CUE</span>
+                      <span className="playback-text">(Y)</span>
+                    </button>
+                    <button
+                      className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
+                      }`}
+                      onClick={() => handlePlayPause("right")}
+                      disabled={!rightTrack.name || isLoading.right}
+                    >
+                      {playing.right ? (
+                        <span className="pause-symbol">
+                          <span>❚❚</span>
+                          <span className="playback-text">(H)</span>
+                        </span>
+                      ) : (
+                        <span className="play-symbol">
+                          <span>▶</span>
+                          <span className="playback-text">(H)</span>
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="effect-buttons">
                   {STEM_TYPES.map((effect, index) => {
                     const hotkey = {
@@ -1490,41 +1535,6 @@ const DJ = () => {
                       </div>
                     );
                   })}
-                </div>
-
-                <div className="playback-section">
-                  <div className="playback-controls">
-                    <button
-                      className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
-                        !rightTrack.name || isLoading.right ? "disabled" : ""
-                      }`}
-                      onMouseDown={() => handleCue("right")}
-                      onMouseUp={() => handleCueEnd("right")}
-                      onMouseLeave={() => handleCueEnd("right")}
-                    >
-                      <span className="cue-symbol">CUE</span>
-                      <span className="playback-text">(Y)</span>
-                    </button>
-                    <button
-                      className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
-                        !rightTrack.name || isLoading.right ? "disabled" : ""
-                      }`}
-                      onClick={() => handlePlayPause("right")}
-                      disabled={!rightTrack.name || isLoading.right}
-                    >
-                      {playing.right ? (
-                        <span className="pause-symbol">
-                          <span className="playback-text">❚❚</span>
-                          <span className="playback-text">(H)</span>
-                        </span>
-                      ) : (
-                        <span className="play-symbol">
-                          <span>▶</span>
-                          <span className="playback-text">(H)</span>
-                        </span>
-                      )}
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
