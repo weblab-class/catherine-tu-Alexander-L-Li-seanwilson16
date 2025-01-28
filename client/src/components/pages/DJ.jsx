@@ -34,6 +34,25 @@ const AVAILABLE_TRACKS = [
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
+const stemColors = {
+  bass: {
+    waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
+    progressColor: "rgba(255, 49, 140, 0.8)",
+  },
+  drums: {
+    waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
+    progressColor: "rgba(56, 255, 130, 0.8)",
+  },
+  melody: {
+    waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
+    progressColor: "rgba(255, 247, 32, 0.8)",
+  },
+  vocals: {
+    waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
+    progressColor: "rgba(70, 237, 255, 0.8)",
+  },
+};
+
 const createWaveSurfer = (container, options = {}) => {
   const timeline = TimelinePlugin.create({
     height: 20,
@@ -264,48 +283,55 @@ const DJ = () => {
 
     setPlaying((prev) => {
       const newPlaying = { ...prev, [deck]: !prev[deck] };
-      console.log("New playing state:", newPlaying);
 
       // Get all audio elements for this deck
       const audioElements = trackState.audioElements;
       console.log("Audio elements:", audioElements);
 
       if (newPlaying[deck]) {
-        // Play all enabled stems
+        // Get current position from the first available wavesurfer
+        const currentTime = Object.values(wavesurfers.current)[0]?.getCurrentTime() || 0;
+
+        // Play all enabled stems and sync them to the same position
         Object.entries(audioElements).forEach(([stem, audio]) => {
           if (trackState.effectsEnabled[stem]) {
             console.log(`Playing ${stem}`);
+            audio.currentTime = currentTime;
             audio.play().catch(err => console.error(`Error playing ${stem}:`, err));
           }
         });
 
-        // Start wavesurfer
-        Object.values(wavesurfers.current).forEach(ws => {
-          if (ws) {
+        // Start all wavesurfers at the same position
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          if (wavesurfer) {
             console.log("Starting wavesurfer");
-            ws.play();
+            wavesurfer.setTime(currentTime);
+            wavesurfer.play();
           }
         });
 
-        // Add playing class to turntable
         const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
         if (turntable) turntable.classList.add("playing");
       } else {
-        // Pause all stems
+        // Get current position before pausing
+        const currentTime = Object.values(wavesurfers.current)[0]?.getCurrentTime() || 0;
+
+        // Pause all stems and sync their positions
         Object.entries(audioElements).forEach(([stem, audio]) => {
           console.log(`Pausing ${stem}`);
           audio.pause();
+          audio.currentTime = currentTime;
         });
 
-        // Pause wavesurfer
-        Object.values(wavesurfers.current).forEach(ws => {
-          if (ws) {
+        // Pause all wavesurfers and sync their positions
+        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+          if (wavesurfer) {
             console.log("Pausing wavesurfer");
-            ws.pause();
+            wavesurfer.pause();
+            wavesurfer.setTime(currentTime);
           }
         });
 
-        // Remove playing class from turntable
         const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
         if (turntable) turntable.classList.remove("playing");
       }
@@ -968,43 +994,45 @@ const DJ = () => {
         console.log("Audio path:", track.path);
 
         try {
-          // Create a single wavesurfer instance for now
-          console.log("Creating wavesurfer");
-          const ws = createWaveSurfer(container, {
-            waveColor: "rgba(255, 49, 140, 0.5)",
-            progressColor: "rgba(255, 49, 140, 0.5)",
-            height: 70,
-          });
-
-          wavesurfers.current.bass = ws;
-
-          // Create audio element
-          const audio = new Audio();
-          audio.crossOrigin = "anonymous";
-          audio.src = track.path;
-          audio.preload = "auto";
-          audioElements.bass = audio;
-          audioElements.drums = audio;
-          audioElements.melody = audio;
-          audioElements.vocals = audio;
-
-          // Load audio into wavesurfer
-          ws.setMediaElement(audio);
-          await new Promise((resolve, reject) => {
-            ws.once("ready", () => {
-              console.log("Wavesurfer ready");
-              resolve();
+          // Create separate wavesurfers and audio elements for each stem
+          const stemPromises = STEM_TYPES.map(async (stem) => {
+            console.log(`Creating wavesurfer for ${stem}`);
+            const ws = createWaveSurfer(container, {
+              showTimeline: stem === "drums",
+              waveColor: stemColors[stem].waveColor,
+              progressColor: stemColors[stem].progressColor,
+              height: 70,
             });
-            ws.once("error", reject);
-            
-            // Add a timeout just in case
-            setTimeout(() => {
-              console.log("Wavesurfer timed out, continuing anyway");
-              resolve();
-            }, 5000);
+
+            wavesurfers.current[stem] = ws;
+
+            // Create separate audio element for each stem
+            const audio = new Audio();
+            audio.crossOrigin = "anonymous";
+            audio.src = track.path;
+            audio.preload = "auto";
+            audioElements[stem] = audio;
+
+            // Load audio into wavesurfer
+            ws.setMediaElement(audio);
+            return new Promise((resolve, reject) => {
+              ws.once("ready", () => {
+                console.log(`Wavesurfer ready for ${stem}`);
+                resolve();
+              });
+              ws.once("error", reject);
+              
+              // Add a timeout just in case
+              setTimeout(() => {
+                console.log("Wavesurfer timed out, continuing anyway");
+                resolve();
+              }, 5000);
+            });
           });
 
-          console.log("Setting track state");
+          await Promise.all(stemPromises);
+          console.log("All wavesurfers loaded");
+
           // Update track state with new audio elements and metadata
           setTrackState((prev) => ({
             ...prev,
@@ -1082,6 +1110,12 @@ const DJ = () => {
                   });
 
                   wavesurfer.once("error", reject);
+                  
+                  // Add a timeout just in case
+                  setTimeout(() => {
+                    console.log("Wavesurfer timed out, continuing anyway");
+                    resolve();
+                  }, 5000);
                 });
 
                 await loadPromise;
@@ -1147,8 +1181,8 @@ const DJ = () => {
     }));
   };
 
-  const handleTrackSelectWrapper = async (deck, track) => {
-    await handleTrackSelect(deck, track, true);
+  const handleTrackSelectWrapper = (deck, track) => {
+    handleTrackSelect(deck, track, false);
   };
 
   return (
