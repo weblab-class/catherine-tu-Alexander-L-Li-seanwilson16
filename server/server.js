@@ -77,6 +77,9 @@ app.use(auth.populateCurrentUser);
 // connect user-defined routes
 app.use("/api", api);
 
+// Set up serving of static files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Serve uploaded files
 app.use("/uploads", (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:5174");
