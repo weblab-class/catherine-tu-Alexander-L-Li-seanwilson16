@@ -12,9 +12,11 @@ const auth = require("./auth");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const FormData = require("form-data");
-const fetch = require("node-fetch");
 const axios = require("axios");
+
+// Import our stem processing modules
+const { createStems, checkStemStatus } = require("./audioshake-stem-steps");
+const { downloadStems } = require("./download-stem-steps");
 
 const exec = require('child_process').exec;
 
@@ -25,36 +27,37 @@ const Song = require("./models/song");
 // import socket manager
 const socketManager = require("./server-socket");
 
+// Ensure upload directories exist
+const uploadsDir = path.join(__dirname, "../uploads");
+const stemsDir = path.join(__dirname, "../stems");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+if (!fs.existsSync(stemsDir)) {
+  fs.mkdirSync(stemsDir, { recursive: true });
+}
+
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, "../uploads");
-    console.log("Upload path:", uploadPath);
-    
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadPath)) {
-      console.log("Creating upload directory");
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
+  destination(req, file, cb) {
+    cb(null, uploadsDir);
   },
-  filename: function (req, file, cb) {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const filename = uniqueSuffix + path.extname(file.originalname);
-    console.log("Generated filename:", filename);
-    cb(null, filename);
-  },
+  filename(req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
 });
 
 const upload = multer({
   storage: storage,
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
+  fileFilter(req, file, cb) {
+    const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only MP3 and WAV files are allowed."));
+      cb(new Error('Invalid file type. Only MP3 and WAV files are allowed.'));
     }
   },
   limits: {
@@ -157,6 +160,13 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       return res.status(400).json({ error: "No file uploaded" });
     }
 
+    console.log("File uploaded:", {
+      filename: req.file.filename,
+      path: req.file.path,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
+
     const song = new Song({
       creator_id: req.user._id,
       title: req.body.title || req.file.originalname,
@@ -164,91 +174,194 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       filePath: req.file.path,
       fileType: req.file.mimetype,
       fileSize: req.file.size,
-      processed: false
+      processed: false,
+      stemsStatus: 'pending'
     });
 
     await song.save();
+    console.log("Song saved to database:", song._id);
 
-    // Create stems directory
-    const stemsDir = path.join(__dirname, "../uploads/stems", song._id.toString());
-    if (!fs.existsSync(stemsDir)) {
-      fs.mkdirSync(stemsDir, { recursive: true });
+    // Create stems directory for this song using song ID
+    const songStemsDir = path.join(stemsDir, song._id.toString());
+    if (!fs.existsSync(songStemsDir)) {
+      fs.mkdirSync(songStemsDir, { recursive: true });
     }
 
-    try {
-      // Make request to AudioShake API
-      const response = await axios.post('https://groovy.audioshake.ai/v1/split', {
-        audio_url: `http://localhost:5174/uploads/${req.file.filename}`,
-        stems: ['vocals', 'drums', 'bass', 'other']
-      }, {
-        headers: {
-          'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
-        }
+    // Start the stem separation process immediately
+    console.log("Starting stem separation process...");
+    let assetId, jobIds;  // Declare these at a higher scope
+    createStems(song.filePath, song._id)
+      .then((result) => {
+        console.log("Stems creation started:", result);
+        assetId = result.assetId;  // Store in outer scope
+        jobIds = result.jobIds;    // Store in outer scope
+        song.audioshakeAssetId = assetId;
+        song.audioshakeJobIds = jobIds;
+        song.stemsStatus = 'processing';
+        return song.save();
+      })
+      .then(() => {
+        // Start polling for completion
+        const pollInterval = setInterval(async () => {
+          try {
+            console.log("Checking stem status...");
+            const jobStatuses = await Promise.all(jobIds.map(async (jobId) => {
+              try {
+                const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
+                  headers: {
+                    'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
+                  }
+                });
+                console.log(`Full response for job ${jobId}:`, JSON.stringify(response.data, null, 2));
+                return { jobId, status: response.data.job.status, data: response.data.job };
+              } catch (error) {
+                console.error(`Error checking job ${jobId}:`, error);
+                return { jobId, status: 'error', error };
+              }
+            }));
+
+            // Track which stems have been downloaded
+            if (!song.stems) {
+              song.stems = {};
+            }
+
+            // Download completed stems that haven't been downloaded yet
+            const stemTypes = ['vocals', 'drums', 'bass', 'other'];
+            let allCompleted = true;
+            let anyNewDownloads = false;
+
+            for (let i = 0; i < jobIds.length; i++) {
+              const jobStatus = jobStatuses[i];
+              const stemType = stemTypes[i];
+              
+              if (jobStatus.status === 'completed' && !song.stems[stemType]) {
+                console.log(`Downloading completed stem: ${stemType}`);
+                console.log('Job status data:', JSON.stringify(jobStatus.data, null, 2));
+                try {
+                  // Create stems directory if it doesn't exist
+                  if (!fs.existsSync(songStemsDir)) {
+                    fs.mkdirSync(songStemsDir, { recursive: true });
+                  }
+
+                  // Get the stem URL based on stem type
+                  let stemUrl;
+                  console.log(`\nChecking stem data for ${stemType}:`, JSON.stringify(jobStatus.data, null, 2));
+                  
+                  if (stemType === 'other') {
+                    // For 'other' stem, look in stemAssets array
+                    const otherStem = jobStatus.data.stemAssets?.find(asset => asset.name === 'other.wav');
+                    stemUrl = otherStem?.link;
+                  } else {
+                    // For other stems, look in stemAssets array with their respective names
+                    const stem = jobStatus.data.stemAssets?.find(asset => asset.name === `${stemType}.wav`);
+                    if (stem) {
+                      stemUrl = stem.link;
+                    } else {
+                      // Fallback to output.url if stemAssets not found
+                      stemUrl = jobStatus.data.output?.url;
+                    }
+                  }
+
+                  if (!stemUrl) {
+                    console.error(`No URL found for ${stemType} stem in job response. Job data:`, JSON.stringify(jobStatus.data, null, 2));
+                    continue;
+                  }
+
+                  console.log(`Found stem URL for ${stemType}:`, stemUrl);
+                  
+                  // Download the stem
+                  const headers = {
+                    'Accept': '*/*'  // Accept any content type
+                  };
+                  
+                  // Only add Authorization header if not an S3 URL
+                  if (!stemUrl.includes('s3.amazonaws.com')) {
+                    headers['Authorization'] = `Bearer ${process.env.AUDIOSHAKE_API_KEY}`;
+                  }
+
+                  const response = await axios({
+                    method: 'GET',
+                    url: stemUrl,
+                    responseType: 'arraybuffer',  // Changed to arraybuffer for binary data
+                    headers,
+                    maxRedirects: 5,  // Allow redirects
+                    validateStatus: null  // Don't throw on any status
+                  });
+
+                  if (response.status !== 200) {
+                    console.error(`Error downloading ${stemType} stem: Status ${response.status}`);
+                    if (response.data) {
+                      console.error('Response:', response.data.toString());
+                    }
+                    continue;
+                  }
+
+                  // Create stems directory if it doesn't exist
+                  if (!fs.existsSync(songStemsDir)) {
+                    fs.mkdirSync(songStemsDir, { recursive: true });
+                  }
+
+                  // Write the buffer to file
+                  try {
+                    await fs.promises.writeFile(path.join(songStemsDir, `${stemType}_stem.wav`), response.data);
+                    console.log(`Successfully wrote ${stemType} stem to ${songStemsDir}`);
+
+                    // Verify the file was written
+                    const stats = await fs.promises.stat(path.join(songStemsDir, `${stemType}_stem.wav`));
+                    console.log(`File size: ${stats.size} bytes`);
+
+                    // Update the stems object with the new stem
+                    song.stems[stemType] = path.basename(`${stemType}_stem.wav`);
+                    anyNewDownloads = true;
+                    console.log(`Successfully downloaded ${stemType} stem to ${songStemsDir}`);
+                  } catch (writeError) {
+                    console.error(`Error writing file ${songStemsDir}:`, writeError);
+                    continue;
+                  }
+                } catch (error) {
+                  console.error(`Error downloading ${stemType} stem:`, error);
+                }
+              } else if (jobStatus.status !== 'completed') {
+                allCompleted = false;
+              }
+            }
+
+            // Save progress if we downloaded any new stems
+            if (anyNewDownloads) {
+              song.stemsPath = songStemsDir;
+              await song.save();
+            }
+
+            // If all jobs are complete, finish up
+            if (allCompleted) {
+              clearInterval(pollInterval);
+              song.stemsStatus = 'completed';
+              song.processed = true;
+              await song.save();
+              console.log("All stems downloaded successfully");
+            } else {
+              console.log("Some stems still processing...");
+            }
+          } catch (error) {
+            console.error("Error in stem processing:", error);
+            clearInterval(pollInterval);
+            song.stemsStatus = 'failed';
+            await song.save();
+          }
+        }, 10000); // Check every 10 seconds
+      })
+      .catch((error) => {
+        console.error("Error starting stem process:", error);
+        song.stemsStatus = 'failed';
+        song.save();
       });
 
-      song.audioShakeJobId = response.data.job_id;
-      await song.save();
-
-      // Start polling for completion
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusResponse = await axios.get(`https://groovy.audioshake.ai/v1/status/${response.data.job_id}`, {
-            headers: {
-              'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
-            }
-          });
-
-          if (statusResponse.data.status === 'complete') {
-            clearInterval(pollInterval);
-            
-            // Download each stem
-            const stemTypes = ['vocals', 'drums', 'bass', 'other'];
-            for (const stemType of stemTypes) {
-              const stemUrl = statusResponse.data.stems[stemType];
-              const stemPath = path.join(stemsDir, `${stemType}.mp3`);
-              console.log(`Downloading ${stemType} to ${stemPath}`);
-              
-              const response = await axios({
-                method: 'GET',
-                url: stemUrl,
-                responseType: 'stream',
-                headers: {
-                  'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
-                }
-              });
-          
-              await new Promise((resolve, reject) => {
-                const writer = fs.createWriteStream(stemPath);
-                response.data.pipe(writer);
-                writer.on('finish', resolve);
-                writer.on('error', reject);
-              });
-          
-              if (!song.stems) {
-                song.stems = {};
-              }
-              song.stems[stemType] = stemPath;
-              console.log(`Downloaded ${stemType}`);
-            }
-          
-            song.processed = true;
-            await song.save();
-            console.log("All stems downloaded and saved");
-          }
-        } catch (error) {
-          console.error("Error checking stem status:", error);
-          clearInterval(pollInterval);
-        }
-      }, 5000);
-
-    } catch (error) {
-      console.error("Error starting stem separation:", error);
-    }
-
+    // Send response immediately with the song object
     res.status(200).json(song);
+
   } catch (error) {
     console.error("Error uploading song:", error);
-    res.status(500).json({ error: "Failed to upload song" });
+    res.status(500).json({ error: "Failed to upload song", details: error.message });
   }
 });
 
@@ -282,11 +395,11 @@ router.get("/song/:id/stems/status", auth.ensureLoggedIn, async (req, res) => {
       return res.status(404).json({ error: "Song not found" });
     }
 
-    if (!song.audioShakeJobId) {
+    if (!song.audioshakeJobIds) {
       return res.json({ status: 'not_started' });
     }
 
-    const statusResponse = await fetch(`https://api.audioshake.ai/v1/status/${song.audioShakeJobId}`, {
+    const statusResponse = await fetch(`https://api.audioshake.ai/v1/status/${song.audioshakeJobIds[0]}`, {
       headers: {
         'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
       }
@@ -327,7 +440,7 @@ router.get("/song/:id/stems/download", auth.ensureLoggedIn, async (req, res) => 
     }
 
     // Verify that the song has an AudioShake job ID
-    if (!song.audioShakeJobId) {
+    if (!song.audioshakeJobIds) {
       return res.status(400).json({ error: "Song has not been processed for stems" });
     }
 
@@ -335,7 +448,7 @@ router.get("/song/:id/stems/download", auth.ensureLoggedIn, async (req, res) => 
     const config = {
       method: 'get',
       maxBodyLength: Infinity,
-      url: `https://groovy.audioshake.ai/download/${song.audioShakeJobId}`,
+      url: `https://groovy.audioshake.ai/download/${song.audioshakeJobIds[0]}`,
       headers: { 
         'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
       },
@@ -367,7 +480,7 @@ router.get("/song/:id/debug", auth.ensureLoggedIn, async (req, res) => {
       songId: song._id,
       title: song.title,
       processed: song.processed,
-      audioShakeJobId: song.audioShakeJobId,
+      audioshakeJobIds: song.audioshakeJobIds,
       stems: song.stems,
       uploadDate: song.uploadDate,
       audioshakeKeyConfigured: !!process.env.AUDIOSHAKE_API_KEY,
@@ -380,7 +493,7 @@ router.get("/song/:id/debug", auth.ensureLoggedIn, async (req, res) => {
     };
 
     // Check if stems directory exists
-    const stemsDir = path.join(__dirname, "../uploads/stems", song._id.toString());
+    const stemsDir = path.join(__dirname, "../stems", song._id.toString());
     debugInfo.stemsDirExists = fs.existsSync(stemsDir);
     debugInfo.stemsDir = stemsDir;
     
@@ -389,10 +502,10 @@ router.get("/song/:id/debug", auth.ensureLoggedIn, async (req, res) => {
     }
 
     // If we have an AudioShake job ID, check its status
-    if (song.audioShakeJobId) {
+    if (song.audioshakeJobIds) {
       try {
-        console.log("[Debug] Checking AudioShake status for job:", song.audioShakeJobId);
-        const statusResponse = await fetch(`https://groovy.audioshake.ai/v1/status/${song.audioShakeJobId}`, {
+        console.log("[Debug] Checking AudioShake status for job:", song.audioshakeJobIds[0]);
+        const statusResponse = await fetch(`https://groovy.audioshake.ai/v1/status/${song.audioshakeJobIds[0]}`, {
           headers: {
             'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
           }

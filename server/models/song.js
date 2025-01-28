@@ -38,8 +38,14 @@ const SongSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  audioShakeTrackId: String,
-  audioShakeJobId: String,
+  audioshakeAssetId: String,
+  audioshakeJobIds: [String],
+  stemsStatus: {
+    type: String,
+    enum: ['pending', 'processing', 'completed', 'failed'],
+    default: 'pending'
+  },
+  stemsPath: String,
   uploadDate: {
     type: Date,
     default: Date.now,
