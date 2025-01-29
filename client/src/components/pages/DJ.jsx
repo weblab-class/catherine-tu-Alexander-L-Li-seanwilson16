@@ -284,6 +284,7 @@ const DJ = () => {
       melody: true,
       vocals: true,
     },
+    highlightBpm: false,
   });
 
   const [rightTrack, setRightTrack] = useState({
@@ -299,6 +300,7 @@ const DJ = () => {
       melody: true,
       vocals: true,
     },
+    highlightBpm: false,
   });
 
   const [dropdownOpen, setDropdownOpen] = useState({
@@ -571,76 +573,67 @@ const DJ = () => {
   };
 
   const handleSync = () => {
-    // Don't sync if either track is not loaded
-    if (!leftTrack.name || !rightTrack.name) return;
+    if (leftTrack.name && rightTrack.name) {
+      const leftBPM = leftTrack.bpm;
+      const rightBPM = rightTrack.bpm;
+      const averageBPM = Math.round((leftBPM + rightBPM) / 2);
 
-    setSyncEnabled((prevSync) => {
-      const newSyncEnabled = !prevSync;
+      if (leftBPM !== rightBPM) {
+        // Update left track if needed
+        if (leftBPM !== averageBPM) {
+          const targetBPM = averageBPM;
+          const leftPlaybackRate = targetBPM / leftBPM;
 
-      if (newSyncEnabled) {
-        const leftBPM = leftTrack.bpm;
-        const rightBPM = rightTrack.bpm;
-        const targetBPM = Math.max(leftBPM, rightBPM);
-
-        // Update both decks to the exact same BPM
-        const leftRate = targetBPM / leftTrack.originalBpm;
-        const rightRate = targetBPM / rightTrack.originalBpm;
-
-        // Update left deck
-        setLeftTrack((prev) => {
-          // Update audio elements
-          Object.values(prev.audioElements || {}).forEach((audio) => {
-            if (audio) {
-              audio.preservesPitch = true;
-              audio.playbackRate = leftRate;
-            }
-          });
-          // Update wavesurfers
-          Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
-            if (wavesurfer) {
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = leftRate;
-              }
-              wavesurfer.setPlaybackRate(targetBPM / 100);
-            }
-          });
-          return {
+          setLeftTrack((prev) => ({
             ...prev,
             bpm: targetBPM,
-          };
-        });
+            highlightBpm: true,
+          }));
 
-        // Update right deck
-        setRightTrack((prev) => {
-          // Update audio elements
-          Object.values(prev.audioElements || {}).forEach((audio) => {
+          // Reset highlight after animation
+          setTimeout(() => {
+            setLeftTrack((prev) => ({
+              ...prev,
+              highlightBpm: false,
+            }));
+          }, 500);
+
+          Object.values(leftTrack.audioElements).forEach((audio) => {
             if (audio) {
               audio.preservesPitch = true;
-              audio.playbackRate = rightRate;
+              audio.playbackRate = leftPlaybackRate;
             }
           });
-          // Update wavesurfers
-          Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
-            if (wavesurfer) {
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = rightRate;
-              }
-              wavesurfer.setPlaybackRate(targetBPM / 100);
-            }
-          });
-          return {
+        }
+
+        // Update right track if needed
+        if (rightBPM !== averageBPM) {
+          const targetBPM = averageBPM;
+          const rightPlaybackRate = targetBPM / rightBPM;
+
+          setRightTrack((prev) => ({
             ...prev,
             bpm: targetBPM,
-          };
-        });
+            highlightBpm: true,
+          }));
+
+          // Reset highlight after animation
+          setTimeout(() => {
+            setRightTrack((prev) => ({
+              ...prev,
+              highlightBpm: false,
+            }));
+          }, 500);
+
+          Object.values(rightTrack.audioElements).forEach((audio) => {
+            if (audio) {
+              audio.preservesPitch = true;
+              audio.playbackRate = rightPlaybackRate;
+            }
+          });
+        }
       }
-
-      return newSyncEnabled;
-    });
+    }
   };
 
   const handleEffectToggle = useCallback(
@@ -823,6 +816,7 @@ const DJ = () => {
         melody: true,
         vocals: true,
       },
+      highlightBpm: false,
     });
     setRightTrack({
       name: "",
@@ -837,6 +831,7 @@ const DJ = () => {
         melody: true,
         vocals: true,
       },
+      highlightBpm: false,
     });
 
     // Reset all other state
@@ -1407,7 +1402,7 @@ const DJ = () => {
           <div className="decks-container">
             <div className="deck left-deck">
               <div className="deck-top">
-                <div className="bpm-slider-container-left">
+                <div className={`bpm-slider-container-left ${leftTrack.highlightBpm ? 'bpm-highlight' : ''}`}>
                   <div className="control-group">
                     <div className="control-label">BPM</div>
                     <div className="control-buttons">
@@ -1585,7 +1580,7 @@ const DJ = () => {
                     alt="Chill Guy DJ"
                   />
                 </div>
-                <div className="bpm-slider-container-right">
+                <div className={`bpm-slider-container-right ${rightTrack.highlightBpm ? 'bpm-highlight' : ''}`}>
                   <div className="control-group">
                     <div className="control-label">BPM</div>
                     <div className="control-buttons">
