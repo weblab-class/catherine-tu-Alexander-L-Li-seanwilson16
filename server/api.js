@@ -591,6 +591,47 @@ router.delete("/song/:id", auth.ensureLoggedIn, async (req, res) => {
   }
 });
 
+router.post("/songs/:songId/delete", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    const song = await Song.findById(req.params.songId);
+    if (!song) {
+      return res.status(404).send({ error: "Song not found" });
+    }
+
+    // Check if this song belongs to the user
+    if (song.creator_id.toString() !== req.user._id.toString()) {
+      return res.status(403).send({ error: "Not authorized to delete this song" });
+    }
+
+    // Delete the original audio file if it exists
+    if (song.audioPath) {
+      const filePath = path.join(__dirname, song.audioPath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    // Delete any stem files if they exist
+    if (song.stems) {
+      for (const stem of Object.values(song.stems)) {
+        if (stem && stem.path) {
+          const stemPath = path.join(__dirname, stem.path);
+          if (fs.existsSync(stemPath)) {
+            fs.unlinkSync(stemPath);
+          }
+        }
+      }
+    }
+
+    // Delete the song from database
+    await Song.findByIdAndDelete(song._id);
+    res.send({ message: "Song deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting song:", error);
+    res.status(500).send({ error: "Could not delete song" });
+  }
+});
+
 // Get song processing status
 router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
   try {
