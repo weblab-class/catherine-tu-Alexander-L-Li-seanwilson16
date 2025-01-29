@@ -308,8 +308,9 @@
 
 .song-rename-container {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
+  padding: 4px 0;
 }
 
 .song-rename-input {
@@ -317,9 +318,11 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 14px;
-  font-family: var(--raleway)
+  font-family: var(--raleway);
+  width: 100%;
+  max-width: 300px;
 }
 
 .song-rename-input:focus {
@@ -329,7 +332,7 @@
 
 .song-rename-buttons {
   display: flex;
-  gap: 4px;
+  gap: 8px;
 }
 
 .song-rename-save,
@@ -338,10 +341,11 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   color: white;
-  padding: 4px 8px;
+  padding: 4px 12px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: var(--josefin);
 }
 
 .song-rename-save {
@@ -354,4 +358,91 @@
 
 .song-rename-cancel:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.upload-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.upload-modal-content {
+  background: var(--black);
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid var(--darkgrey);
+}
+
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-confirm-container {
+  text-align: center;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: 12px;
+}
+
+.delete-confirm-container h3 {
+  margin-top: 0;
+  color: var(--white);
+  font-family: var(--josefin);
+  font-size: 24px;
+}
+
+.delete-confirm-container p {
+  color: var(--white);
+  margin: 1rem 0;
+  font-family: var(--raleway);
+}
+
+.delete-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.delete-confirm-buttons button {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--josefin);
+  transition: all 0.2s ease;
+}
+
+.delete-confirm-buttons .cancel-button {
+  background: var(--darkgrey);
+  color: var(--white);
+  font-size: 18px;
+}
+
+.delete-confirm-buttons .confirm-button {
+  background: var(--red);
+  color: var(--white);
+  font-size: 18px;
+}
+
+.delete-confirm-buttons button:hover {
+  opacity: 0.8;
 }

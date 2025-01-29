@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FileInput } from "@mantine/core";
 import musicPlusIcon from "../../../public/assets/music-plus.svg";
 
@@ -12,6 +12,23 @@ const FileUpload = ({ onUploadSuccess }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [processingStatus, setProcessingStatus] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setShowUploadModal(false);
+      }
+    };
+
+    if (showUploadModal) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUploadModal]);
 
   const acceptedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
 
@@ -92,7 +109,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
       {showUploadModal && (
         <div className="upload-modal">
-          <div className="upload-modal-content">
+          <div className="upload-modal-content" ref={modalRef}>
             <h3>Upload Your Song</h3>
             <FileInput
               className="file-input"
