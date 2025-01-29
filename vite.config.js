@@ -8,6 +8,14 @@ export default defineConfig({
   root: path.resolve(__dirname, 'client'), // Set the root directory for Vite
   build: {
     outDir: path.resolve(__dirname, 'client/dist'), // Output directory for production build
+    rollupOptions: {
+      external: ['canvas-confetti'],
+      output: {
+        globals: {
+          'canvas-confetti': 'confetti'
+        }
+      }
+    }
   },
   server: {
     port: 5173,
@@ -19,9 +27,11 @@ export default defineConfig({
       '/socket.io': {
         target: 'http://localhost:3000',
         ws: true,
-        changeOrigin: true,
-      },
+      }
     },
     historyApiFallback: true
+  },
+  optimizeDeps: {
+    include: ['canvas-confetti']
   }
 });

@@ -92,8 +92,8 @@ const createWaveSurfer = (container, options = {}) => {
 
   const wavesurfer = WaveSurfer.create({
     container,
-    waveColor: options.waveColor || "rgba(255, 255, 255, 0.5)",
-    progressColor: options.progressColor || "#fff",
+    waveColor: options.hideWaveform ? "rgba(0,0,0,0)" : (options.waveColor || "rgba(255, 255, 255, 0.5)"),
+    progressColor: options.hideWaveform ? "rgba(0,0,0,0)" : (options.progressColor || "#fff"),
     cursorColor: options.cursorColor || "#ffffff",
     height: 70,
     responsive: true,
@@ -111,9 +111,7 @@ const createWaveSurfer = (container, options = {}) => {
     dragToSeek: true,
     pixelRatio: 1,
     autoScroll: true,
-    partialRender: true,
-    waveColor: options.hideWaveform ? "rgba(0,0,0,0)" : options.waveColor,
-    progressColor: options.hideWaveform ? "rgba(0,0,0,0)" : options.progressColor,
+    partialRender: true
   });
 
   // Create and configure the media element
