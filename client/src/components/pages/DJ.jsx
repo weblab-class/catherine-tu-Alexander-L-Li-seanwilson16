@@ -1165,7 +1165,7 @@ const DJ = () => {
               resolve();
             };
             const errorHandler = (error) => {
-              console.error(`Error loading ${stem} audio:`, error);
+              // console.error(`Error loading ${stem} audio:`, error);
               audio.removeEventListener("error", errorHandler);
               reject(error);
             };
@@ -1176,7 +1176,7 @@ const DJ = () => {
           audioElements[stem] = audio;
           // console.log(`Successfully loaded ${stem} stem`);
         } catch (error) {
-          console.error(`Error loading ${stem} stem:`, error);
+          // console.error(`Error loading ${stem} stem:`, error);
         }
       }
 
@@ -1230,7 +1230,7 @@ const DJ = () => {
               });
               // console.log(`Successfully loaded ${stem} waveform`);
             } catch (error) {
-              console.error(`Error loading waveform for ${stem}:`, error);
+              // console.error(`Error loading waveform for ${stem}:`, error);
               throw error;
             }
           })
@@ -1250,7 +1250,7 @@ const DJ = () => {
         effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
       }));
     } catch (error) {
-      console.error("Error loading track:", error);
+      // console.error("Error loading track:", error);
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
