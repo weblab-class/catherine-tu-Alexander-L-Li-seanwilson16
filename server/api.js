@@ -632,6 +632,21 @@ router.post("/songs/:songId/delete", auth.ensureLoggedIn, async (req, res) => {
   }
 });
 
+// delete endpoint in api.js
+// Add this route to handle song deletion
+router.post("/songs/:id/delete", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    const song = await Song.findOneAndDelete({ _id: req.params.id, creator_id: req.user._id });
+    if (!song) {
+      return res.status(404).json({ error: "Song not found" });
+    }
+    res.status(200).json({ message: "Song deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting song:", error);
+    res.status(500).json({ error: "Failed to delete song" });
+  }
+});
+
 // Get song processing status
 router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
   try {

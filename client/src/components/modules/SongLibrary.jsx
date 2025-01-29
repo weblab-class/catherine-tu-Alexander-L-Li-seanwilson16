@@ -88,10 +88,7 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
     if (!songToDelete) return;
     
     try {
-      const response = await fetch(`/api/songs/${songToDelete._id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete song");
+      await post(`/api/songs/${songToDelete._id}/delete`);
       setSongs((prevSongs) => prevSongs.filter((song) => song._id !== songToDelete._id));
     } catch (error) {
       console.error("Error deleting song:", error);
