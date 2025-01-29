@@ -2,77 +2,113 @@ import React from "react";
 import confetti from "canvas-confetti";
 
 const ConfettiButton = () => {
-  const handleConfetti = () => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 20;
-    canvas.height = 20;
+  const createLetterConfetti = () => {
+    const colors = ['#FF69B4', '#9370DB', '#4169E1', '#20B2AA', '#FFD700'];
+    
+    // Define points for each letter with more detail
+    const letters = {
+      'W': [
+        // Left diagonal down
+        [0.20, 0.35], [0.21, 0.37], [0.22, 0.39], [0.23, 0.41], [0.24, 0.43],
+        // First up diagonal
+        [0.25, 0.41], [0.26, 0.39], [0.27, 0.37], [0.28, 0.35],
+        // Second down diagonal
+        [0.29, 0.37], [0.30, 0.39], [0.31, 0.41], [0.32, 0.43],
+        // Right up diagonal
+        [0.33, 0.41], [0.34, 0.39], [0.35, 0.37], [0.36, 0.35]
+      ],
+      'E': [
+        // Vertical line
+        [0.38, 0.35], [0.38, 0.37], [0.38, 0.39], [0.38, 0.41], [0.38, 0.43],
+        // Top horizontal
+        [0.39, 0.35], [0.40, 0.35], [0.41, 0.35],
+        // Middle horizontal
+        [0.39, 0.39], [0.40, 0.39], [0.41, 0.39],
+        // Bottom horizontal
+        [0.39, 0.43], [0.40, 0.43], [0.41, 0.43]
+      ],
+      'B': [
+        // Vertical line
+        [0.44, 0.35], [0.44, 0.37], [0.44, 0.39], [0.44, 0.41], [0.44, 0.43],
+        // Top curve
+        [0.45, 0.35], [0.46, 0.35], [0.47, 0.36], [0.47, 0.37], [0.46, 0.38], [0.45, 0.39],
+        // Bottom curve
+        [0.45, 0.39], [0.46, 0.39], [0.47, 0.40], [0.47, 0.42], [0.46, 0.43], [0.45, 0.43]
+      ],
+      'L': [
+        // Vertical line
+        [0.50, 0.35], [0.50, 0.37], [0.50, 0.39], [0.50, 0.41], [0.50, 0.43],
+        // Bottom horizontal
+        [0.51, 0.43], [0.52, 0.43], [0.53, 0.43]
+      ],
+      'A': [
+        // Left diagonal
+        [0.56, 0.43], [0.57, 0.41], [0.58, 0.39], [0.59, 0.37], [0.60, 0.35],
+        // Right diagonal
+        [0.61, 0.37], [0.62, 0.39], [0.63, 0.41], [0.64, 0.43],
+        // Middle line
+        [0.58, 0.39], [0.59, 0.39], [0.60, 0.39], [0.61, 0.39], [0.62, 0.39]
+      ],
+      'B2': [
+        // Vertical line
+        [0.67, 0.35], [0.67, 0.37], [0.67, 0.39], [0.67, 0.41], [0.67, 0.43],
+        // Top curve
+        [0.68, 0.35], [0.69, 0.35], [0.70, 0.36], [0.70, 0.37], [0.69, 0.38], [0.68, 0.39],
+        // Bottom curve
+        [0.68, 0.39], [0.69, 0.39], [0.70, 0.40], [0.70, 0.42], [0.69, 0.43], [0.68, 0.43]
+      ]
+    };
 
-    // Draw a simple music note shape
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(10, 5, 4, 3, 0, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(13, 5);
-    ctx.lineTo(13, 15);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'white';
-    ctx.stroke();
-
-    // Convert to image
-    const noteImage = new Image();
-    noteImage.src = canvas.toDataURL();
-
-    // Wait for image to load
-    noteImage.onload = () => {
-      const myShape = confetti.shapeFromPath({
-        path: 'M10 2C9.5 2 9 2.5 9 3V9C8.5 9 7.7 9.3 7 10C5.9 11.1 5.7 12.7 6.5 13.5C7.3 14.3 8.9 14.1 10 13C10.8 12.2 11.1 11.1 11 10V5L14 6V4L10 2Z',
+    // Launch confetti for each letter sequentially
+    Object.entries(letters).forEach(([letter, points], letterIndex) => {
+      points.forEach((point, pointIndex) => {
+        setTimeout(() => {
+          // Launch a small cluster for each point
+          for (let i = 0; i < 2; i++) {
+            confetti({
+              particleCount: 2,
+              spread: 10, // Reduced spread for tighter formation
+              origin: { 
+                x: point[0] + (Math.random() - 0.5) * 0.005, // Smaller random offset
+                y: point[1] + (Math.random() - 0.5) * 0.005
+              },
+              colors: [colors[Math.floor(Math.random() * colors.length)]],
+              ticks: 300,
+              scalar: 0.8, // Smaller particles
+              gravity: 0,
+              drift: 0,
+              decay: 0.94,
+              startVelocity: 1
+            });
+          }
+        }, letterIndex * 400 + pointIndex * 20); // Faster sequence within each letter
       });
+    });
 
-      // Launch multiple bursts
-      for (let i = 0; i < 1; i++) {
+    // After letters are formed, make them explode
+    setTimeout(() => {
+      Object.values(letters).flat().forEach((point, index) => {
         setTimeout(() => {
           confetti({
-            particleCount: 30,
-            spread: 70,
-            origin: { y: 0.4, x: 0.5 + (Math.random() - 0.5) * 0.4 },
-            colors: ['#FF69B4', '#9370DB', '#4169E1', '#20B2AA', '#FFD700'],
-            shapes: [myShape],
+            particleCount: 4,
+            spread: 360,
+            origin: { x: point[0], y: point[1] },
+            colors: colors,
             ticks: 200,
-            scalar: 2,
-            gravity: 1,
-            drift: 0,
+            scalar: 1,
+            gravity: 0.8,
+            drift: 0.2,
             decay: 0.94,
-            startVelocity: 30,
+            startVelocity: 30
           });
-        }, i * 200);
-
-        // Add some slower-falling pieces
-      setTimeout(() => {
-        confetti({
-          particleCount: 20,
-          spread: 100,
-          origin: { y: 0.35, x: 0.5 },
-          colors: ['#FF69B4', '#9370DB', '#4169E1', '#20B2AA', '#FFD700'],
-          shapes: [myShape],
-          ticks: 300,
-          gravity: 0.5,
-          scalar: 3,
-          drift: 0.2,
-          decay: 0.97,
-          startVelocity: 15,
-        });
-      }, 500);
-      }
-
-      
-    };
+        }, index * 10);
+      });
+    }, Object.keys(letters).length * 500);
   };
 
   return (
     <button
-      onClick={handleConfetti}
+      onClick={createLetterConfetti}
       style={{
         position: "fixed",
         top: "20px",
