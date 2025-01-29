@@ -38,24 +38,24 @@ const AVAILABLE_TRACKS = [
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
-const stemColors = {
-  bass: {
-    waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
-    progressColor: "rgba(255, 49, 140, 0.8)",
-  },
-  drums: {
-    waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
-    progressColor: "rgba(56, 255, 130, 0.8)",
-  },
-  melody: {
-    waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
-    progressColor: "rgba(255, 247, 32, 0.8)",
-  },
-  vocals: {
-    waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
-    progressColor: "rgba(70, 237, 255, 0.8)",
-  },
-};
+// const stemColors = {
+//   bass: {
+//     waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
+//     progressColor: "rgba(255, 49, 140, 0.8)",
+//   },
+//   drums: {
+//     waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
+//     progressColor: "rgba(56, 255, 130, 0.8)",
+//   },
+//   melody: {
+//     waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
+//     progressColor: "rgba(255, 247, 32, 0.8)",
+//   },
+//   vocals: {
+//     waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
+//     progressColor: "rgba(70, 237, 255, 0.8)",
+//   },
+// };
 
 const createWaveSurfer = (container, options = {}) => {
   const timeline = TimelinePlugin.create({
@@ -128,7 +128,7 @@ const DJ = () => {
         bpm: song.bpm || 120,
         key: song.key || "1A",
       }));
-      setTracks((prevTracks) => [...AVAILABLE_TRACKS, ...userSongs]);
+      setTracks((prevTracks) => [...userSongs, ...AVAILABLE_TRACKS]);
     } catch (err) {
       console.error("Error fetching user songs:", err);
     }
@@ -1134,6 +1134,7 @@ const DJ = () => {
 
   const handleTrackSelectWrapper = (deck, track) => {
     handleTrackSelect(track, deck);
+    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
 
   const handleImportSong = (deck) => {
