@@ -27,16 +27,40 @@ const walkthroughSteps = [
     spotlightSize: 300
   },
   {
+    id: "bpm-left",
+    text: "Use these controls to adjust the BPM (speed) of your left track.",
+    selector: ".deck.left-deck .bpm-slider-container-left .control-group",
+    spotlightSize: 80
+  },
+  {
     id: "turntable-left",
     text: "This is a visual indicator of your left track's playback, with a chill twist!",
     selector: ".deck.left-deck .turntable",
     spotlightSize: 200
   },
   {
+    id: "volume-left",
+    text: "Use these controls to adjust the volume of your left track.",
+    selector: ".deck.left-deck .volume-slider-container-left .control-group",
+    spotlightSize: 80
+  },
+  {
+    id: "volume-right",
+    text: "Use these controls to adjust the volume of your right track.",
+    selector: ".deck.right-deck .volume-slider-container-right .control-group",
+    spotlightSize: 80
+  },
+  {
     id: "turntable-right",
     text: "This is a visual indicator of your right track's playback, with a chill twist!",
     selector: ".deck.right-deck .turntable",
     spotlightSize: 200
+  },
+  {
+    id: "bpm-right",
+    text: "Use these controls to adjust the BPM (speed) of your right track.",
+    selector: ".deck.right-deck .bpm-slider-container-right .control-group",
+    spotlightSize: 80
   },
   {
     id: "cue-left",
@@ -54,13 +78,13 @@ const walkthroughSteps = [
     id: "effects-left",
     text: "Press 'Q', 'W', 'E', or 'R' to toggle bass/drums/melody/vocals for your left track.",
     selector: ".deck.left-deck .effect-buttons",
-    spotlightSize: 400
+    spotlightSize: 240
   },
   {
     id: "effects-right",
     text: "Press 'U', 'I', 'O', or 'P' to toggle bass/drums/melody/vocals for your right track.",
     selector: ".deck.right-deck .effect-buttons",
-    spotlightSize: 400
+    spotlightSize: 240
   },
   {
     id: "cue-right",

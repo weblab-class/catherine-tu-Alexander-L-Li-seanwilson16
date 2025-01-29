@@ -74,6 +74,19 @@
 
   .effect-buttons {
     gap: 3px;
+    position: relative;
+  }
+
+  .effect-buttons::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    pointer-events: none;
   }
 
   .deck-controls {

@@ -221,12 +221,7 @@ const Tutorial = () => {
 
   const handleSpotlightClick = (e) => {
     if (!spotlightPosition) return;
-
-    // Check if click is within the adjusted spotlight bounds
-    if (e.clientX >= spotlightPosition.left && e.clientX <= spotlightPosition.left + spotlightPosition.width &&
-        e.clientY >= spotlightPosition.top && e.clientY <= spotlightPosition.top + spotlightPosition.height) {
-      handleNext();
-    }
+    handleNext();
   };
 
   const handlePrev = () => {
@@ -252,7 +247,7 @@ const Tutorial = () => {
           <NavBar />
           {isWalkthrough && (
             <>
-              <div className="walkthrough-overlay" />
+              <div className="walkthrough-overlay" onClick={handleSpotlightClick} />
               {spotlightPosition && (
                 <div className="spotlight-container" onClick={handleSpotlightClick}>
                   <div

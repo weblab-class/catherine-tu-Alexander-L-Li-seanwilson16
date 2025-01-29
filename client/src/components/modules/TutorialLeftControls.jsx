@@ -120,46 +120,6 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
       </div>
 
       <div className="deck-row">
-        <Popover
-          width={215}
-          position="top"
-          closeOnClickOutside={false}
-          withArrow
-          opened={effectsOpened}
-          onClose={() => handleMouseLeave(setEffectsOpened)}
-          styles={popoverStyles}
-        >
-          <Popover.Target>
-            <div
-              className="effect-buttons"
-              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
-              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
-            >
-              {STEM_TYPES.map((effect, index) => {
-                const hotkey = {
-                  bass: "Q",
-                  drums: "W", 
-                  melody: "E",
-                  vocals: "R",
-                }[effect];
-
-                return (
-                  <div key={effect} className="effect-button-container">
-                    <div className="hotkey-indicator hotkey">
-                      <span className="hotkey-text">{hotkey}</span>
-                    </div>
-                    <button className={`effect-btn ${effect}-btn`} disabled />
-                    <span className="effect-label">{effect}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Text ta="center">Toggle individual track elements.</Text>
-          </Popover.Dropdown>
-        </Popover>
-
         <div className="playback-section">
           <div className="playback-controls">
             <Popover
@@ -215,6 +175,46 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
             </Popover>
           </div>
         </div>
+
+        <Popover
+          width={215}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={effectsOpened}
+          onClose={() => handleMouseLeave(setEffectsOpened)}
+          styles={popoverStyles}
+        >
+          <Popover.Target>
+            <div
+              className="effect-buttons"
+              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
+              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
+            >
+              {STEM_TYPES.map((effect, index) => {
+                const hotkey = {
+                  bass: "Q",
+                  drums: "W", 
+                  melody: "E",
+                  vocals: "R",
+                }[effect];
+
+                return (
+                  <div key={effect} className="effect-button-container">
+                    <div className="hotkey-indicator hotkey">
+                      <span className="hotkey-text">{hotkey}</span>
+                    </div>
+                    <button className={`effect-btn ${effect}-btn`} disabled />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">Toggle individual track elements.</Text>
+          </Popover.Dropdown>
+        </Popover>
       </div>
     </div>
   );
