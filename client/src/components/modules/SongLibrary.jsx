@@ -61,6 +61,56 @@ const SongLibrary = ({ onUploadSuccess }) => {
     }
   };
 
+  const renderProgress = (song) => {
+    let status = "Processing...";
+    let progress = 0;
+
+    // Calculate progress based on stem separation status
+    if (song.stemsStatus === "completed") {
+      progress = 100;
+    } else if (song.stemsStatus === "processing") {
+      // Calculate progress based on completed stems
+      const totalStems = 4; // vocals, drums, bass, other
+      const completedStems = Object.keys(song.stems || {}).length;
+      progress = Math.floor((completedStems / totalStems) * 100);
+    }
+
+    // Set status text based on state
+    switch (song.stemsStatus) {
+      case "pending":
+        status = "Starting";
+        break;
+      case "processing":
+        status = "Processing stems";
+        break;
+      case "completed":
+        status = "Ready";
+        break;
+      case "failed":
+        status = "Failed";
+        break;
+      default:
+        status = "Unknown";
+    }
+
+    return (
+      <div className="progress-section">
+        <div className="progress-container">
+          <div 
+            className="progress-bar" 
+            style={{ 
+              width: `${progress}%`,
+              transition: "width 0.3s ease-in-out"
+            }} 
+          />
+        </div>
+        <span className="progress-status">
+          {status} (<span>{progress}%</span>)
+        </span>
+      </div>
+    );
+  };
+
   if (loading) {
     return <div className="song-library-message">Loading your songs...</div>;
   }
@@ -98,6 +148,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
                     <li key={song._id} className="song-item">
                       <span className="song-name">{song.title}</span>
                       <span className="song-date">{new Date(song.uploadDate).toLocaleDateString()}</span>
+                      {renderProgress(song)}
                       <div className="song-actions">
                         <button className="u-link delete" onClick={() => handleDelete(song._id)}>
                           Delete
