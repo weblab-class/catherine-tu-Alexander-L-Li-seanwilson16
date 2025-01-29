@@ -13,6 +13,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
+const { UPLOADS_DIR, STEMS_DIR } = require("./config");
 
 // Import our stem processing modules
 const { createStems, checkStemStatus } = require("./audioshake-stem-steps");
@@ -30,21 +31,18 @@ const socketManager = require("./server-socket");
 const router = express.Router();
 
 // Ensure upload directories exist
-const uploadsDir = path.join(__dirname, "../uploads");
-const stemsDir = path.join(__dirname, "../stems");
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 }
 
-if (!fs.existsSync(stemsDir)) {
-  fs.mkdirSync(stemsDir, { recursive: true });
+if (!fs.existsSync(STEMS_DIR)) {
+  fs.mkdirSync(STEMS_DIR, { recursive: true });
 }
 
 // Configure multer for handling file uploads
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, uploadsDir);
+    cb(null, UPLOADS_DIR);
   },
   filename(req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -182,7 +180,7 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
     // console.log("Song saved to database:", song._id);
 
     // Create stems directory for this song using song ID
-    const songStemsDir = path.join(stemsDir, song._id.toString());
+    const songStemsDir = path.join(STEMS_DIR, song._id.toString());
     if (!fs.existsSync(songStemsDir)) {
       fs.mkdirSync(songStemsDir, { recursive: true });
     }
@@ -379,7 +377,7 @@ router.get("/songs", auth.ensureLoggedIn, (req, res) => {
 
       // Check for stem files in the stems directory
       const stemTypes = ["bass", "drums", "vocals", "other"];
-      const stemDir = path.join(__dirname, "../stems", song._id.toString());
+      const stemDir = path.join(__dirname, STEMS_DIR, song._id.toString());
 
       if (fs.existsSync(stemDir)) {
         stemTypes.forEach((stemType) => {
@@ -527,7 +525,7 @@ router.get("/song/:id/debug", auth.ensureLoggedIn, async (req, res) => {
     };
 
     // Check if stems directory exists
-    const stemsDir = path.join(__dirname, "../stems", song._id.toString());
+    const stemsDir = path.join(__dirname, STEMS_DIR, song._id.toString());
     debugInfo.stemsDirExists = fs.existsSync(stemsDir);
     debugInfo.stemsDir = stemsDir;
 

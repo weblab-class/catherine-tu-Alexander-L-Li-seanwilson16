@@ -28,12 +28,22 @@ const session = require("express-session"); // library that stores info about ea
 const mongoose = require("mongoose"); // library to connect to MongoDB
 const path = require("path"); // provide utilities for working with file and directory paths
 const cors = require("cors");
+const fs = require("fs");
 
 const api = require("./api");
 const auth = require("./auth");
+const socketManager = require("./server-socket");
+const { UPLOADS_DIR, STEMS_DIR } = require("./config");
+
+// ensure directories exist
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+if (!fs.existsSync(STEMS_DIR)) {
+  fs.mkdirSync(STEMS_DIR, { recursive: true });
+}
 
 // socket stuff
-const socketManager = require("./server-socket");
 
 // Server configuration below
 // TODO change connection URL after setting up your team database
@@ -61,11 +71,11 @@ app.use(validator.checkRoutes);
 
 // Set up cors middleware BEFORE routes
 app.use(cors({ 
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
-  exposedHeaders: ['Content-Range', 'Accept-Ranges']
+  exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Type', 'Accept', 'Content-Length']
 }));
 
 // Set up all middleware
@@ -94,23 +104,23 @@ app.use(auth.populateCurrentUser);
 // Serve static files with CORS headers
 app.use("/uploads", (req, res, next) => {
   res.set({
-    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-    'Access-Control-Allow-Headers': 'Range',
-    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges'
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Type, Accept, Content-Length'
   });
   next();
-}, express.static(path.join(__dirname, "..", "uploads")));
+}, express.static(UPLOADS_DIR));
 
 app.use("/stems", (req, res, next) => {
   res.set({
-    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-    'Access-Control-Allow-Headers': 'Range',
-    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges'
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Type, Accept, Content-Length'
   });
   next();
-}, express.static(path.join(__dirname, "..", "stems")));
+}, express.static(STEMS_DIR));
 
 // connect user-defined routes
 app.use("/api", api);
