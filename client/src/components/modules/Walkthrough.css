@@ -1,0 +1,84 @@
+.walkthrough-overlay {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  pointer-events: all;
+}
+
+.walkthrough-navigation {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10002;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.walkthrough-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.walkthrough-text {
+  font-family: var(--raleway);
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.walkthrough-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.walkthrough-button:hover {
+  color: #000;
+}
+
+.walkthrough-button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.walkthrough-exit {
+  background: none;
+  border: none;
+  color: #666;
+  font-family: var(--raleway);
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.walkthrough-exit:hover {
+  color: #000;
+}

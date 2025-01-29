@@ -335,13 +335,31 @@ body {
   margin-top: 50px;
 }
 
+.waveform-placeholder {
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.2) 40%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0.2) 80%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
 .waveform-container {
   flex: 1;
   display: flex;
   position: relative;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);  /* More transparent background */
   transition: all 0.3s ease;
   pointer-events: none;
+}
+
+.waveform-container:active {
+  background: rgba(255, 255, 255, 0.05);  /* More transparent active state */
 }
 
 .waveform-container.left {
@@ -1339,4 +1357,49 @@ body {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+}
+
+.Tutorial-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.Tutorial-decks {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.walkthrough-overlay {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 9998;
+  pointer-events: all;
+}
+
+.walkthrough-spotlight {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 9999;
+  transition: all 0.3s ease;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    transparent 80%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
 }
