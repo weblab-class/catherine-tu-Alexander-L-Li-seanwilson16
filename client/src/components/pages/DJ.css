@@ -264,11 +264,13 @@ body {
 .no-track-left {
   left: 0px;
   position: absolute;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .no-track-right {
   right: 0px;
   position: absolute;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .track-details-left {

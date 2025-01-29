@@ -684,7 +684,7 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
     );
 
     // Count completed jobs
-    const completedJobs = jobStatuses.filter(status => status === "completed").length;
+    const completedJobs = jobStatuses.filter((status) => status === "completed").length;
     const totalJobs = jobStatuses.length;
 
     console.log("Job completion:", completedJobs, "/", totalJobs);
@@ -700,8 +700,8 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
       status: {
         completedJobs,
         totalJobs,
-        jobStatuses
-      }
+        jobStatuses,
+      },
     };
     console.log("Sending response:", response);
     res.send(response);
@@ -710,9 +710,9 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
     if (error.response) {
       console.error("Response data:", error.response.data);
     }
-    res.status(500).send({ 
+    res.status(500).send({
       error: "Error checking song status",
-      details: error.message 
+      details: error.message,
     });
   }
 });

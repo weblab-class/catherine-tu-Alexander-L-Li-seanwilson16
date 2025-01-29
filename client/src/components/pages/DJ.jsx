@@ -32,7 +32,23 @@ const AVAILABLE_TRACKS = [
     name: "Chill Guy Remix by 류서진",
     path: "chill-guy-remix",
     bpm: 80,
-    key: "A-Flat Major",
+    key: "Ab Major",
+  },
+  {
+    isUserSong: false,
+    id: 4,
+    name: "Disfigure by Blank",
+    path: "Disfigure_Blank",
+    bpm: 140,
+    key: "B Minor",
+  },
+  {
+    isUserSong: false,
+    id: 5,
+    name: "Let Me Down Slowly (Not So Good Remix) by Alec Benjamin",
+    path: "Let_Me_Down_Slowly_Alec_Benjamin",
+    bpm: 75,
+    key: "C# Minor",
   },
 ];
 
@@ -987,9 +1003,8 @@ const DJ = () => {
         return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };
 
-      // Calculate playback rate
-      const currentBPM = trackState.bpm || track.bpm;
-      const newRate = currentBPM / track.bpm;
+      // Calculate playback rate - use track.bpm as both target and original BPM for initial load
+      const newRate = 1.0; // Start at original speed
 
       // Load audio elements first
       for (const stem of STEM_TYPES) {
@@ -1091,7 +1106,7 @@ const DJ = () => {
         name: track.name,
         path: track.path,
         key: track.key,
-        bpm: currentBPM,
+        bpm: track.bpm, // Use the original BPM from the track
         originalBpm: track.bpm,
         audioElements,
         effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
