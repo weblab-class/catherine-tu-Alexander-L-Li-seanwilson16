@@ -69,7 +69,7 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
       setSongs(response || []);
     } catch (err) {
       console.log("Error fetching songs:", err);
-      setError("Failed to fetch songs");
+      setError("Failed to fetch songs. Please refresh and log in again.");
     } finally {
       setLoading(false);
     }
