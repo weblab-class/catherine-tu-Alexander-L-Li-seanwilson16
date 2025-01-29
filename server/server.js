@@ -64,7 +64,12 @@ app.use(express.json());
 
 // Set up cors middleware BEFORE routes
 app.use(cors({ 
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    "https://chilldeck.onrender.com",
+    process.env.CORS_ORIGIN // Add this to support your Render domain
+  ].filter(Boolean), // Remove any undefined origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -78,7 +83,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: false, // set to false for HTTP in development
+      secure: process.env.NODE_ENV === 'production', // true in production
       sameSite: 'lax'  // needed for cross-site cookie handling
     }
   })
