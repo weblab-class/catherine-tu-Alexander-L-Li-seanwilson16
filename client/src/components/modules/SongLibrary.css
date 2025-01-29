@@ -1,11 +1,12 @@
 .song-library {
   width: 100%;
-  padding: 2rem;
+  padding: 1rem;
 }
 
 .song-library-container {
+  width: 100%;
   border-radius: 12px;
-  padding: 2rem;
+  padding: 2rem 3rem;
   border: 2px dashed transparent;
   transition: all 0.3s ease;
 }
@@ -29,6 +30,7 @@
 }
 
 .song-list-container {
+  width: 100%;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   overflow: hidden;
@@ -36,7 +38,8 @@
 
 .song-list-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 3.5fr 3.5fr 5fr 3fr;
+  gap: 2rem;
   padding: 1rem 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   color: white;
@@ -52,7 +55,8 @@
 
 .song-item {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 2fr 1fr;
+  gap: 2rem;
   padding: 1rem 1.5rem;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -67,26 +71,59 @@
   border-bottom: none;
 }
 
+.header-title {
+  text-align: left;
+  justify-self: start;
+}
+
+.header-date {
+  text-align: center;
+  justify-self: left;
+}
+
+.header-progress {
+  text-align: center;
+  justify-self: left;
+}
+
+.header-actions {
+  text-align: center;
+  justify-self: center;
+}
+
+.song-name {
+  text-align: left;
+  justify-self: start;
+}
+
 .song-name,
 .song-date {
   font-family: var(--raleway);
   color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-date {
+  text-align: center;
+  justify-self: center;
 }
 
 .song-actions {
   display: flex;
   gap: 12px;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
 }
 
 .song-actions .u-link {
   background: none;
   border: none;
-  padding: 0;
+  padding: 4px 8px;
   font: inherit;
   cursor: pointer;
   color: white;
-  text-decoration: underline;
   opacity: 0.8;
   transition: all 0.2s ease;
 }
@@ -97,6 +134,10 @@
 
 .song-actions .u-link.delete {
   color: #ff6b6b;
+}
+
+.song-actions .u-link.delete:hover {
+  color: #ff4f4f;
 }
 
 .song-library-message {
@@ -124,19 +165,19 @@
 .progress-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-left: auto;
-  margin-right: 20px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .progress-container {
-  width: 200px; /* Fixed width */
+  width: 200px;
   height: 12px;
   background-color: #f5f5f5;
   border: 1px solid #e0e0e0;
   border-radius: 6px;
   overflow: hidden;
   position: relative;
+  margin-right: -15px;
 }
 
 .progress-bar {
@@ -151,10 +192,27 @@
 .progress-status {
   font-size: 14px;
   color: #666;
-  min-width: 120px;
   font-weight: 500;
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* display: flex; */
+  /* align-items: center; */
+  justify-content: center;
 }
 
-.progress-status span {
-  color: #2196F3;
+.song-item > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-name,
+.song-date,
+.progress-status {
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--raleway);
+  color: white;
 }

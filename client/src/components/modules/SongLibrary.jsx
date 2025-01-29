@@ -205,6 +205,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
             <div className="song-list-header">
               <span className="header-title">Title</span>
               <span className="header-date">Date Uploaded</span>
+              <span className="header-progress">Stem Split Progress</span>
               <span className="header-actions">Actions</span>
             </div>
             {error ? (
@@ -219,10 +220,17 @@ const SongLibrary = ({ onUploadSuccess }) => {
                   songs.map((song) => (
                     <li key={song._id} className="song-item">
                       <span className="song-name">{song.title}</span>
-                      <span className="song-date">{new Date(song.uploadDate).toLocaleDateString()}</span>
-                      {renderProgress(song)}
+                      <span className="song-date">
+                        {new Date(song.uploadDate).toLocaleDateString()}
+                      </span>
+                      <div className="progress-section">
+                        {renderProgress(song)}
+                      </div>
                       <div className="song-actions">
-                        <button className="u-link delete" onClick={() => handleDelete(song._id)}>
+                        <button 
+                          className="u-link delete" 
+                          onClick={() => handleDelete(song._id)}
+                        >
                           Delete
                         </button>
                       </div>
