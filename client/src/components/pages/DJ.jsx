@@ -13,7 +13,7 @@ const AVAILABLE_TRACKS = [
   {
     isUserSong: false,
     id: 1,
-    name: "Fall to Light by NCS",
+    name: "Fall to Light by Laszlo",
     path: "NCS_Fall_to_Light",
     bpm: 87,
     key: "B Major",
@@ -21,7 +21,7 @@ const AVAILABLE_TRACKS = [
   {
     isUserSong: false,
     id: 2,
-    name: "On & On by NCS",
+    name: "On & On by Cartoon, Daniel Levi & Jeja",
     path: "NCS_On&On",
     bpm: 86,
     key: "B Major",
@@ -66,14 +66,14 @@ const AVAILABLE_TRACKS = [
     bpm: 128,
     key: "Ab Major",
   },
-  { isUserSong: false, id: 8, name: "Vertigo by NCS", path: "Vertigo", bpm: 87, key: "G Minor" },
+  { isUserSong: false, id: 8, name: "Vertigo by Rob Gasser & Laura Brehm", path: "Vertigo", bpm: 87, key: "G Minor" },
   {
     isUserSong: false,
     id: 9,
-    name: "We Are by Whales",
+    name: "We Are by Jo Cohen & Whales",
     path: "We_Are",
-    bpm: 75,
-    key: "F Major",
+    bpm: 128,
+    key: "Ab Major",
   },
 ];
 
