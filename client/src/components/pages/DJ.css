@@ -1,3 +1,259 @@
+/* Media query for devices with height 820px or less */
+@media screen and (max-height: 820px) {
+  .dj-page {
+    padding-top: 60px;
+  }
+
+  .deck {
+    gap: 15px;
+  }
+
+  .deck-controls {
+    gap: 5px;
+  }
+
+  .turntable {
+    width: 200px !important;
+    height: 200px !important;
+  }
+
+  .turntable-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin-top: 5px;
+  }
+
+  .control-value {
+    font-size: 0.9em;
+  }
+
+  .waveform-container {
+    height: 60px !important;
+  }
+
+  .import-dropdown {
+    max-height: 250px;
+  }
+
+  .effect-buttons {
+    gap: 8px;
+  }
+
+  .control-button {
+    padding: 8px 12px;
+    font-size: 0.85em;
+  }
+
+  .effect-button {
+    padding: 6px 10px;
+    font-size: 0.85em;
+  }
+}
+
+@media screen and (max-height: 820px) {
+  .turntable-image {
+    width: 75px;
+    height: 75px;
+    margin-top: 0px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .control-button {
+    padding: 2px 4px;
+    font-size: 0.65em;
+    min-width: 40px;
+  }
+
+  .effect-button {
+    padding: 2px 3px;
+    font-size: 0.65em;
+    min-width: 35px;
+  }
+
+  .effect-buttons {
+    gap: 3px;
+  }
+
+  .deck-controls {
+    gap: 2px;
+  }
+
+  .turntable {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .turntable-image {
+    width: 55px;
+    height: 55px;
+    margin-top: -5px;
+  }
+
+  .effect-btn {
+    width: 65px !important;
+    height: 65px !important;
+    margin-top: -30px;
+  }
+
+  .play-btn, .cue-btn {
+    width: 60px;
+    height: 60px;
+  }
+
+  .play-symbol, .pause-symbol {
+    font-size: 1em;
+  }
+
+  .cue-symbol {
+    font-size: 12px;
+  }
+
+  .effect-label {
+    font-size: 10px;
+  }
+
+  .sync-btn, .reset-btn {
+    width: 50px;
+    height: 30px;
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .control-value {
+    font-size: 0.7em;
+  }
+
+  .hotkey-indicator {
+    width: 45px !important;
+    height: 45px !important;
+    top: -20px !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    font-size: 26px !important;
+  }
+
+  .deck-row.right-deck-row {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .deck-controls {
+    gap: 0;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .effect-buttons {
+    margin-right: 30px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .play-btn .playback-text {
+    font-size: 0.6em !important;
+  }
+
+  .sync-text, .reset-text {
+    font-size: 1.4em !important;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .sync-btn .playback-text, 
+  .reset-btn .playback-text {
+    font-size: 1.5em !important;
+  }
+
+  .cue-btn .playback-text,
+  .effect-btn .playback-text {
+    font-size: 0.9em !important;
+  }
+
+  .sync-btn, .reset-btn {
+    padding: 8px 14px !important;
+  }
+
+  .play-btn, .cue-btn {
+    width: 65px !important;
+    height: 65px !important;
+    margin-top: -15px;
+    position: relative;
+  }
+
+  .deck-controls {
+    gap: 10px !important;
+    margin-top: 10px;
+  }
+
+  .play-symbol, .pause-symbol {
+    font-size: 1em !important;
+  }
+
+  .cue-symbol {
+    font-size: 12px !important;
+  }
+
+  .control-button {
+    padding: 2px 4px;
+    width: 28px;
+    height: 30px;
+    min-width: unset;
+  }
+
+  .control-value {
+    font-size: 0.85em;
+    margin: 4px 0;
+  }
+
+  .control-label {
+    font-size: 0.85em;
+  }
+
+  .control-buttons {
+    gap: 2px;
+  }
+
+  .bpm-slider-container-right, .volume-slider-container-right {
+    margin-top: -20px;
+  }
+
+  .bpm-slider-container-left, .volume-slider-container-left {
+    margin-top: -20px;
+  }
+
+  .deck-row.right-deck-row {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .deck-controls {
+    gap: 10px !important;
+    margin-top: 10px;
+  }
+  
+  .right-deck .effect-buttons {
+    margin-right: -50px;
+    margin-left: -50px;
+  }
+
+  .effect-buttons {
+    gap: 6px;
+  }
+}
+
 html,
 body {
   margin: 0;
@@ -840,8 +1096,8 @@ body {
   top: 30%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   animation: rotate 2s linear infinite;
   animation-play-state: paused;
@@ -852,6 +1108,34 @@ body {
 .turntable.playing .turntable-image {
   animation-play-state: running;
   opacity: 1;
+}
+
+.rotating-image {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  animation: rotate 2s linear infinite;
+  animation-play-state: paused;
+}
+
+@media screen and (max-height: 820px) {
+  .turntable-image, .rotating-image {
+    width: 75px;
+    height: 75px;
+    margin-top: 0px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .turntable-image, .rotating-image {
+    width: 55px;
+    height: 55px;
+    margin-top: -5px;
+  }
 }
 
 .playback-text {
@@ -1338,6 +1622,43 @@ body {
   }
 } */
 
+@media screen and (max-width: 710px) {
+  .bpm-slider-container-left,
+  .bpm-slider-container-right,
+  .volume-slider-container-left,
+  .volume-slider-container-right {
+    width: 40px;
+    transform: scale(0.7);
+    margin-top: 15px;
+  }
+
+  .slider-control {
+    gap: 8px;
+  }
+
+  .slider-control button {
+    transform: scale(1.5);
+  }
+
+  .deck-row {
+    width: auto;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .right-deck .deck-row {
+    flex-direction: column-reverse;
+  }
+
+  .effect-buttons {
+    width: auto;
+  }
+
+  .control-value {
+    font-size: 0.8em;
+  }
+}
+
 @keyframes rotate {
   from {
     transform: translateX(-50%) rotate(0deg);
@@ -1378,4 +1699,134 @@ body {
   display: flex;
   justify-content: flex-end;
   width: 100%;
+}
+
+@media screen and (max-height: 730px) {
+  .hotkey-indicator {
+    width: 45px !important;
+    height: 45px !important;
+    top: -20px !important;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    font-size: 26px !important;
+  }
+
+  .deck-row.right-deck-row {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .deck-controls {
+    gap: 0;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .effect-buttons {
+    margin-right: 30px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .play-btn .playback-text {
+    font-size: 0.6em !important;
+  }
+
+  .sync-text, .reset-text {
+    font-size: 1.4em !important;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .sync-btn .playback-text, 
+  .reset-btn .playback-text {
+    font-size: 1.5em !important;
+  }
+
+  .cue-btn .playback-text,
+  .effect-btn .playback-text {
+    font-size: 0.9em !important;
+  }
+
+  .sync-btn, .reset-btn {
+    padding: 8px 14px !important;
+  }
+
+  .play-btn, .cue-btn {
+    width: 65px !important;
+    height: 65px !important;
+    margin-top: -15px;
+    position: relative;
+  }
+
+  .deck-controls {
+    gap: 10px !important;
+    margin-top: 10px;
+  }
+
+  .play-symbol, .pause-symbol {
+    font-size: 1em !important;
+  }
+
+  .cue-symbol {
+    font-size: 12px !important;
+  }
+
+  .control-button {
+    padding: 2px 4px;
+    width: 28px;
+    height: 30px;
+    min-width: unset;
+  }
+
+  .control-value {
+    font-size: 0.85em;
+    margin: 4px 0;
+  }
+
+  .control-label {
+    font-size: 0.85em;
+  }
+
+  .control-buttons {
+    gap: 2px;
+  }
+
+  .bpm-slider-container-right, .volume-slider-container-right {
+    margin-top: -20px;
+  }
+
+  .bpm-slider-container-left, .volume-slider-container-left {
+    margin-top: -20px;
+  }
+
+  .deck-row.right-deck-row {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .right-deck .deck-top {
+    gap: 0;
+  }
+  
+  .right-deck .deck-controls {
+    gap: 10px !important;
+    margin-top: 10px;
+  }
+  
+  .right-deck .effect-buttons {
+    margin-right: -50px;
+    margin-left: -50px;
+  }
+
+  .effect-buttons {
+    gap: 6px;
+  }
 }
