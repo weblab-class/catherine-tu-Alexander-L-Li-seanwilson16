@@ -147,14 +147,34 @@ body {
 
 .import-dropdown {
   position: absolute;
-  top: calc(100% + 45px); /* Increased from 44px to 45px */
+  top: 100%;
   left: 0;
-  background: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   padding: 8px 0;
-  min-width: 200px;
   z-index: 1000;
+  max-height: 300px; /* Height for 3 items plus some padding */
+  overflow-y: auto;
+}
+
+.import-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.import-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 4px;
+}
+
+.import-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.import-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .import-container-right .import-dropdown {
