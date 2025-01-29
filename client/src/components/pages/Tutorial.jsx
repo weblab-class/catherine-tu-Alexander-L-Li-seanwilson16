@@ -99,6 +99,25 @@ const Tutorial = () => {
     }
   }, [isWalkthrough, currentStep]);
 
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (isWalkthrough) {
+        if (e.key === "Escape") {
+          setIsWalkthrough(false);
+        } else if ((e.key === "ArrowRight" || e.key === "ArrowDown") && currentStep < walkthroughSteps.length - 1) {
+          setCurrentStep(currentStep + 1);
+        } else if ((e.key === "ArrowLeft" || e.key === "ArrowUp") && currentStep > 0) {
+          setCurrentStep(currentStep - 1);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [isWalkthrough, currentStep, walkthroughSteps.length]);
+
   const handleNext = () => {
     if (currentStep < walkthroughSteps.length - 1) {
       setHasTransition(true); // Enable transition for step changes
