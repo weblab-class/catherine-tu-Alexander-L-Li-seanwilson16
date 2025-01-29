@@ -1437,7 +1437,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("right", "up")}
-                        style={{ opacity: volume.right >= 1 ? 0.7 : 1 }}
+                        style={{ opacity: volume.right >= 1 ? 0.4 : 1 }}
                       >
                         ▲
                       </button>
@@ -1445,7 +1445,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("right", "down")}
-                        style={{ opacity: volume.right <= 0 ? 0.7 : 1 }}
+                        style={{ opacity: volume.right <= 0 ? 0.4 : 1 }}
                       >
                         ▼
                       </button>
@@ -1467,7 +1467,7 @@ const DJ = () => {
                         className="control-button"
                         onClick={() => handleBPMChange("right", "up")}
                         style={{
-                          opacity: (rightTrack.bpm || rightTrack.originalBpm) >= 140 ? 0.7 : 1,
+                          opacity: (rightTrack.bpm || rightTrack.originalBpm) >= 140 ? 0.4 : 1,
                         }}
                       >
                         ▲
@@ -1479,7 +1479,7 @@ const DJ = () => {
                         className="control-button"
                         onClick={() => handleBPMChange("right", "down")}
                         style={{
-                          opacity: (rightTrack.bpm || rightTrack.originalBpm) <= 60 ? 0.7 : 1,
+                          opacity: (rightTrack.bpm || rightTrack.originalBpm) <= 60 ? 0.4 : 1,
                         }}
                       >
                         ▼
