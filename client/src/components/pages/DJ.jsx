@@ -50,6 +50,22 @@ const AVAILABLE_TRACKS = [
     bpm: 75,
     key: "C# Minor",
   },
+  {
+    isUserSong: false,
+    id: 6,
+    name: "Cradles by Sub Urban",
+    path: "Sub_Urban",
+    bpm: 79,
+    key: "Bb Minor",
+  },
+  {
+    isUserSong: false,
+    id: 7,
+    name: "Shine by Spektrum",
+    path: "Shine",
+    bpm: 128,
+    key: "Ab Major",
+  },
 ];
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
@@ -986,12 +1002,37 @@ const DJ = () => {
     console.log(`Loading track for ${deck} deck:`, track);
 
     try {
+      // Set loading state to true at the start
+      setIsLoading((prev) => ({ ...prev, [deck]: true }));
+
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
       const trackState = deck === "left" ? leftTrack : rightTrack;
       const audioElements = {};
 
+      // Find the track in AVAILABLE_TRACKS if it exists
+      const defaultTrack = AVAILABLE_TRACKS.find((t) => t.path === track.path);
+      const trackBpm = defaultTrack ? defaultTrack.bpm : track.bpm || 120;
+      const trackKey = defaultTrack ? defaultTrack.key : track.key || "C";
+
+      // Stop any currently playing audio
+      if (trackState.audioElements) {
+        Object.values(trackState.audioElements).forEach((audio) => {
+          if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+          }
+        });
+      }
+
+      // Stop and reset wavesurfers
+      Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          wavesurfer.pause();
+          wavesurfer.seekTo(0);
+        }
+      });
+
       const mapStemName = (stem) => {
-        // Map 'melody' to 'other' for file paths while keeping frontend display as 'melody'
         return stem === "melody" ? "other" : stem;
       };
 
@@ -1003,14 +1044,14 @@ const DJ = () => {
         return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };
 
-      // Calculate playback rate - use track.bpm as both target and original BPM for initial load
+      // Use trackBpm directly for initial load
       const newRate = 1.0; // Start at original speed
 
       // Load audio elements first
       for (const stem of STEM_TYPES) {
         console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
         const audio = new Audio();
-        audio.crossOrigin = "anonymous"; // Important for CORS
+        audio.crossOrigin = "anonymous";
         audio.src = getAudioPath(stem);
         audio.preload = "auto";
         audio.volume = volume[deck];
@@ -1062,7 +1103,6 @@ const DJ = () => {
               const audioPath = getAudioPath(stemToUse);
 
               await new Promise((resolve, reject) => {
-                // Set wavesurfer options for CORS
                 wavesurfer.setOptions({
                   backend: "MediaElement",
                   mediaControls: false,
@@ -1084,7 +1124,7 @@ const DJ = () => {
                     mediaElement.volume = 0;
                     mediaElement.muted = true;
                     mediaElement.playbackRate = newRate;
-                    mediaElement.crossOrigin = "anonymous"; // Important for CORS
+                    mediaElement.crossOrigin = "anonymous";
                   }
                   resolve();
                 });
@@ -1099,21 +1139,20 @@ const DJ = () => {
         );
       }
 
-      // Update track state
+      // Update track state with the correct BPM and key
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
         name: track.name,
         path: track.path,
-        key: track.key,
-        bpm: track.bpm, // Use the original BPM from the track
-        originalBpm: track.bpm,
+        key: trackKey,
+        bpm: trackBpm,
+        originalBpm: trackBpm,
         audioElements,
         effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
       }));
     } catch (error) {
       console.error("Error loading track:", error);
-      // Reset track state on error
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
@@ -1126,6 +1165,9 @@ const DJ = () => {
         effectsEnabled: {},
       }));
       throw error;
+    } finally {
+      // Always set loading state to false when done, whether successful or not
+      setIsLoading((prev) => ({ ...prev, [deck]: false }));
     }
   };
 
