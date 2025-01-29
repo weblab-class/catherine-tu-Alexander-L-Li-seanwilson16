@@ -70,25 +70,6 @@ const AVAILABLE_TRACKS = [
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
-// const stemColors = {
-//   bass: {
-//     waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
-//     progressColor: "rgba(255, 49, 140, 0.8)",
-//   },
-//   drums: {
-//     waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
-//     progressColor: "rgba(56, 255, 130, 0.8)",
-//   },
-//   melody: {
-//     waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
-//     progressColor: "rgba(255, 247, 32, 0.8)",
-//   },
-//   vocals: {
-//     waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
-//     progressColor: "rgba(70, 237, 255, 0.8)",
-//   },
-// };
-
 const createWaveSurfer = (container, options = {}) => {
   const timeline = TimelinePlugin.create({
     height: 20,
@@ -152,14 +133,118 @@ const DJ = () => {
 
     try {
       const response = await get("/api/songs");
-      const userSongs = response.map((song) => ({
-        isUserSong: true,
-        id: song._id,
-        name: song.title,
-        path: song._id,
-        bpm: song.bpm || 120,
-        key: song.key || "1A",
-      }));
+      console.log("Fetched songs from server:", response);
+
+      const userSongs = await Promise.all(
+        response.map(async (song) => {
+          const baseSong = {
+            isUserSong: true,
+            id: song._id,
+            name: song.title,
+            path: song._id,
+          };
+
+          console.log("Processing song:", {
+            title: song.title,
+            isUserSong: true,
+            bpm: song.bpm,
+            key: song.key,
+          });
+
+          if (true) {
+            try {
+              console.log(`Starting analysis for song: ${song.title}`);
+              const audioUrl = `http://localhost:3000/stems/${song._id}/other_stem.wav`;
+              console.log("Fetching audio from:", audioUrl);
+
+              const response = await fetch(audioUrl);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch audio: ${response.status} ${response.statusText}`);
+              }
+
+              const arrayBuffer = await response.arrayBuffer();
+              console.log("Audio file fetched, size:", arrayBuffer.byteLength);
+
+              const audioContext = new AudioContext();
+              const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+              console.log("Audio decoded, duration:", audioBuffer.duration);
+
+              const audioData = audioBuffer.getChannelData(0);
+              const sampleRate = audioBuffer.sampleRate;
+
+              // Analyze only first 30 seconds for efficiency
+              const maxSamples = Math.min(audioData.length, 30 * sampleRate);
+              const samples = audioData.slice(0, maxSamples);
+
+              // Calculate energy values in 1024-sample windows
+              const windowSize = 1024;
+              const energies = [];
+              for (let i = 0; i < samples.length - windowSize; i += windowSize) {
+                let energy = 0;
+                for (let j = 0; j < windowSize; j++) {
+                  energy += Math.abs(samples[i + j]);
+                }
+                energies.push(energy);
+              }
+
+              // Normalize energies
+              const maxEnergy = Math.max(...energies);
+              const normalizedEnergies = energies.map((e) => e / maxEnergy);
+
+              // Find peaks (beats)
+              const peaks = [];
+              const minPeakDistance = 12; // Minimum distance between peaks (about 200ms)
+              let lastPeakIndex = -minPeakDistance;
+
+              for (let i = 2; i < normalizedEnergies.length - 2; i++) {
+                if (
+                  normalizedEnergies[i] > 0.5 && // Threshold
+                  normalizedEnergies[i] > normalizedEnergies[i - 1] &&
+                  normalizedEnergies[i] > normalizedEnergies[i - 2] &&
+                  normalizedEnergies[i] > normalizedEnergies[i + 1] &&
+                  normalizedEnergies[i] > normalizedEnergies[i + 2] &&
+                  i - lastPeakIndex >= minPeakDistance
+                ) {
+                  peaks.push(i);
+                  lastPeakIndex = i;
+                }
+              }
+
+              // Calculate BPM
+              if (peaks.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < peaks.length; i++) {
+                  intervals.push(peaks[i] - peaks[i - 1]);
+                }
+
+                // Convert intervals to BPM values
+                const bpmValues = intervals.map(
+                  (interval) => (60 * sampleRate) / (interval * windowSize)
+                );
+
+                // Get median BPM (more robust than mean)
+                const sortedBpms = bpmValues.sort((a, b) => a - b);
+                const medianBpm = Math.round(sortedBpms[Math.floor(sortedBpms.length / 2)]);
+
+                // Ensure BPM is in reasonable range (60-180)
+                const bpm =
+                  medianBpm < 60 ? medianBpm * 2 : medianBpm > 180 ? medianBpm / 2 : medianBpm;
+
+                console.log(`Analysis results for ${song.title}:`, { bpm });
+                return { ...baseSong, bpm, key: "C Major" };
+              }
+
+              console.log(`Could not detect BPM for ${song.title}, using default`);
+              return { ...baseSong, bpm: 120, key: "C Major" };
+            } catch (error) {
+              console.error(`Error analyzing song ${song.title}:`, error);
+              return { ...baseSong, bpm: 120, key: "C Major" };
+            }
+          }
+          return { ...baseSong, bpm: song.bpm || 120, key: song.key || "" };
+        })
+      );
+      console.log("Final processed user songs:", userSongs);
       setTracks((prevTracks) => [...userSongs, ...AVAILABLE_TRACKS]);
     } catch (err) {
       console.error("Error fetching user songs:", err);
@@ -1211,6 +1296,44 @@ const DJ = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const renderImportDropdown = (deck) => {
+    return (
+      <div className="import-dropdown">
+        {tracks.map((track) => (
+          <button key={track.id} onClick={() => handleTrackSelect(track, deck)}>
+            <div className="song-info">
+              <span className="song-name">{track.name}</span>
+              <span className="song-details">
+                BPM: {track.bpm} | Key: {track.key}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const renderTrackInfo = (deck) => {
+    const track = deck === "left" ? leftTrack : rightTrack;
+    return (
+      <div className="track-info">
+        <div className="track-title">
+          {track.name ? (
+            <>
+              {track.name}
+              <span className="track-details">
+                {" "}
+                • BPM: {track.bpm} • Key: {track.key}
+              </span>
+            </>
+          ) : (
+            "No track loaded"
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {showLoadingScreen && <Loading />}
@@ -1239,39 +1362,9 @@ const DJ = () => {
                     IMPORT SONG ▼
                   </button>
                   {isLoading.left && <div className="track-loading-spinner left" />}
-                  {dropdownOpen.left && (
-                    <div className="import-dropdown">
-                      {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelectWrapper("left", track);
-                          }}
-                        >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {dropdownOpen.left && renderImportDropdown("left")}
                 </div>
-                <div className="track-info">
-                  {leftTrack.name ? (
-                    <>
-                      <div className="track-name-left">{leftTrack.name}</div>
-                      <div className="track-details-left">
-                        {leftTrack.bpm + " BPM • " + leftTrack.key}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-track-left">NO TRACK LOADED</div>
-                  )}
-                </div>
+                {renderTrackInfo("left")}
               </div>
 
               <div className="import-container import-container-right">
@@ -1286,39 +1379,9 @@ const DJ = () => {
                     IMPORT SONG ▼
                   </button>
                   {isLoading.right && <div className="track-loading-spinner right" />}
-                  {dropdownOpen.right && (
-                    <div className="import-dropdown">
-                      {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelectWrapper("right", track);
-                          }}
-                        >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {dropdownOpen.right && renderImportDropdown("right")}
                 </div>
-                <div className="track-info">
-                  {rightTrack.name ? (
-                    <>
-                      <div className="track-name-right">{rightTrack.name}</div>
-                      <div className="track-details-right">
-                        {rightTrack.bpm + " BPM • " + rightTrack.key}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-track-right">NO TRACK LOADED</div>
-                  )}
-                </div>
+                {renderTrackInfo("right")}
               </div>
             </div>
           </div>

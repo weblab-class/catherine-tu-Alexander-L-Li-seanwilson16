@@ -229,6 +229,16 @@ body {
   margin-top: 10px;
   position: relative;
   z-index: 1;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 25px;
+  gap: 10px;
+  margin-left: 5px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--josefin);
+  font-size: 1.1em;
 }
 
 /* Override for right deck to ensure it stays centered */
@@ -237,7 +247,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
 } */
-
+/* 
 .track-name-left {
   font-size: 1.2em;
   font-weight: bold;
@@ -252,16 +262,7 @@ body {
   margin-bottom: 5px;
   font-family: var(--josefin);
   color: rgba(255, 255, 255, 0.7);
-}
-
-.track-info {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 25px;
-  gap: 10px;
-  margin-left: 5px;
-}
+} */
 
 .no-track-left {
   left: 0px;
@@ -1182,6 +1183,7 @@ body {
   .track-details-right {
     font-family: var(--josefin);
     font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
   }
 }
 
