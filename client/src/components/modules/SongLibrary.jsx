@@ -185,7 +185,7 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
     let progress = 0;
 
     const songStatus = songStatuses[song._id];
-    console.log("Rendering progress for song:", song._id, "Status:", songStatus);
+    // console.log("Rendering progress for song:", song._id, "Status:", songStatus);
 
     if (song.stemsStatus === "completed" || (songStatus && songStatus.completedJobs === songStatus.totalJobs)) {
       progress = 100;
