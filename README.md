@@ -1,5 +1,5 @@
 ### INTRO 
-hey hey hey! we made this as 3 freshmen, and we met each other through the logarhythms of mit a cappella group, through our love for music. whether it’s singing, or playing an instrument, or listening to songs, music can strengthen many bonds. we hope that with our website, you can be encouraged to ~branch out~ (ahaha) and meet new people & try new things. we hope you enjoy chilldeck! built by chill people, for chill people.
+hey hey hey! we made this as 3 freshmen, and we met each other through the logarhythms of mit a cappella group, through our love for music. whether it’s singing, or playing an instrument, or listening to songs, music can strengthen many bonds. we hope that with our website, you can be encouraged to _branch out_ (ahaha) and meet new people & try new things. we hope you enjoy chilldeck! built by chill people, for chill people.
 
 ### STRUCTURE
 # front-end:
@@ -26,7 +26,7 @@ cat, alex, sean
 
 
 
-
+<!-- 
 
 ## INSTRUCTIONS
 
@@ -100,7 +100,7 @@ Then open http://localhost:5173
 
 Check out this [How to Get Started Guide](http://weblab.is/get-started) -->
 
-## Socket stuff
+<!-- ## Socket stuff
 
 Note: we'll be getting to this in lecture in week 2, so don't worry if you don't know it yet
 
@@ -122,4 +122,4 @@ package-lock.json
 vite.config.js
 ```
 
-## Good luck on your project :)
+## Good luck on your project :) --> -->
