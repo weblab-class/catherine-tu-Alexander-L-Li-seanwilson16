@@ -1135,9 +1135,8 @@ const DJ = () => {
 
       const getAudioPath = (stem) => {
         const stemFileName = mapStemName(stem);
-        const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
         if (track.isUserSong === true) {
-          return `${serverUrl}/stems/${track.id}/${stemFileName}_stem.wav`;
+          return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
         }
         return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };
