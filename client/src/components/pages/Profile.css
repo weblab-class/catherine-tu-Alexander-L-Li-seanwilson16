@@ -100,7 +100,7 @@ img.Profile-avatar,
   position: relative;
   margin: 0;
   padding: 0;
-  padding-bottom: env(safe-area-inset-bottom, 20px);
+  /* padding-bottom: env(safe-area-inset-bottom, 20px); */
   justify-content: flex-start;
 }
 
@@ -121,7 +121,17 @@ img.Profile-avatar,
   min-width: 300px;
   max-width: 800px;
   border-radius: 8px;
-  padding: 0px 20px 0px 20px;
+  padding: 0px 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.song-library-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .profile-content {
@@ -250,7 +260,7 @@ img.Profile-avatar,
 /* iPhone XR landscape specific */
 @media only screen and (device-width: 896px) and (device-height: 414px) and (orientation: landscape) {
   .profile-container {
-    padding: 0.5rem 0;
+    /* padding: 0.5rem 0; */
     gap: 0.5rem;
     min-height: -webkit-fill-available;
   }
