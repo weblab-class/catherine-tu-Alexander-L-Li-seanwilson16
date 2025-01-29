@@ -10,6 +10,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [songStatuses, setSongStatuses] = useState({});
 
   const fetchSongs = async () => {
     if (!isLoggedIn) {
@@ -61,36 +62,65 @@ const SongLibrary = ({ onUploadSuccess }) => {
     }
   };
 
+  // Function to check job status
+  const checkJobStatus = async (song) => {
+    if (!song.audioshakeJobIds) {
+      console.log("No job IDs found for song:", song._id);
+      return;
+    }
+
+    try {
+      console.log("Checking status for song:", song._id);
+      const response = await get(`/api/songs/${song._id}/status`);
+      console.log("Status response:", response);
+      
+      if (response.status) {
+        setSongStatuses(prev => ({
+          ...prev,
+          [song._id]: response.status
+        }));
+      }
+    } catch (error) {
+      console.error("Error checking job status:", error);
+    }
+  };
+
+  // Poll for status updates
+  useEffect(() => {
+    if (!songs.length) return;
+
+    // Initial check for all songs
+    songs.forEach(song => {
+      checkJobStatus(song);
+    });
+
+    const interval = setInterval(() => {
+      songs.forEach(song => {
+        checkJobStatus(song);
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [songs]);
+
   const renderProgress = (song) => {
     let status = "Processing...";
     let progress = 0;
 
-    // Calculate progress based on stem separation status
-    if (song.stemsStatus === "completed") {
-      progress = 100;
-    } else if (song.stemsStatus === "processing") {
-      // Calculate progress based on completed stems
-      const totalStems = 4; // vocals, drums, bass, other
-      const completedStems = Object.keys(song.stems || {}).length;
-      progress = Math.floor((completedStems / totalStems) * 100);
-    }
+    const songStatus = songStatuses[song._id];
+    console.log("Rendering progress for song:", song._id, "Status:", songStatus);
 
-    // Set status text based on state
-    switch (song.stemsStatus) {
-      case "pending":
-        status = "Starting";
-        break;
-      case "processing":
-        status = "Processing stems";
-        break;
-      case "completed":
-        status = "Ready";
-        break;
-      case "failed":
-        status = "Failed";
-        break;
-      default:
-        status = "Unknown";
+    if (song.stemsStatus === "completed" || (songStatus && songStatus.completedJobs === songStatus.totalJobs)) {
+      progress = 100;
+      status = "Ready";
+    } else if (songStatus) {
+      const { completedJobs, totalJobs } = songStatus;
+      progress = Math.floor((completedJobs / totalJobs) * 100);
+      status = `Processing stems (${completedJobs}/${totalJobs})`;
+    } else if (song.stemsStatus === "pending") {
+      status = "Starting";
+    } else if (song.stemsStatus === "failed") {
+      status = "Failed";
     }
 
     return (

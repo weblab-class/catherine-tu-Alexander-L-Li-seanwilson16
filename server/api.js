@@ -591,6 +591,91 @@ router.delete("/song/:id", auth.ensureLoggedIn, async (req, res) => {
   }
 });
 
+// Get song processing status
+router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    console.log("Checking status for song:", req.params.songId);
+    const song = await Song.findById(req.params.songId);
+    if (!song) {
+      console.log("Song not found:", req.params.songId);
+      return res.status(404).send({ error: "Song not found" });
+    }
+
+    console.log("Found song:", song._id, "Status:", song.stemsStatus);
+
+    // If song is already completed or failed, return current status
+    if (song.stemsStatus === "completed") {
+      console.log("Song already completed");
+      return res.send({ status: { completedJobs: 4, totalJobs: 4 } });
+    }
+    if (song.stemsStatus === "failed") {
+      console.log("Song failed");
+      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
+    }
+
+    // Check if we have jobIds
+    if (!song.audioshakeJobIds || song.audioshakeJobIds.length === 0) {
+      console.log("No job IDs found for song");
+      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
+    }
+
+    console.log("Checking job statuses for:", song.audioshakeJobIds);
+
+    // Check status of each job
+    const jobStatuses = await Promise.all(
+      song.audioshakeJobIds.map(async (jobId) => {
+        try {
+          const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
+            headers: {
+              Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+            },
+          });
+          console.log(`Job ${jobId} status:`, response.data.job.status);
+          return response.data.job.status;
+        } catch (error) {
+          console.error(`Error checking job ${jobId}:`, error.message);
+          if (error.response) {
+            console.error("Response data:", error.response.data);
+          }
+          return "error";
+        }
+      })
+    );
+
+    // Count completed jobs
+    const completedJobs = jobStatuses.filter(status => status === "completed").length;
+    const totalJobs = jobStatuses.length;
+
+    console.log("Job completion:", completedJobs, "/", totalJobs);
+
+    // Update song status if all jobs are complete
+    if (completedJobs === totalJobs && !jobStatuses.includes("error")) {
+      console.log("All jobs completed, updating song status");
+      song.stemsStatus = "completed";
+      await song.save();
+    }
+
+    const response = {
+      status: {
+        completedJobs,
+        totalJobs,
+        jobStatuses
+      }
+    };
+    console.log("Sending response:", response);
+    res.send(response);
+  } catch (error) {
+    console.error("Error checking song status:", error.message);
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+    }
+    res.status(500).send({ 
+      error: "Error checking song status",
+      details: error.message 
+    });
+  }
+});
+
 // audioshake create a new asset
 router.post("/audioshake/upload", async (req, res) => {
   try {
