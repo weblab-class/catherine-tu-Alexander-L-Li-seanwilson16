@@ -21,6 +21,10 @@
   width: 8rem;
   margin: 5px;
   touch-action: manipulation;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 .button-style:hover {
@@ -51,6 +55,10 @@
   padding: 0 10px;
   position: relative;
   z-index: 3;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 /* Mobile adjustments */
@@ -509,4 +517,15 @@
     justify-content: center !important;
     margin: 0 !important;
   }
+}
+
+.theme-button,
+.theme-button span,
+.theme-button img,
+.theme-buttons button,
+.theme-buttons button * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }

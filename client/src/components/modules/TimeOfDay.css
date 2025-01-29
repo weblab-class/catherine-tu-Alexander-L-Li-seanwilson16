@@ -15,6 +15,17 @@
   line-height: 1.2;
 }
 
+.greeting,
+.greeting *,
+.user-name,
+.user-name * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none;
+}
+
 @media screen and (max-width: 480px) {
   .profile-title {
     font-size: 2rem;
