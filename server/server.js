@@ -147,11 +147,19 @@ app.use((err, req, res, next) => {
   });
 });
 
-// hardcode port to 3000 for now
-const port = 3000;
-const server = http.Server(app);
-socketManager.init(server);
+// Port that the webserver listens to
+const port = process.env.PORT || 3000;
+const host = '0.0.0.0';  // Bind to all network interfaces
 
-server.listen(port, () => {
-  // console.log(`Server running on port: ${port}`);
+const server = http.createServer(app);
+
+// Increase timeouts
+server.keepAliveTimeout = 120000; // 120 seconds
+server.headersTimeout = 120000; // 120 seconds
+
+server.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}`);
 });
+
+// Add socket stuff
+socketManager.init(server);
