@@ -13,6 +13,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
+const { s3, BUCKET_NAME } = require("./aws-config");
 
 // Import our stem processing modules
 const { createStems, checkStemStatus } = require("./audioshake-stem-steps");
@@ -29,28 +30,8 @@ const socketManager = require("./server-socket");
 
 const router = express.Router();
 
-// Ensure upload directories exist
-const uploadsDir = path.join(__dirname, "../uploads");
-const stemsDir = path.join(__dirname, "../stems");
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-if (!fs.existsSync(stemsDir)) {
-  fs.mkdirSync(stemsDir, { recursive: true });
-}
-
 // Configure multer for handling file uploads
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename(req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage(); // Use memory storage instead of disk
 
 const upload = multer({
   storage: storage,
@@ -160,211 +141,168 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // console.log("File uploaded:", {
-    //   filename: req.file.filename,
-    //   path: req.file.path,
-    //   mimetype: req.file.mimetype,
-    //   size: req.file.size,
-    // });
+    // Generate unique filename
+    const timestamp = new Date().getTime();
+    const filename = `${timestamp}-${req.file.originalname}`;
+    const s3Key = `uploads/${req.user._id}/${filename}`;
 
+    // Upload to S3
+    const uploadParams = {
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    };
+
+    const s3Response = await s3.upload(uploadParams).promise();
+
+    // Create song document
     const song = new Song({
       creator_id: req.user._id,
       title: req.body.title || req.file.originalname,
-      filename: req.file.filename,
-      filePath: req.file.path,
+      filename: filename,
+      filePath: s3Response.Location, // Store S3 URL instead of local path
       fileType: req.file.mimetype,
       fileSize: req.file.size,
+      uploadDate: new Date(),
       processed: false,
       stemsStatus: "pending",
+      stems: {},
     });
 
     await song.save();
-    // console.log("Song saved to database:", song._id);
 
-    // Create stems directory for this song using song ID
-    const songStemsDir = path.join(stemsDir, song._id.toString());
-    if (!fs.existsSync(songStemsDir)) {
-      fs.mkdirSync(songStemsDir, { recursive: true });
-    }
+    // Send initial response immediately
+    res.status(200).json(song);
 
-    // Start the stem separation process immediately
-    // console.log("Starting stem separation process...");
-    let assetId, jobIds;
-    createStems(song.filePath, song._id)
-      .then((result) => {
-        // console.log("Stems creation started:", result);
-        assetId = result.assetId;
-        jobIds = result.jobIds;
-        song.audioshakeAssetId = assetId;
-        song.audioshakeJobIds = jobIds;
-        song.stemsStatus = "processing";
-        song.stems = {}; // Initialize empty stems object
-        return song.save();
-      })
-      .then(() => {
-        // Start polling for completion
-        const pollInterval = setInterval(async () => {
-          try {
-            // console.log("Checking stem status...");
-            const jobStatuses = await Promise.all(
-              jobIds.map(async (jobId) => {
-                try {
-                  const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
-                    headers: {
-                      Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
-                    },
-                  });
-                  return { jobId, status: response.data.job.status, data: response.data.job };
-                } catch (error) {
-                  console.error(`Error checking job ${jobId}:`, error);
-                  return { jobId, status: "error", error };
-                }
-              })
-            );
+    // Start stem processing in background
+    try {
+      console.log("Starting stem creation for song:", song._id);
+      const result = await createStems(s3Response.Location, song._id);
+      const { assetId, jobIds } = result;
+      
+      // Update song with AudioShake IDs
+      song.audioshakeAssetId = assetId;
+      song.audioshakeJobIds = jobIds;
+      song.stemsStatus = "processing";
+      await song.save();
 
-            // Download completed stems that haven't been downloaded yet
-            const stemTypes = ["vocals", "drums", "bass", "other"];
-            let allCompleted = true;
-            let anyNewDownloads = false;
-
-            for (let i = 0; i < jobIds.length; i++) {
-              const jobStatus = jobStatuses[i];
-              const stemType = stemTypes[i];
-
-              if (jobStatus.status === "completed" && !song.stems[stemType]) {
-                try {
-                  // Download logic here...
-                  // Create stems directory if it doesn't exist
-                  if (!fs.existsSync(songStemsDir)) {
-                    fs.mkdirSync(songStemsDir, { recursive: true });
-                  }
-
-                  // Get the stem URL based on stem type
-                  let stemUrl;
-                  // console.log(
-                  //   `\nChecking stem data for ${stemType}:`,
-                  //   JSON.stringify(jobStatus.data, null, 2)
-                  // );
-
-                  if (stemType === "other") {
-                    // For 'other' stem, look in stemAssets array
-                    const otherStem = jobStatus.data.stemAssets?.find(
-                      (asset) => asset.name === "other.wav"
-                    );
-                    stemUrl = otherStem?.link;
-                  } else {
-                    // For other stems, look in stemAssets array with their respective names
-                    const stem = jobStatus.data.stemAssets?.find(
-                      (asset) => asset.name === `${stemType}.wav`
-                    );
-                    if (stem) {
-                      stemUrl = stem.link;
-                    } else {
-                      // Fallback to output.url if stemAssets not found
-                      stemUrl = jobStatus.data.output?.url;
-                    }
-                  }
-
-                  if (!stemUrl) {
-                    console.error(
-                      `No URL found for ${stemType} stem in job response. Job data:`,
-                      JSON.stringify(jobStatus.data, null, 2)
-                    );
-                    continue;
-                  }
-
-                  // console.log(`Found stem URL for ${stemType}:`, stemUrl);
-
-                  // Download the stem
-                  const headers = {
-                    Accept: "*/*", // Accept any content type
-                  };
-
-                  // Only add Authorization header if not an S3 URL
-                  if (!stemUrl.includes("s3.amazonaws.com")) {
-                    headers["Authorization"] = `Bearer ${process.env.AUDIOSHAKE_API_KEY}`;
-                  }
-
-                  const response = await axios({
-                    method: "GET",
-                    url: stemUrl,
-                    responseType: "arraybuffer", // Changed to arraybuffer for binary data
-                    headers,
-                    maxRedirects: 5, // Allow redirects
-                    validateStatus: null, // Don't throw on any status
-                  });
-
-                  if (response.status !== 200) {
-                    console.error(`Error downloading ${stemType} stem: Status ${response.status}`);
-                    if (response.data) {
-                      console.error("Response:", response.data.toString());
-                    }
-                    continue;
-                  }
-
-                  // Create stems directory if it doesn't exist
-                  if (!fs.existsSync(songStemsDir)) {
-                    fs.mkdirSync(songStemsDir, { recursive: true });
-                  }
-
-                  // Write the buffer to file
-                  try {
-                    await fs.promises.writeFile(
-                      path.join(songStemsDir, `${stemType}_stem.wav`),
-                      response.data
-                    );
-                    // console.log(`Successfully wrote ${stemType} stem to ${songStemsDir}`);
-
-                    // Verify the file was written
-                    const stats = await fs.promises.stat(
-                      path.join(songStemsDir, `${stemType}_stem.wav`)
-                    );
-                    // console.log(`File size: ${stats.size} bytes`);
-
-                    // Update the stems object with the new stem
-                    song.stems[stemType] = `${stemType}_stem.wav`;
-                    anyNewDownloads = true;
-                    await song.save(); // Save after each stem to track progress
-                  } catch (writeError) {
-                    console.error(`Error writing file ${songStemsDir}:`, writeError);
-                    continue;
-                  }
-                } catch (error) {
-                  console.error(`Error downloading ${stemType} stem:`, error);
-                }
-              } else if (jobStatus.status !== "completed") {
-                allCompleted = false;
+      // Start polling for completion
+      const stemTypes = ["vocals", "drums", "bass", "other"];
+      const pollInterval = setInterval(async () => {
+        try {
+          console.log(`Checking stem status for song ${song._id}...`);
+          const jobStatuses = await Promise.all(
+            jobIds.map(async (jobId) => {
+              try {
+                const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
+                  headers: {
+                    Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+                  },
+                });
+                return { jobId, status: response.data.job.status, data: response.data.job };
+              } catch (error) {
+                console.error(`Error checking job ${jobId}:`, error);
+                return { jobId, status: "error", error };
               }
-            }
+            })
+          );
 
-            // If all jobs are complete, finish up
-            if (allCompleted) {
-              clearInterval(pollInterval);
-              song.stemsStatus = "completed";
-              song.processed = true;
-              await song.save();
+          // Download completed stems that haven't been downloaded yet
+          let allCompleted = true;
+          let anyNewDownloads = false;
+
+          for (let i = 0; i < jobIds.length; i++) {
+            const jobStatus = jobStatuses[i];
+            const stemType = stemTypes[i];
+
+            console.log(`Status for ${stemType}:`, jobStatus.status);
+
+            if (jobStatus.status === "completed" && !song.stems[stemType]) {
+              try {
+                // Get the stem URL based on stem type
+                let stemUrl;
+                
+                if (stemType === "other") {
+                  // For 'other' stem, look in stemAssets array
+                  const otherStem = jobStatus.data.stemAssets?.find(
+                    (asset) => asset.name === "other.wav"
+                  );
+                  stemUrl = otherStem?.link;
+                } else {
+                  // For other stems, look in stemAssets array with their respective names
+                  const stem = jobStatus.data.stemAssets?.find(
+                    (asset) => asset.name === `${stemType}.wav`
+                  );
+                  if (stem) {
+                    stemUrl = stem.link;
+                  } else {
+                    // Fallback to output.url if stemAssets not found
+                    stemUrl = jobStatus.data.output?.url;
+                  }
+                }
+
+                if (!stemUrl) {
+                  throw new Error(`No URL found for ${stemType} stem`);
+                }
+
+                // Upload stem to S3
+                const stemResponse = await axios.get(stemUrl, { responseType: 'arraybuffer' });
+                const stemS3Key = `stems/${song._id}/${stemType}.wav`;
+                const stemUploadParams = {
+                  Bucket: BUCKET_NAME,
+                  Key: stemS3Key,
+                  Body: stemResponse.data,
+                  ContentType: 'audio/wav'
+                };
+
+                const stemS3Response = await s3.upload(stemUploadParams).promise();
+                
+                // Update song with stem URL
+                song.stems[stemType] = stemS3Response.Location;
+                anyNewDownloads = true;
+
+                console.log(`Successfully processed ${stemType} stem for song ${song._id}`);
+              } catch (error) {
+                console.error(`Error processing ${stemType} stem:`, error);
+                song.stems[stemType] = null; // Mark as failed
+              }
+            } else if (jobStatus.status !== "completed") {
+              allCompleted = false;
             }
-          } catch (error) {
-            console.error("Error in stem processing:", error);
-            clearInterval(pollInterval);
-            song.stemsStatus = "failed";
+          }
+
+          // Save any stem updates
+          if (anyNewDownloads) {
             await song.save();
           }
-        }, 5000); // Check every 5 seconds
-      })
-      .catch((error) => {
-        console.error("Error starting stem process:", error);
-        song.stemsStatus = "failed";
-        song.save();
-      });
 
-    // Send response immediately with the song object
-    res.status(200).json(song);
+          // If all jobs are complete, finish up
+          if (allCompleted) {
+            clearInterval(pollInterval);
+            song.stemsStatus = "completed";
+            song.processed = true;
+            await song.save();
+            console.log(`All stems completed for song ${song._id}`);
+          }
+        } catch (error) {
+          console.error("Error in stem processing:", error);
+          clearInterval(pollInterval);
+          song.stemsStatus = "failed";
+          await song.save();
+        }
+      }, 5000); // Check every 5 seconds
+    } catch (error) {
+      console.error("Error starting stem process:", error);
+      song.stemsStatus = "failed";
+      await song.save();
+    }
   } catch (error) {
     console.error("Error uploading song:", error);
     res.status(500).json({ error: "Failed to upload song", details: error.message });
   }
 });
+
 router.get("/songs", auth.ensureLoggedIn, (req, res) => {
   Song.find({ creator_id: req.user._id }).then((songs) => {
     // Transform songs to include full paths for stems
@@ -519,21 +457,12 @@ router.get("/song/:id/debug", auth.ensureLoggedIn, async (req, res) => {
       uploadDate: song.uploadDate,
       audioshakeKeyConfigured: !!process.env.AUDIOSHAKE_API_KEY,
       originalFile: {
-        exists: fs.existsSync(song.filePath),
+        exists: false, // File is stored in S3, not locally
         path: song.filePath,
         size: song.fileSize,
         type: song.fileType,
       },
     };
-
-    // Check if stems directory exists
-    const stemsDir = path.join(__dirname, "../stems", song._id.toString());
-    debugInfo.stemsDirExists = fs.existsSync(stemsDir);
-    debugInfo.stemsDir = stemsDir;
-
-    if (debugInfo.stemsDirExists) {
-      debugInfo.stemFiles = fs.readdirSync(stemsDir);
-    }
 
     // If we have an AudioShake job ID, check its status
     if (song.audioshakeJobIds) {
@@ -578,10 +507,12 @@ router.delete("/song/:id", auth.ensureLoggedIn, async (req, res) => {
       return res.status(404).json({ error: "Song not found" });
     }
 
-    // Delete the file from storage
-    if (fs.existsSync(song.filePath)) {
-      fs.unlinkSync(song.filePath);
-    }
+    // Delete the file from S3
+    const s3Params = {
+      Bucket: BUCKET_NAME,
+      Key: song.filePath,
+    };
+    await s3.deleteObject(s3Params).promise();
 
     await Song.deleteOne({ _id: req.params.id });
     res.json({ message: "Song deleted successfully" });
@@ -653,82 +584,54 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
     console.log("Checking status for song:", req.params.songId);
     const song = await Song.findById(req.params.songId);
     if (!song) {
-      // console.log("Song not found:", req.params.songId);
-      return res.status(404).send({ error: "Song not found" });
+      return res.status(404).json({ error: "Song not found" });
     }
 
-    // console.log("Found song:", song._id, "Status:", song.stemsStatus);
-
-    // If song is already completed or failed, return current status
-    if (song.stemsStatus === "completed") {
-      // console.log("Song already completed");
-      return res.send({ status: { completedJobs: 4, totalJobs: 4 } });
-    }
-    if (song.stemsStatus === "failed") {
-      // console.log("Song failed");
-      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
-    }
-
-    // Check if we have jobIds
-    if (!song.audioshakeJobIds || song.audioshakeJobIds.length === 0) {
-      // console.log("No job IDs found for song");
-      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
-    }
-
-    // console.log("Checking job statuses for:", song.audioshakeJobIds);
-
-    // Check status of each job
-    const jobStatuses = await Promise.all(
-      song.audioshakeJobIds.map(async (jobId) => {
-        try {
-          const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
-            headers: {
-              Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
-            },
-          });
-          // console.log(`Job ${jobId} status:`, response.data.job.status);
-          return response.data.job.status;
-        } catch (error) {
-          console.error(`Error checking job ${jobId}:`, error.message);
-          if (error.response) {
-            console.error("Response data:", error.response.data);
+    // If the song is still processing, check the actual job statuses
+    if (song.stemsStatus === "processing" && song.audioshakeJobIds?.length > 0) {
+      const stemTypes = ["vocals", "drums", "bass", "other"];
+      const jobStatuses = await Promise.all(
+        song.audioshakeJobIds.map(async (jobId) => {
+          try {
+            const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
+              headers: {
+                Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+              },
+            });
+            return response.data.job.status;
+          } catch (error) {
+            console.error(`Error checking job ${jobId}:`, error);
+            return "error";
           }
-          return "error";
-        }
-      })
-    );
+        })
+      );
 
-    // Count completed jobs
-    const completedJobs = jobStatuses.filter((status) => status === "completed").length;
-    const totalJobs = jobStatuses.length;
+      // Calculate progress based on completed stems
+      const completedStems = jobStatuses.filter(status => status === "completed").length;
+      const progress = (completedStems / stemTypes.length) * 100;
 
-    // console.log("Job completion:", completedJobs, "/", totalJobs);
-
-    // Update song status if all jobs are complete
-    if (completedJobs === totalJobs && !jobStatuses.includes("error")) {
-      // console.log("All jobs completed, updating song status");
-      song.stemsStatus = "completed";
-      await song.save();
+      return res.json({
+        songId: song._id,
+        status: song.stemsStatus,
+        progress,
+        stems: song.stems || {},
+        stemStatuses: stemTypes.map((type, i) => ({
+          type,
+          status: jobStatuses[i]
+        }))
+      });
     }
 
-    const response = {
-      status: {
-        completedJobs,
-        totalJobs,
-        jobStatuses,
-      },
-    };
-    // console.log("Sending response:", response);
-    res.send(response);
-  } catch (error) {
-    console.error("Error checking song status:", error.message);
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-    }
-    res.status(500).send({
-      error: "Error checking song status",
-      details: error.message,
+    // For completed or failed songs, just return the status
+    return res.json({
+      songId: song._id,
+      status: song.stemsStatus,
+      progress: song.stemsStatus === "completed" ? 100 : 0,
+      stems: song.stems || {}
     });
+  } catch (error) {
+    console.error("Error checking song status:", error);
+    res.status(500).json({ error: "Failed to check song status" });
   }
 });
 
