@@ -1,7 +1,7 @@
-## INTRO 
+### INTRO 
 hey hey hey! we made this as 3 freshmen, and we met each other through the logarhythms of mit a cappella group, through our love for music. whether it’s singing, or playing an instrument, or listening to songs, music can strengthen many bonds. we hope that with our website, you can be encouraged to ~branch out~ (ahaha) and meet new people & try new things. we hope you enjoy chilldeck! built by chill people, for chill people.
 
-## STRUCTURE
+### STRUCTURE
 # front-end:
 - incorperated mantine libraries
 - responsive design accounted for different screen sizes
@@ -10,12 +10,13 @@ hey hey hey! we made this as 3 freshmen, and we met each other through the logar
 - audioshake api to split the song into 4 stems
 - wavesurfer api to visualize audio waveforms on the dj board
 
-# databate:
+# database:
 - user schema (includes name, googleid, chosen theme, chosen profile picture)
 - song schema (includes creator_id, title, filename, filePath, fileType, fileSize, stems, processed, audioshakeAssetId, audioshakeJobIds, stemsStatus, stemsPath, uploadDate)
 
-
-
+happy branching!!
+made with love,
+cat, alex, sean
 
 
 
