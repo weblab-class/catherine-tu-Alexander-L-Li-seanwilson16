@@ -1,3 +1,6 @@
+# our component tree (:
+![component-tree](https://github.com/user-attachments/assets/8e5b2740-495c-4087-bde2-5bd44ae75b97)
+
 # INTRO 
 hey hey hey! we made this as 3 freshmen, and we met each other through the logarhythms of mit a cappella group, through our love for music. whether it’s singing, or playing an instrument, or listening to songs, music can strengthen many bonds. we hope that with our website, you can be encouraged to _branch out_ (ahaha) and meet new people & try new things. we hope you enjoy chilldeck! built by chill people, for chill people.
 
@@ -17,6 +20,8 @@ hey hey hey! we made this as 3 freshmen, and we met each other through the logar
 happy branching!!
 made with love,
 cat, alex, sean
+
+
 
 
 
