@@ -4,25 +4,6 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 /**
- * Formats a stem filename consistently
- * @param {string} stemType - Type of stem (vocals, drums, bass, melody)
- * @returns {string} - Formatted filename
- */
-function formatStemFilename(stemType) {
-  // Map 'other' to 'melody'
-  const typeMap = {
-    other: "melody",
-    vocals: "vocals",
-    drums: "drums",
-    bass: "bass",
-  };
-
-  // Get the correct stem type name and append .wav
-  const mappedType = typeMap[stemType] || stemType;
-  return `${mappedType}.wav`;
-}
-
-/**
  * Downloads and saves stems from AudioShake
  * @param {string} assetId - AudioShake asset ID
  * @param {string[]} jobIds - Array of AudioShake job IDs

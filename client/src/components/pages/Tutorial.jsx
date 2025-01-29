@@ -1,4 +1,3 @@
-import "../pages/DJ.css";
 import React, { useState, useEffect } from "react";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import LoginOverlay from "../modules/LoginOverlay";
@@ -7,206 +6,206 @@ import TutorialImportAndWaveforms from "../modules/TutorialImportAndWaveforms";
 import TutorialLeftControls from "../modules/TutorialLeftControls";
 import TutorialRightControls from "../modules/TutorialRightControls";
 import TutorialCentralControls from "../modules/TutorialCentralControls";
-import TutorialModal from "../modules/TutorialModal";
+import HelpText, { walkthroughSteps } from "../modules/HelpText";
+import Walkthrough from "../modules/Walkthrough";
+import "../pages/DJ.css";
+import "../../components/pages/Tutorial.css";
 
 const Tutorial = () => {
   const isLoggedIn = useRequireLogin();
-  const [isModalVisible, setIsModalVisible] = useState(true);
-  
-  // Left deck states
-  const [leftPopovers, setLeftPopovers] = useState({
-    cue: false,
-    play: false,
-    bpm: false,
-    turntable: false,
-    volume: false,
-    effects: false
-  });
+  const [isWalkthrough, setIsWalkthrough] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [spotlightPosition, setSpotlightPosition] = useState(null);
+  const [hasTransition, setHasTransition] = useState(false);
 
-  // Right deck states
-  const [rightPopovers, setRightPopovers] = useState({
-    cue: false,
-    play: false,
-    bpm: false,
-    turntable: false,
-    volume: false,
-    effects: false
-  });
+  // States for hover popovers
+  const [cueOpened, setCueOpened] = useState(false);
+  const [playOpened, setPlayOpened] = useState(false);
+  const [bpmOpened, setBpmOpened] = useState(false);
+  const [turntableOpened, setTurntableOpened] = useState(false);
+  const [volumeOpened, setVolumeOpened] = useState(false);
+  const [effectsOpened, setEffectsOpened] = useState(false);
+  const [rightCueOpened, setRightCueOpened] = useState(false);
+  const [rightPlayOpened, setRightPlayOpened] = useState(false);
+  const [rightBpmOpened, setRightBpmOpened] = useState(false);
+  const [rightTurntableOpened, setRightTurntableOpened] = useState(false);
+  const [rightVolumeOpened, setRightVolumeOpened] = useState(false);
+  const [rightEffectsOpened, setRightEffectsOpened] = useState(false);
+  const [syncOpened, setSyncOpened] = useState(false);
+  const [resetOpened, setResetOpened] = useState(false);
 
-  // Central controls states
-  const [centralPopovers, setCentralPopovers] = useState({
-    sync: false,
-    reset: false,
-  });
+  const updateSpotlightPosition = () => {
+    const element = document.querySelector(walkthroughSteps[currentStep].selector);
+    
+    if (element) {
+      const elementRect = element.getBoundingClientRect();
+      
+      // Special handling for different types of controls
+      const isBpmSlider = element.classList.contains('bpm-slider-container-left') || 
+                         element.classList.contains('bpm-slider-container-right');
+      const isVolumeSlider = element.classList.contains('volume-slider');
+      const isImportBtn = element.classList.contains('import-btn');
+      
+      const padding = 5;
+      let width = elementRect.width;
+      let height = elementRect.height;
+      let leftOffset = 0;
+      let topOffset = 0;
+      
+      if (isBpmSlider) {
+        width = elementRect.width * 0.15;
+        leftOffset = (elementRect.width - width) / 2;
+      } else if (isVolumeSlider) {
+        width = elementRect.width * 5;      // 5x width
+        height = elementRect.height * 1.1;  // Keep the shorter height (1.1x)
+        leftOffset = elementRect.width/2 - width/2;
+      } else if (isImportBtn) {
+        height = elementRect.height * 1.5;  // Make import buttons 1.5x height
+        leftOffset = elementRect.width/2 - width/2;
+        topOffset = elementRect.height * 0.08; // Keep the vertical offset
+      }
+      
+      setSpotlightPosition({
+        top: elementRect.top - padding + topOffset,
+        left: elementRect.left - padding + leftOffset,
+        width: width + (padding * 2),
+        height: height + (padding * 2)
+      });
+    }
+  };
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.target.tagName === "INPUT") return;
-      if (event.repeat) return; // Prevent key repeat
+    if (isWalkthrough) {
+      setCurrentStep(0);
+      setHasTransition(false); // Start without transition
+      updateSpotlightPosition();
+    } else {
+      setSpotlightPosition(null);
+    }
+  }, [isWalkthrough]);
 
-      const key = event.key.toLowerCase();
+  useEffect(() => {
+    if (isWalkthrough) {
+      updateSpotlightPosition();
+      // Update position on scroll and resize
+      window.addEventListener('resize', updateSpotlightPosition);
+      window.addEventListener('scroll', updateSpotlightPosition);
+      const interval = setInterval(updateSpotlightPosition, 100);
+      return () => {
+        window.removeEventListener('resize', updateSpotlightPosition);
+        window.removeEventListener('scroll', updateSpotlightPosition);
+        clearInterval(interval);
+      };
+    }
+  }, [isWalkthrough, currentStep]);
 
-      // Left deck controls
-      if (key === "t") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, cue: true }));
-      } else if (key === "g") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, play: true }));
-      }
+  const handleNext = () => {
+    if (currentStep < walkthroughSteps.length - 1) {
+      setHasTransition(true); // Enable transition for step changes
+      setCurrentStep(currentStep + 1);
+    }
+  };
 
-      // Right deck controls
-      if (key === "y") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, cue: true }));
-      } else if (key === "h") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, play: true }));
-      }
+  const handleSpotlightClick = (e) => {
+    if (!spotlightPosition) return;
 
-      // Central controls
-      if (key === "s") {
-        event.preventDefault();
-        setCentralPopovers(prev => ({ ...prev, sync: true }));
-      } else if (key === "k") {
-        event.preventDefault();
-        setCentralPopovers(prev => ({ ...prev, reset: true }));
-      }
+    // Check if click is within the adjusted spotlight bounds
+    if (e.clientX >= spotlightPosition.left && e.clientX <= spotlightPosition.left + spotlightPosition.width &&
+        e.clientY >= spotlightPosition.top && e.clientY <= spotlightPosition.top + spotlightPosition.height) {
+      handleNext();
+    }
+  };
 
-      // Left deck effects
-      if (key === "q") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, effects: true }));
-      } else if (key === "w") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, effects: true }));
-      } else if (key === "e") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, effects: true }));
-      } else if (key === "r") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, effects: true }));
-      }
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setHasTransition(true); // Enable transition for step changes
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
-      // Right deck effects
-      if (key === "u") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, effects: true }));
-      } else if (key === "i") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, effects: true }));
-      } else if (key === "o" || key === "p") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, effects: true }));
-      }
-    };
-
-    const handleKeyUp = (event) => {
-      if (event.target.tagName === "INPUT") return;
-
-      const key = event.key.toLowerCase();
-
-      // Left deck controls
-      if (key === "t") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, cue: false }));
-      } else if (key === "g") {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, play: false }));
-      }
-
-      // Right deck controls
-      if (key === "y") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, cue: false }));
-      } else if (key === "h") {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, play: false }));
-      }
-
-      // Central controls
-      if (key === "s") {
-        event.preventDefault();
-        setCentralPopovers(prev => ({ ...prev, sync: false }));
-      } else if (key === "k") {
-        event.preventDefault();
-        setCentralPopovers(prev => ({ ...prev, reset: false }));
-      }
-
-      // Left deck effects
-      if (["q", "w", "e", "r"].includes(key)) {
-        event.preventDefault();
-        setLeftPopovers(prev => ({ ...prev, effects: false }));
-      }
-
-      // Right deck effects
-      if (["u", "i", "o", "p"].includes(key)) {
-        event.preventDefault();
-        setRightPopovers(prev => ({ ...prev, effects: false }));
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
+  const handleToggleWalkthrough = () => {
+    if (!isWalkthrough) {
+      setCurrentStep(0);
+    }
+    setIsWalkthrough(!isWalkthrough);
+  };
 
   return (
     <>
-      {!isLoggedIn && <LoginOverlay />}
-      <div className="dj-page">
-        <TutorialModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
-
-        <NavBar />
-        
-        <TutorialImportAndWaveforms enableHover={!isModalVisible} />
-
-        <div className="decks-container">
-          <TutorialLeftControls 
-            enableHover={!isModalVisible} 
-            cueOpened={leftPopovers.cue}
-            playOpened={leftPopovers.play}
-            bpmOpened={leftPopovers.bpm}
-            turntableOpened={leftPopovers.turntable}
-            volumeOpened={leftPopovers.volume}
-            effectsOpened={leftPopovers.effects}
-            setCueOpened={(value) => setLeftPopovers(prev => ({ ...prev, cue: value }))}
-            setPlayOpened={(value) => setLeftPopovers(prev => ({ ...prev, play: value }))}
-            setBpmOpened={(value) => setLeftPopovers(prev => ({ ...prev, bpm: value }))}
-            setTurntableOpened={(value) => setLeftPopovers(prev => ({ ...prev, turntable: value }))}
-            setVolumeOpened={(value) => setLeftPopovers(prev => ({ ...prev, volume: value }))}
-            setEffectsOpened={(value) => setLeftPopovers(prev => ({ ...prev, effects: value }))}
-          />
-
-          <TutorialCentralControls 
-            enableHover={!isModalVisible} 
-            syncOpened={centralPopovers.sync}
-            resetOpened={centralPopovers.reset}
-            setSyncOpened={(value) => setCentralPopovers(prev => ({ ...prev, sync: value }))}
-            setResetOpened={(value) => setCentralPopovers(prev => ({ ...prev, reset: value }))}
-          />
-
-          <TutorialRightControls 
-            enableHover={!isModalVisible} 
-            cueOpened={rightPopovers.cue}
-            playOpened={rightPopovers.play}
-            bpmOpened={rightPopovers.bpm}
-            turntableOpened={rightPopovers.turntable}
-            volumeOpened={rightPopovers.volume}
-            effectsOpened={rightPopovers.effects}
-            setCueOpened={(value) => setRightPopovers(prev => ({ ...prev, cue: value }))}
-            setPlayOpened={(value) => setRightPopovers(prev => ({ ...prev, play: value }))}
-            setBpmOpened={(value) => setRightPopovers(prev => ({ ...prev, bpm: value }))}
-            setTurntableOpened={(value) => setRightPopovers(prev => ({ ...prev, turntable: value }))}
-            setVolumeOpened={(value) => setRightPopovers(prev => ({ ...prev, volume: value }))}
-            setEffectsOpened={(value) => setRightPopovers(prev => ({ ...prev, effects: value }))}
+      {!isLoggedIn ? (
+        <LoginOverlay />
+      ) : (
+        <div className="dj-page">
+          <NavBar />
+          {isWalkthrough && (
+            <>
+              <div className="walkthrough-overlay" />
+              {spotlightPosition && (
+                <div className="spotlight-container" onClick={handleSpotlightClick}>
+                  <div
+                    className={`walkthrough-spotlight ${hasTransition ? 'with-transition' : ''}`}
+                    style={{
+                      top: spotlightPosition.top,
+                      left: spotlightPosition.left,
+                      width: spotlightPosition.width,
+                      height: spotlightPosition.height,
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+          <div className="dj-container">
+            <TutorialImportAndWaveforms />
+            <div className="decks-container">
+              <TutorialLeftControls 
+                enableHover={!isWalkthrough}
+                cueOpened={cueOpened}
+                setCueOpened={setCueOpened}
+                playOpened={playOpened}
+                setPlayOpened={setPlayOpened}
+                bpmOpened={bpmOpened}
+                setBpmOpened={setBpmOpened}
+                turntableOpened={turntableOpened}
+                setTurntableOpened={setTurntableOpened}
+                volumeOpened={volumeOpened}
+                setVolumeOpened={setVolumeOpened}
+                effectsOpened={effectsOpened}
+                setEffectsOpened={setEffectsOpened}
+              />
+              <TutorialCentralControls 
+                enableHover={!isWalkthrough}
+                syncOpened={syncOpened}
+                setSyncOpened={setSyncOpened}
+                resetOpened={resetOpened}
+                setResetOpened={setResetOpened}
+              />
+              <TutorialRightControls 
+                enableHover={!isWalkthrough}
+                cueOpened={rightCueOpened}
+                setCueOpened={setRightCueOpened}
+                playOpened={rightPlayOpened}
+                setPlayOpened={setRightPlayOpened}
+                bpmOpened={rightBpmOpened}
+                setBpmOpened={setRightBpmOpened}
+                turntableOpened={rightTurntableOpened}
+                setTurntableOpened={setRightTurntableOpened}
+                volumeOpened={rightVolumeOpened}
+                setVolumeOpened={setRightVolumeOpened}
+                effectsOpened={rightEffectsOpened}
+                setEffectsOpened={setRightEffectsOpened}
+              />
+            </div>
+          </div>
+          <HelpText
+            isWalkthrough={isWalkthrough}
+            currentStep={currentStep}
+            onNext={handleNext}
+            onPrev={handlePrev}
+            onToggleWalkthrough={handleToggleWalkthrough}
           />
         </div>
-      </div>
+      )}
     </>
   );
 };

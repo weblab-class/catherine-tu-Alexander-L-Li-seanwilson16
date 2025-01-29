@@ -4,7 +4,7 @@ import { UserContext } from "../context/Context";
 import "./NavBar.css";
 
 const NavBar = (props) => {
-  const { userId } = useContext(UserContext);
+  const { userId, handleLogout } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleProfileClick = (e) => {
@@ -36,17 +36,15 @@ const NavBar = (props) => {
     });
   };
 
+  const handleLogoutClick = () => {
+    handleNavClick();
+    handleLogout();
+    navigate("/");
+  };
+
   return (
     <div className="navbar-notch-container">
       <div className="navbar-content">
-        <NavLink
-          to="/"
-          className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
-          onClick={handleNavClick}
-          end
-        >
-          Home
-        </NavLink>
         <NavLink
           to="/dj"
           className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
@@ -59,7 +57,7 @@ const NavBar = (props) => {
           className={({ isActive }) => `nav-link ${isActive ? "nav-link-active" : ""}`}
           onClick={handleNavClick}
         >
-          Tutorial
+          Help
         </NavLink>
         {userId && (
           <NavLink
@@ -70,6 +68,12 @@ const NavBar = (props) => {
             Profile
           </NavLink>
         )}
+        <button
+          className="nav-link"
+          onClick={handleLogoutClick}
+        >
+          Logout
+        </button>
       </div>
     </div>
   );

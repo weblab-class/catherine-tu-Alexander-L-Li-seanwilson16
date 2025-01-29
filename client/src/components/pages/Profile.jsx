@@ -7,7 +7,6 @@ import ThemeButtons from "../modules/ThemeButtons";
 import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
 import NavBar from "../modules/NavBar";
-import FileUpload from "../modules/FileUpload";
 import SongLibrary from "../modules/SongLibrary";
 
 import "./Profile.css";
@@ -40,6 +39,8 @@ const Profile = () => {
   }, [userId, isLoggedIn]);
 
   const handleUploadSuccess = (song) => {
+    console.log("Upload completed successfully in Profile:", song);
+    console.log("Stems created:", song.stems);
     // Trigger a refresh of the song library
     setRefreshLibrary((prev) => prev + 1);
   };
@@ -74,9 +75,8 @@ const Profile = () => {
         />
         <TimeOfDay name={user.name} />
         <div className="upload-library-container">
-          {/* <FileUpload onUploadSuccess={handleUploadSuccess} /> */}
           <div className="song-library-wrapper">
-            <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} />
+            <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} onUploadSuccess={handleUploadSuccess} />
           </div>
         </div>
         <div className="button-text-inline">

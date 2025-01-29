@@ -1,13 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import "../pages/DJ.css";
 import { Popover, Text } from "@mantine/core";
 
 const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setCueOpened, setPlayOpened, bpmOpened, setBpmOpened, turntableOpened, setTurntableOpened, volumeOpened, setVolumeOpened, effectsOpened, setEffectsOpened }) => {
-  const [turntableOpenedState, setTurntableOpenedState] = useState(false);
-  const [bpmOpenedState, setBpmOpenedState] = useState(false);
-  const [volumeOpenedState, setVolumeOpenedState] = useState(false);
-  const [effectsOpenedState, setEffectsOpenedState] = useState(false);
-
   const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
   const handleMouseEnter = (setter) => {
@@ -41,22 +36,22 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
           position="top"
           closeOnClickOutside={false}
           withArrow
-          opened={bpmOpened}
-          onClose={() => handleMouseLeave(setBpmOpened)}
+          opened={volumeOpened}
+          onClose={() => handleMouseLeave(setVolumeOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
-              className="bpm-slider-container-right"
-              onMouseEnter={() => handleMouseEnter(setBpmOpened)}
-              onMouseLeave={() => handleMouseLeave(setBpmOpened)}
+              className="volume-slider-container-right"
+              onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
+              onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
             >
-              <input type="range" className="bpm-slider" min="60" max="180" />
-              <div className="bpm-display">BPM</div>
+              <input type="range" className="volume-slider" min="0" max="100" />
+              <div className="volume-display">VOL</div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">Adjust the BPM (speed) of the track.</Text>
+            <Text ta="center">Adjust the volume of the track.</Text>
           </Popover.Dropdown>
         </Popover>
 
@@ -92,22 +87,22 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
           position="top"
           closeOnClickOutside={false}
           withArrow
-          opened={volumeOpened}
-          onClose={() => handleMouseLeave(setVolumeOpened)}
+          opened={bpmOpened}
+          onClose={() => handleMouseLeave(setBpmOpened)}
           styles={popoverStyles}
         >
           <Popover.Target>
             <div
-              className="volume-slider-container-right"
-              onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
-              onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
+              className="bpm-slider-container-right"
+              onMouseEnter={() => handleMouseEnter(setBpmOpened)}
+              onMouseLeave={() => handleMouseLeave(setBpmOpened)}
             >
-              <input type="range" className="volume-slider" min="0" max="100" />
-              <div className="volume-display">VOL</div>
+              <input type="range" className="bpm-slider" min="60" max="180" />
+              <div className="bpm-display">BPM</div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
-            <Text ta="center">Adjust the volume of the track.</Text>
+            <Text ta="center">Adjust the BPM (speed) of the track.</Text>
           </Popover.Dropdown>
         </Popover>
       </div>

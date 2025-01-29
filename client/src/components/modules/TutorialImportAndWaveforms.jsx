@@ -136,13 +136,17 @@ const TutorialImportAndWaveforms = ({ enableHover = true }) => {
               onMouseEnter={() => handleMouseEnter(setWaveformsOpened)}
               onMouseLeave={() => handleMouseLeave(setWaveformsOpened)}
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.03)",
                 borderRadius: "4px",
                 cursor: "pointer",
               }}
             >
-              <div ref={leftContainerRef} style={{ flex: 1 }}></div>
-              <div ref={rightContainerRef} style={{ flex: 1 }}></div>
+              <div className="waveform-container left" ref={leftContainerRef}>
+                <div className="waveform-placeholder" style={{ width: "100%", height: "100%" }}></div>
+              </div>
+              <div className="waveform-container right" ref={rightContainerRef}>
+                <div className="waveform-placeholder" style={{ width: "100%", height: "100%" }}></div>
+              </div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>

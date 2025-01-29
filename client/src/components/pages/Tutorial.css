@@ -1,0 +1,45 @@
+.walkthrough-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 10000;
+}
+
+.walkthrough-spotlight {
+  position: absolute;
+  background: transparent;
+  box-shadow: 
+    0 0 0 9999px rgba(0, 0, 0, 0.45),  /* Lighter overlay */
+    0 0 20px rgba(255, 255, 255, 0.7),  /* Brighter inner glow */
+    0 0 35px rgba(255, 255, 255, 0.4),  /* Brighter middle glow */
+    0 0 50px rgba(255, 255, 255, 0.2);  /* New outer glow layer */
+  pointer-events: none;
+  z-index: 10001;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  padding: 5px;
+  margin: -5px;
+}
+
+.walkthrough-spotlight.with-transition {
+  transition: all 0.3s ease;
+}
+
+/* Container for spotlight */
+.spotlight-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10001;
+}
+
+/* Ensure navbar stays above the overlay */
+.navbar {
+  position: relative;
+  z-index: 10002;
+}
