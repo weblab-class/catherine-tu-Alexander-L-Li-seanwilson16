@@ -121,7 +121,7 @@ img.Profile-avatar,
   min-width: 300px;
   max-width: 800px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 0px 20px 0px 20px;
 }
 
 .profile-content {
@@ -151,7 +151,7 @@ img.Profile-avatar,
 }
 
 .theme-section {
-  margin-top: 2rem;
+  margin-top: 1rem;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -167,7 +167,7 @@ img.Profile-avatar,
   position: relative;
   z-index: 2;
   padding: 0.5rem;
-  min-height: fit-content;
+  /* min-height: fit-content; */
 }
 
 .theme-title {

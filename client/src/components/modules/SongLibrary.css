@@ -17,16 +17,28 @@
 
 .song-library-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  /* margin-bottom: 2rem; */
+  width: 100%;
+  min-height: 48px;
 }
 
 .song-library-header h2 {
   color: white;
   font-family: var(--josefin);
-  margin: 0;
   font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.library-title {
+  color: white;
+  font-size: 1.5rem;
+  font-family: var(--josefin);
+  margin: 0;
+  text-align: left;
 }
 
 .song-list-container {
@@ -89,6 +101,13 @@
 .header-actions {
   text-align: center;
   justify-self: center;
+}
+
+.header-actions,
+.header-title,
+.header-date,
+.header-progress {
+  font-size: 18px;
 }
 
 .song-name {
@@ -174,6 +193,10 @@
   color: white;
   font-size: 1.2rem;
   text-align: center;
+  font-family: var(--josefin);
+  margin: 0;
+  align-items: center;
+  justify-content: center;
 }
 
 .progress-section {
@@ -213,6 +236,7 @@
   /* display: flex; */
   /* align-items: center; */
   justify-content: center;
+  margin-left: 8px;
 }
 
 .song-item > * {
