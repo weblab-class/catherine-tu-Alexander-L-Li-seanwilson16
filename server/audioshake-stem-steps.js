@@ -4,24 +4,32 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
+const { s3, BUCKET_NAME } = require("./aws-config");
 
 /**
  * Creates stems for a song using AudioShake API
- * @param {string} filePath - Path to the audio file
+ * @param {string} fileUrl - S3 URL of the audio file
  * @param {string} songId - ID of the song in the database
  * @returns {Object} - Object containing assetId and jobIds
  */
-async function createStems(filePath, songId) {
+async function createStems(fileUrl, songId) {
   try {
-    // Step 1: Upload file and create asset
-    // console.log("\n=== Starting stem creation process ===");
-    // console.log("Input:", { filePath, songId });
-    // console.log("API Key present:", !!process.env.AUDIOSHAKE_API_KEY);
+    // Step 1: Get the file from S3
+    console.log("\n=== Getting file from S3 ===");
+    const s3Key = fileUrl.split(`${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`)[1];
+    const s3Response = await s3.getObject({
+      Bucket: BUCKET_NAME,
+      Key: s3Key
+    }).promise();
+
+    // Step 2: Upload file to AudioShake and create asset
+    console.log("\n=== Starting stem creation process ===");
+    console.log("API Key present:", !!process.env.AUDIOSHAKE_API_KEY);
     
     const formData = new FormData();
-    formData.append('file', fs.createReadStream(filePath));
+    formData.append('file', s3Response.Body, { filename: path.basename(s3Key) });
 
-    // console.log("Making upload request to AudioShake...");
+    console.log("Making upload request to AudioShake...");
     const uploadConfig = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -34,10 +42,10 @@ async function createStems(filePath, songId) {
     };
 
     const uploadResponse = await axios.request(uploadConfig);
-    // console.log("Asset created:", uploadResponse.data);
+    console.log("Asset created:", uploadResponse.data);
     const assetId = uploadResponse.data.id;
 
-    // Step 2: Create stem separation jobs
+    // Step 3: Create stem separation jobs
     console.log("\n=== Creating stem separation jobs ===");
     const stemTypes = ['vocals', 'drums', 'bass', 'other'];  // These are valid stem types according to AudioShake
     const jobIds = [];
@@ -59,7 +67,7 @@ async function createStems(filePath, songId) {
         callbackUrl: `https://example.com/webhook/${stemType}`,
         stemMetadata: {
           format: "wav",
-          stemName: stemType  // Changed back to stemName as that's what AudioShake expects
+          stemName: stemType
         }
       };
 
@@ -77,7 +85,7 @@ async function createStems(filePath, songId) {
     }
 
     console.log("\n=== Stem creation complete ===");
-    // console.log("Results:", { assetId, jobIds });
+    console.log("Results:", { assetId, jobIds });
     
     return {
       assetId,
