@@ -1108,6 +1108,9 @@ const DJ = () => {
       const trackBpm = defaultTrack ? defaultTrack.bpm : track.bpm || 120;
       const trackKey = defaultTrack ? defaultTrack.key : track.key || "C";
 
+      // Close the import list
+      setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
+
       // Stop any currently playing audio
       if (trackState.audioElements) {
         Object.values(trackState.audioElements).forEach((audio) => {

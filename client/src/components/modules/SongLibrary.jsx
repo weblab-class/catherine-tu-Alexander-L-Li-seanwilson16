@@ -13,6 +13,8 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
   const [songStatuses, setSongStatuses] = useState({});
   const [editingSongId, setEditingSongId] = useState(null);
   const [newTitle, setNewTitle] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [songToDelete, setSongToDelete] = useState(null);
 
   // Add refresh warning and cleanup
   useEffect(() => {
@@ -77,26 +79,30 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
     fetchSongs();
   }, [isLoggedIn]);
 
-  const handleDelete = async (songId) => {
-    if (!isLoggedIn) return;
+  const handleDeleteClick = (song) => {
+    setSongToDelete(song);
+    setShowDeleteConfirm(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!songToDelete) return;
+    
     try {
-      const response = await fetch(`/api/song/${songId}`, {
+      const response = await fetch(`/api/songs/${songToDelete._id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to delete song: ${response.statusText}`);
-      }
-      
-      setSongs((prevSongs) => prevSongs.filter((song) => song._id !== songId));
-    } catch (err) {
-      console.log("Error deleting song:", err);
-      setError("Failed to delete song");
+      if (!response.ok) throw new Error("Failed to delete song");
+      setSongs((prevSongs) => prevSongs.filter((song) => song._id !== songToDelete._id));
+    } catch (error) {
+      console.error("Error deleting song:", error);
     }
+    setShowDeleteConfirm(false);
+    setSongToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setSongToDelete(null);
   };
 
   const handleRename = async (songId) => {
@@ -312,7 +318,7 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
                         <div className="delete-container">
                           <button 
                             className="u-link delete" 
-                            onClick={() => handleDelete(song._id)}
+                            onClick={() => handleDeleteClick(song)}
                           >
                             delete
                           </button>
@@ -326,6 +332,25 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
           </div>
         </div>
       </div>
+      {showDeleteConfirm && (
+        <div className="upload-modal">
+          <div className="upload-modal-content">
+            <div className="delete-confirm-container">
+              <h3>delete song</h3>
+              <p>are you sure you want to delete "{songToDelete?.title}"?</p>
+              <p>this action cannot be undone.</p>
+              <div className="delete-confirm-buttons">
+                <button className="cancel-button" onClick={handleCancelDelete}>
+                  cancel
+                </button>
+                <button className="confirm-button" onClick={handleConfirmDelete}>
+                  delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
