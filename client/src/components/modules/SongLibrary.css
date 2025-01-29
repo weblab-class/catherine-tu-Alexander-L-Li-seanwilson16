@@ -278,3 +278,80 @@
   font-family: var(--raleway);
   color: white;
 }
+
+.song-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.song-rename-button {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 20px;
+  margin-right: -4px;
+  transition: all 0.2s ease;
+}
+
+.song-item:hover .song-rename-button {
+  opacity: 1;
+  margin-right: 1rem;
+}
+
+.song-rename-button:hover {
+  color: white;
+  transform: scale(1.1);
+}
+
+.song-rename-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.song-rename-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: var(--raleway)
+}
+
+.song-rename-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.song-rename-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.song-rename-save,
+.song-rename-cancel {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.song-rename-save {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.song-rename-save:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.song-rename-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
