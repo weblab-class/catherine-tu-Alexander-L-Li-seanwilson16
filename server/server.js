@@ -62,6 +62,14 @@ app.use(validator.checkRoutes);
 // allow us to process POST requests
 app.use(express.json());
 
+// Set up cors middleware BEFORE routes
+app.use(cors({ 
+  origin: ["http://localhost:5173", "http://localhost:5174"],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // set up a session, which will persist login data across requests
 app.use(
   session({
@@ -70,7 +78,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: false, // set to true if using https
+      secure: false, // set to false for HTTP in development
+      sameSite: 'lax'  // needed for cross-site cookie handling
     }
   })
 );
@@ -81,15 +90,10 @@ app.use(auth.populateCurrentUser);
 // connect user-defined routes
 app.use("/api", api);
 
-// Set up cors middleware
-app.use(cors({ 
-  origin: ["http://localhost:5173", "http://localhost:5174"],
-  credentials: true 
-}));
-
 // Set up middleware for uploads directory with CORS headers
 app.use("/uploads", (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
   res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
   res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
@@ -98,7 +102,8 @@ app.use("/uploads", (req, res, next) => {
 
 // Set up middleware for stems directory with CORS headers
 app.use("/stems", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
   res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
   res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");

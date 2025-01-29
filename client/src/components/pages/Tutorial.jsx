@@ -34,6 +34,9 @@ const Tutorial = () => {
   const [syncOpened, setSyncOpened] = useState(false);
   const [resetOpened, setResetOpened] = useState(false);
 
+  // Add keybind states
+  const [pressedKey, setPressedKey] = useState(null);
+
   const updateSpotlightPosition = () => {
     const element = document.querySelector(walkthroughSteps[currentStep].selector);
     
@@ -100,7 +103,10 @@ const Tutorial = () => {
   }, [isWalkthrough, currentStep]);
 
   useEffect(() => {
-    const handleKeyPress = (e) => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === "INPUT") return;
+      if (e.repeat) return; // Prevent key repeat
+
       if (isWalkthrough) {
         if (e.key === "Escape") {
           setIsWalkthrough(false);
@@ -109,12 +115,100 @@ const Tutorial = () => {
         } else if ((e.key === "ArrowLeft" || e.key === "ArrowUp") && currentStep > 0) {
           setCurrentStep(currentStep - 1);
         }
+      } else {
+        // Normal mode keybinds - matching DJ component
+        const key = e.key.toLowerCase();
+        
+        // Left deck controls
+        if (key === "t") {
+          setCueOpened(true);
+        } else if (key === "g") {
+          setPlayOpened(true);
+        }
+        
+        // Effect buttons
+        if (key === "q") {
+          setEffectsOpened(true); // Bass
+        } else if (key === "w") {
+          setEffectsOpened(true); // Drums
+        } else if (key === "e") {
+          setEffectsOpened(true); // Melody
+        } else if (key === "r") {
+          setEffectsOpened(true); // Vocals
+        }
+        
+        // Right deck controls
+        if (key === "y") {
+          setRightCueOpened(true);
+        } else if (key === "h") {
+          setRightPlayOpened(true);
+        }
+        
+        // Right effect buttons
+        if (key === "u") {
+          setRightEffectsOpened(true); // Bass
+        } else if (key === "i") {
+          setRightEffectsOpened(true); // Drums
+        } else if (key === "o") {
+          setRightEffectsOpened(true); // Melody
+        } else if (key === "p") {
+          setRightEffectsOpened(true); // Vocals
+        }
+        
+        // Center controls
+        if (key === "s") {
+          setSyncOpened(true);
+        } else if (key === "k") {
+          setResetOpened(true);
+        }
       }
     };
 
-    document.addEventListener("keydown", handleKeyPress);
+    const handleKeyUp = (e) => {
+      if (e.target.tagName === "INPUT") return;
+      
+      if (!isWalkthrough) {
+        const key = e.key.toLowerCase();
+        
+        // Left deck controls
+        if (key === "t") {
+          setCueOpened(false);
+        } else if (key === "g") {
+          setPlayOpened(false);
+        }
+        
+        // Effect buttons
+        if (key === "q" || key === "w" || key === "e" || key === "r") {
+          setEffectsOpened(false);
+        }
+        
+        // Right deck controls
+        if (key === "y") {
+          setRightCueOpened(false);
+        } else if (key === "h") {
+          setRightPlayOpened(false);
+        }
+        
+        // Right effect buttons
+        if (key === "u" || key === "i" || key === "o" || key === "p") {
+          setRightEffectsOpened(false);
+        }
+        
+        // Center controls
+        if (key === "s") {
+          setSyncOpened(false);
+        } else if (key === "k") {
+          setResetOpened(false);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
+    
     return () => {
-      document.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
     };
   }, [isWalkthrough, currentStep, walkthroughSteps.length]);
 
@@ -191,6 +285,7 @@ const Tutorial = () => {
                 setVolumeOpened={setVolumeOpened}
                 effectsOpened={effectsOpened}
                 setEffectsOpened={setEffectsOpened}
+                pressedKey={pressedKey}
               />
               <TutorialCentralControls 
                 enableHover={!isWalkthrough}
@@ -198,6 +293,7 @@ const Tutorial = () => {
                 setSyncOpened={setSyncOpened}
                 resetOpened={resetOpened}
                 setResetOpened={setResetOpened}
+                pressedKey={pressedKey}
               />
               <TutorialRightControls 
                 enableHover={!isWalkthrough}
@@ -213,6 +309,7 @@ const Tutorial = () => {
                 setVolumeOpened={setRightVolumeOpened}
                 effectsOpened={rightEffectsOpened}
                 setEffectsOpened={setRightEffectsOpened}
+                pressedKey={pressedKey}
               />
             </div>
           </div>
