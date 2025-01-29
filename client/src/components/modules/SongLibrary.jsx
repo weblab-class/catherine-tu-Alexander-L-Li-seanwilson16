@@ -12,6 +12,48 @@ const SongLibrary = ({ onUploadSuccess }) => {
   const [error, setError] = useState("");
   const [songStatuses, setSongStatuses] = useState({});
 
+  // Add refresh warning and cleanup
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // Check if any songs are incomplete
+      const hasIncomplete = songs.some(song => {
+        const status = songStatuses[song._id];
+        return status && status.completedJobs < status.totalJobs;
+      });
+
+      if (hasIncomplete) {
+        // Show warning message
+        const message = "Changes you made may not be saved. Are you sure you want to leave?";
+        e.returnValue = message;
+        return message;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [songs, songStatuses]);
+
+  // Delete incomplete songs on page load/refresh
+  useEffect(() => {
+    const cleanupIncomplete = async () => {
+      for (const song of songs) {
+        const status = songStatuses[song._id];
+        if (status && status.completedJobs < status.totalJobs) {
+          try {
+            await post(`/api/songs/${song._id}/delete`);
+            console.log("Deleted incomplete song:", song._id);
+          } catch (error) {
+            console.error("Error deleting incomplete song:", error);
+          }
+        }
+      }
+      // Refresh song list after cleanup
+      await fetchSongs();
+    };
+
+    cleanupIncomplete();
+  }, []); // Run only on mount/refresh
+
   const fetchSongs = async () => {
     if (!isLoggedIn) {
       setLoading(false);
