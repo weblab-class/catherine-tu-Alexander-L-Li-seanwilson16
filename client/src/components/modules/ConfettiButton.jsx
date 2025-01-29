@@ -1,5 +1,5 @@
 import React from "react";
-import confetti from "/node_modules/canvas-confetti/dist/confetti.module.mjs";
+import confetti from "canvas-confetti";
 
 const ConfettiButton = () => {
   const createLetterConfetti = () => {
