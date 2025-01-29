@@ -8,7 +8,6 @@
 */
 
 const express = require("express");
-const router = express.Router();
 const auth = require("./auth");
 const multer = require("multer");
 const path = require("path");
@@ -27,6 +26,8 @@ const Song = require("./models/song");
 
 // import socket manager
 const socketManager = require("./server-socket");
+
+const router = express.Router();
 
 // Ensure upload directories exist
 const uploadsDir = path.join(__dirname, "../uploads");
