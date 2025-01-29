@@ -1,39 +1,50 @@
 .song-library {
   width: 100%;
   padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .song-library-container {
-  width: 100%;
-  border-radius: 12px;
-  padding: 2rem 3rem;
-  border: 2px dashed transparent;
-  transition: all 0.3s ease;
-}
-
-.song-library-container.dragging {
-  border-color: var(--primary);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .song-library-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  /* margin-bottom: 2rem; */
+  width: 100%;
+  min-height: 48px;
 }
 
 .song-library-header h2 {
   color: white;
   font-family: var(--josefin);
-  margin: 0;
   font-size: 1.2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.library-title {
+  color: white;
+  font-size: 1.5rem;
+  font-family: var(--josefin);
+  margin: 0;
+  text-align: left;
 }
 
 .song-list-container {
   width: 100%;
+  height: 360px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .song-list-header {
@@ -41,10 +52,35 @@
   grid-template-columns: 3.25fr 3.5fr 5fr 3fr;
   gap: 2rem;
   padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.1);
   color: white;
   font-family: var(--josefin);
   font-weight: 500;
+}
+
+.song-list {
+  overflow-y: auto;
+  height: calc(100% - 56px); /* Container height minus header height */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.song-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.song-list::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px;
+}
+
+.song-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.song-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .song-list {
@@ -55,11 +91,11 @@
 
 .song-item {
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr;
+  grid-template-columns: 3.25fr 3.5fr 5fr 3fr;
   gap: 2rem;
   padding: 1rem 1.5rem;
-  align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
   transition: background-color 0.2s ease;
 }
 
@@ -89,6 +125,13 @@
 .header-actions {
   text-align: center;
   justify-self: center;
+}
+
+.header-actions,
+.header-title,
+.header-date,
+.header-progress {
+  font-size: 18px;
 }
 
 .song-name {
@@ -174,6 +217,10 @@
   color: white;
   font-size: 1.2rem;
   text-align: center;
+  font-family: var(--josefin);
+  margin: 0;
+  align-items: center;
+  justify-content: center;
 }
 
 .progress-section {
@@ -213,6 +260,7 @@
   /* display: flex; */
   /* align-items: center; */
   justify-content: center;
+  margin-left: 8px;
 }
 
 .song-item > * {

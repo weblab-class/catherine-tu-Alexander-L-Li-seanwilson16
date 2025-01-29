@@ -146,7 +146,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
   }, [songs]);
 
   const renderProgress = (song) => {
-    let status = "Processing...";
+    let status = "processing...";
     let progress = 0;
 
     const songStatus = songStatuses[song._id];
@@ -154,15 +154,15 @@ const SongLibrary = ({ onUploadSuccess }) => {
 
     if (song.stemsStatus === "completed" || (songStatus && songStatus.completedJobs === songStatus.totalJobs)) {
       progress = 100;
-      status = "Ready";
+      status = "ready";
     } else if (songStatus) {
       const { completedJobs, totalJobs } = songStatus;
       progress = Math.floor((completedJobs / totalJobs) * 100);
-      status = `Processing stems (${completedJobs}/${totalJobs})`;
+      status = `processing stems (${completedJobs}/${totalJobs})`;
     } else if (song.stemsStatus === "pending") {
-      status = "Starting";
+      status = "starting";
     } else if (song.stemsStatus === "failed") {
-      status = "Failed";
+      status = "failed";
     }
 
     return (
@@ -184,7 +184,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
   };
 
   if (loading) {
-    return <div className="song-library-message">Loading your songs...</div>;
+    return <div className="song-library-message">loading your songs...</div>;
   }
 
   if (error) {
@@ -203,10 +203,10 @@ const SongLibrary = ({ onUploadSuccess }) => {
           
           <div className="song-list-container">
             <div className="song-list-header">
-              <span className="header-title">File Title</span>
-              <span className="header-date">Date Uploaded</span>
-              <span className="header-progress">Stem Split Progress</span>
-              <span className="header-actions">Actions</span>
+              <span className="header-title">file title</span>
+              <span className="header-date">date uploaded</span>
+              <span className="header-progress">stem split progress</span>
+              <span className="header-actions">actions</span>
             </div>
             {error ? (
               <div className="error-message">{error}</div>
@@ -214,7 +214,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
               <ul className="song-list">
                 {songs.length === 0 ? (
                   <li className="song-library-message">
-                    No songs in your library yet
+                    no songs in your library yet
                   </li>
                 ) : (
                   songs.map((song) => (
@@ -232,7 +232,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
                             className="u-link delete" 
                             onClick={() => handleDelete(song._id)}
                           >
-                            Delete
+                            delete
                           </button>
                         </div>
                       </div>
