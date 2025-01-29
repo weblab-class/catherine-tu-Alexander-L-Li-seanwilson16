@@ -58,6 +58,14 @@ const AVAILABLE_TRACKS = [
     bpm: 79,
     key: "Bb Minor",
   },
+  {
+    isUserSong: false,
+    id: 7,
+    name: "Shine by Spektrum",
+    path: "Shine",
+    bpm: 128,
+    key: "Ab Major",
+  },
 ];
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
@@ -1143,7 +1151,6 @@ const DJ = () => {
         audioElements,
         effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
       }));
-
     } catch (error) {
       console.error("Error loading track:", error);
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
