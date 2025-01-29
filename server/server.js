@@ -27,7 +27,6 @@ const express = require("express"); // backend framework for our node server.
 const session = require("express-session"); // library that stores info about each connected user
 const mongoose = require("mongoose"); // library to connect to MongoDB
 const path = require("path"); // provide utilities for working with file and directory paths
-const cors = require("cors");
 
 const api = require("./api");
 const auth = require("./auth");
@@ -62,32 +61,13 @@ app.use(validator.checkRoutes);
 // allow us to process POST requests
 app.use(express.json());
 
-// Set up cors middleware BEFORE routes
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://chilldeck.onrender.com",
-      process.env.CORS_ORIGIN, // Add this to support your Render domain
-    ].filter(Boolean), // Remove any undefined origins
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
 // set up a session, which will persist login data across requests
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "session-secret",
+    // TODO: add a SESSION_SECRET string in your .env file, and replace the secret with process.env.SESSION_SECRET
+    secret: "session-secret",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: process.env.NODE_ENV === "production", // true in production
-      sameSite: "lax", // needed for cross-site cookie handling
-    },
   })
 );
 
@@ -97,40 +77,6 @@ app.use(auth.populateCurrentUser);
 // connect user-defined routes
 app.use("/api", api);
 
-// Set up middleware for uploads directory with CORS headers
-app.use(
-  "/uploads",
-  (req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Range"
-    );
-    res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-    res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-    next();
-  },
-  express.static(path.join(__dirname, "../uploads"))
-);
-
-// Set up middleware for stems directory with CORS headers
-app.use(
-  "/stems",
-  (req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Range"
-    );
-    res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-    res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-    next();
-  },
-  express.static(path.resolve(__dirname, "..", "stems"))
-);
-
 // load the compiled react files, which will serve /index.html and /bundle.js
 const reactPath = path.resolve(__dirname, "..", "client", "dist");
 app.use(express.static(reactPath));
@@ -139,7 +85,7 @@ app.use(express.static(reactPath));
 app.get("*", (req, res) => {
   res.sendFile(path.join(reactPath, "index.html"), (err) => {
     if (err) {
-      // console.log("Error sending client/dist/index.html:", err.status || 500);
+      console.log("Error sending client/dist/index.html:", err.status || 500);
       res
         .status(err.status || 500)
         .send("Error sending client/dist/index.html - have you run `npm run build`?");
@@ -152,7 +98,7 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   if (status === 500) {
     // 500 means Internal Server Error
-    // console.log("The server errored when processing a request!");
+    console.log("The server errored when processing a request!");
     console.log(err);
   }
 
@@ -163,19 +109,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Port that the webserver listens to
-const port = process.env.PORT || 3000;
-const host = "0.0.0.0"; // Bind to all network interfaces
-
-const server = http.createServer(app);
-
-// Increase timeouts
-server.keepAliveTimeout = 120000; // 120 seconds
-server.headersTimeout = 120000; // 120 seconds
-
-server.listen(port, host, () => {
-  console.log(`Server running at http://${host}:${port}`);
-});
-
-// Add socket stuff
+// hardcode port to 3000 for now
+const port = 3000;
+const server = http.Server(app);
 socketManager.init(server);
+
+server.listen(port, () => {
+  console.log(`Server running on port: ${port}`);
+});
