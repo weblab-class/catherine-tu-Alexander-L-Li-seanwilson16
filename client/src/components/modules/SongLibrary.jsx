@@ -5,6 +5,8 @@ import LoginOverlay from "./LoginOverlay";
 // import FileUpload from "./FileUpload";
 import "./SongLibrary.css";
 
+
+
 const AVAILABLE_TRACKS = [
   {
     _id: "1",
@@ -51,6 +53,42 @@ const AVAILABLE_TRACKS = [
     uploadDate: new Date(),
     stemsStatus: "completed"
   },
+  {
+    _id: "6",
+    title: "Cradles by Sub Urban",
+    path: "Sub_Urban",
+    bpm: 79,
+    key: "Bb Minor",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "7",
+    title: "Shine by Spektrum",
+    path: "Shine",
+    bpm: 128,
+    key: "Ab Major",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "8",
+    title: "Vertigo by Rob Gasser & Laura Brehm",
+    path: "Vertigo",
+    bpm: 87,
+    key: "G Minor",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "9",
+    title: "We Are by Jo Cohen & Whales",
+    path: "We_Are",
+    bpm: 128,
+    key: "Ab Major",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  }
 ];
 
 const SongLibrary = ({ userId, onUploadSuccess }) => {

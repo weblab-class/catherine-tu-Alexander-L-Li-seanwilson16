@@ -9,6 +9,9 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, 'client/dist'), // Output directory for production build
   },
+  define: {
+    __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || 'development'),
+  },
   server: {
     port: 5173,
     proxy: {
