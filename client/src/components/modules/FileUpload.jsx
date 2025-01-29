@@ -132,7 +132,7 @@ const FileUpload = ({ onUploadSuccess }) => {
                   setFileError("");
                 }}
               >
-                Cancel
+                cancel
               </button>
               <button
                 className="submit-button"
@@ -142,7 +142,7 @@ const FileUpload = ({ onUploadSuccess }) => {
                 }}
                 disabled={isUploading || !uploadedFiles.audio}
               >
-                {isUploading ? "Uploading..." : "Upload"}
+                {isUploading ? "Uploading..." : "upload"}
               </button>
             </div>
           </div>
