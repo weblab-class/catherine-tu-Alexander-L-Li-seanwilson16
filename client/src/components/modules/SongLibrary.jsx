@@ -35,8 +35,8 @@ const AVAILABLE_TRACKS = [
   },
   {
     _id: "4",
-    title: "Disfigure by Blank",
-    path: "Disfigure_Blank",
+    title: "Blank by Disfigure",
+    path: "Disfigure - Blank [NCS Release]",
     bpm: 140,
     key: "B Minor",
     uploadDate: new Date(),
@@ -45,9 +45,45 @@ const AVAILABLE_TRACKS = [
   {
     _id: "5",
     title: "Let Me Down Slowly (Not So Good Remix) by Alec Benjamin",
-    path: "Let_Me_Down_Slowly_Alec_Benjamin",
+    path: "Alec Benjamin - Let Me Down Slowly (Not So Good Remix)",
     bpm: 75,
     key: "C# Minor",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "6",
+    title: "Cradles by Sub Urban",
+    path: "Sub Urban - Cradles [NCS Release]",
+    bpm: 79,
+    key: "Bb Minor",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "7",
+    title: "Shine by Spektrem",
+    path: "Spektrem - Shine [NCS Release]",
+    bpm: 128,
+    key: "Ab Major",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "8",
+    title: "Vertigo by Rob Gasser & Laura Brehm",
+    path: "Rob Gasser, Laura Brehm - Vertigo [NCS Release]",
+    bpm: 87,
+    key: "G Minor",
+    uploadDate: new Date(),
+    stemsStatus: "completed"
+  },
+  {
+    _id: "9",
+    title: "We Are by Whales & Jo. Cohen",
+    path: "Whales, Jo. Cohen - We Are [NCS Release] (1)",
+    bpm: 128,
+    key: "Ab Major",
     uploadDate: new Date(),
     stemsStatus: "completed"
   },
@@ -112,14 +148,8 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
   };
 
   const getAudioFileName = (path) => {
-    const fileNameMap = {
-      "Let_Me_Down_Slowly_Alec_Benjamin": "Alec Benjamin - Let Me Down Slowly (Not So Good Remix)",
-      "Disfigure_Blank": "Disfigure - Blank [NCS Release]",
-      "NCS_Fall_to_Light": "NCS_Fall_to_Light",
-      "NCS_On&On": "NCS_On&On",
-      "chill-guy-remix": "chill-guy-remix"
-    };
-    return fileNameMap[path] || path;
+    // No need for mapping since we're using exact filenames now
+    return path;
   };
 
   const formatTime = (time) => {
