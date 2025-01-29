@@ -63,17 +63,19 @@ app.use(validator.checkRoutes);
 app.use(express.json());
 
 // Set up cors middleware BEFORE routes
-app.use(cors({ 
-  origin: [
-    "http://localhost:5173", 
-    "http://localhost:5174",
-    "https://chilldeck.onrender.com",
-    process.env.CORS_ORIGIN // Add this to support your Render domain
-  ].filter(Boolean), // Remove any undefined origins
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://chilldeck.onrender.com",
+      process.env.CORS_ORIGIN, // Add this to support your Render domain
+    ].filter(Boolean), // Remove any undefined origins
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 // set up a session, which will persist login data across requests
 app.use(
@@ -83,9 +85,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      secure: process.env.NODE_ENV === 'production', // true in production
-      sameSite: 'lax'  // needed for cross-site cookie handling
-    }
+      secure: process.env.NODE_ENV === "production", // true in production
+      sameSite: "lax", // needed for cross-site cookie handling
+    },
   })
 );
 
@@ -96,24 +98,38 @@ app.use(auth.populateCurrentUser);
 app.use("/api", api);
 
 // Set up middleware for uploads directory with CORS headers
-app.use("/uploads", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
-  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-  next();
-}, express.static(path.join(__dirname, "../uploads")));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Range"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
+    next();
+  },
+  express.static(path.join(__dirname, "../uploads"))
+);
 
 // Set up middleware for stems directory with CORS headers
-app.use("/stems", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
-  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-  next();
-}, express.static(path.resolve(__dirname, "..", "stems")));
+app.use(
+  "/stems",
+  (req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Range"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
+    next();
+  },
+  express.static(path.resolve(__dirname, "..", "stems"))
+);
 
 // load the compiled react files, which will serve /index.html and /bundle.js
 const reactPath = path.resolve(__dirname, "..", "client", "dist");
@@ -149,7 +165,7 @@ app.use((err, req, res, next) => {
 
 // Port that the webserver listens to
 const port = process.env.PORT || 3000;
-const host = '0.0.0.0';  // Bind to all network interfaces
+const host = "0.0.0.0"; // Bind to all network interfaces
 
 const server = http.createServer(app);
 
