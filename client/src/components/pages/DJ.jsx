@@ -66,6 +66,15 @@ const AVAILABLE_TRACKS = [
     bpm: 128,
     key: "Ab Major",
   },
+  { isUserSong: false, id: 8, name: "Vertigo by NCS", path: "Vertigo", bpm: 87, key: "G Minor" },
+  {
+    isUserSong: false,
+    id: 9,
+    name: "We Are by Whales",
+    path: "We_Are",
+    bpm: 75,
+    key: "F Major",
+  },
 ];
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
