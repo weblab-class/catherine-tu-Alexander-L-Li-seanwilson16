@@ -79,9 +79,11 @@ const Profile = () => {
             <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} onUploadSuccess={handleUploadSuccess} />
           </div>
         </div>
-        <div className="button-text-inline">
-          <h2 className="theme-title">choose a theme:</h2>
-          <ThemeButtons />
+        <div className="theme-section">
+          <div className="button-text-inline">
+            <h2 className="theme-title">choose a theme:</h2>
+            <ThemeButtons />
+          </div>
         </div>
       </div>
     </>
