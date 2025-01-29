@@ -263,12 +263,13 @@ const DJ = () => {
   // Fetch user songs when component mounts or login state changes
   useEffect(() => {
     // Reset tracks to default tracks when logged out
-    if (!isLoggedIn) {
-      setTracks(AVAILABLE_TRACKS);
-    }
-    // Fetch user songs when logged in
-    fetchUserSongs();
-  }, [isLoggedIn, fetchUserSongs]);
+    // if (!isLoggedIn) {
+    //   setTracks(AVAILABLE_TRACKS);
+    // }
+    // // Fetch user songs when logged in
+    // fetchUserSongs();
+    setTracks(AVAILABLE_TRACKS); // Only use default tracks for now
+  }, [isLoggedIn]);
 
   const [leftTrack, setLeftTrack] = useState({
     name: "",
@@ -1135,10 +1136,10 @@ const DJ = () => {
 
       const getAudioPath = (stem) => {
         const stemFileName = mapStemName(stem);
-        if (track.isUserSong === true) {
-          return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
-        }
-        return `/assets/processed/${track.path}/${stemFileName}.wav`;
+        // if (track.isUserSong === true) {
+        //   return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
+        // }
+        return `/assets/processed/${track.path}/${stemFileName}.wav`; // Only use default songs path
       };
 
       // Use trackBpm directly for initial load
