@@ -203,7 +203,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
           
           <div className="song-list-container">
             <div className="song-list-header">
-              <span className="header-title">Title</span>
+              <span className="header-title">File Title</span>
               <span className="header-date">Date Uploaded</span>
               <span className="header-progress">Stem Split Progress</span>
               <span className="header-actions">Actions</span>
@@ -227,12 +227,14 @@ const SongLibrary = ({ onUploadSuccess }) => {
                         {renderProgress(song)}
                       </div>
                       <div className="song-actions">
-                        <button 
-                          className="u-link delete" 
-                          onClick={() => handleDelete(song._id)}
-                        >
-                          Delete
-                        </button>
+                        <div className="delete-container">
+                          <button 
+                            className="u-link delete" 
+                            onClick={() => handleDelete(song._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))

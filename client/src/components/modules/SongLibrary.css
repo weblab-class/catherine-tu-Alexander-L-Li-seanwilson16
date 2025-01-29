@@ -38,7 +38,7 @@
 
 .song-list-header {
   display: grid;
-  grid-template-columns: 3.5fr 3.5fr 5fr 3fr;
+  grid-template-columns: 3.25fr 3.5fr 5fr 3fr;
   gap: 2rem;
   padding: 1rem 1.5rem;
   background: rgba(255, 255, 255, 0.05);
@@ -126,6 +126,7 @@
   color: white;
   opacity: 0.8;
   transition: all 0.2s ease;
+  font-family: var(--josefin);
 }
 
 .song-actions .u-link:hover {
@@ -133,11 +134,24 @@
 }
 
 .song-actions .u-link.delete {
-  color: #ff6b6b;
+  color: #fa0000;
+  font-weight: 600;
 }
 
 .song-actions .u-link.delete:hover {
-  color: #ff4f4f;
+  color: #ff0000;
+  font-weight: 600;
+}
+
+.delete-container {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.delete-container:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .song-library-message {

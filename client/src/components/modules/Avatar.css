@@ -24,7 +24,7 @@
   justify-content: center;
   gap: 2rem;
   flex-direction: column;
-  padding-top: calc(3vh + 1rem);
+  padding-top: calc(4vh + 1rem);
 }
 
 .avatar-wrapper {
@@ -334,7 +334,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(8vh + 0.75rem);
+    padding-top: calc(1vh + 0.75rem);
     gap: 1.5rem;
   }
 
@@ -357,7 +357,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(8vh + 0.5rem);
+    padding-top: calc(1vh + 0.5rem);
     gap: 1.25rem;
   }
 
@@ -380,7 +380,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem);
+    padding-top: calc(1vh + 0.5rem);
     gap: 1rem;
   }
 
@@ -398,7 +398,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(12vh + 1rem);
+    padding-top: calc(1vh + 1rem);
     gap: 3rem;
   }
 
@@ -431,7 +431,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(12vh + 1rem);
+    padding-top: calc(1vh + 1rem);
     gap: 3rem;
   }
 
@@ -464,7 +464,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(6vh + 1rem);
+    padding-top: calc(1vh + 1rem);
     gap: 1.5rem;
   }
 
@@ -498,7 +498,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.75rem) !important;
+    padding-top: calc(1vh + 0.75rem) !important;
     gap: 1rem;
   }
 
@@ -529,7 +529,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(7vh + 0.5rem);
+    padding-top: calc(1vh + 0.5rem);
     gap: 1rem;
   }
 
@@ -563,7 +563,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh - 0.75rem) !important;
+    padding-top: calc(1vh - 0.75rem) !important;
     gap: 0.75rem;
   }
 
@@ -597,7 +597,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem) !important;
+    padding-top: calc(1vh + 0.5rem) !important;
     gap: 0.75rem;
   }
 
@@ -631,7 +631,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem) !important;
+    padding-top: calc(1vh + 0.5rem) !important;
     gap: 0.75rem;
   }
 
@@ -665,7 +665,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem) !important;
+    padding-top: calc(1vh + 0.5rem) !important;
     gap: 0.75rem;
   }
 
@@ -699,7 +699,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem) !important;
+    padding-top: calc(1vh + 0.5rem) !important;
     gap: 0.75rem;
   }
 
@@ -732,7 +732,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.5rem) !important;
+    padding-top: calc(1vh + 0.5rem) !important;
     gap: 0.75rem;
   }
 
@@ -766,7 +766,7 @@ h3 {
   }
 
   .avatar-content {
-    padding-top: calc(11vh + 0.25rem) !important;
+    padding-top: calc(1vh + 0.25rem) !important;
     gap: 0.75rem;
   }
 
