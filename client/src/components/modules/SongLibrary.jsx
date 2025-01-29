@@ -10,6 +10,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [songStatuses, setSongStatuses] = useState({});
 
   const fetchSongs = async () => {
     if (!isLoggedIn) {
@@ -61,6 +62,85 @@ const SongLibrary = ({ onUploadSuccess }) => {
     }
   };
 
+  // Function to check job status
+  const checkJobStatus = async (song) => {
+    if (!song.audioshakeJobIds) {
+      console.log("No job IDs found for song:", song._id);
+      return;
+    }
+
+    try {
+      console.log("Checking status for song:", song._id);
+      const response = await get(`/api/songs/${song._id}/status`);
+      console.log("Status response:", response);
+      
+      if (response.status) {
+        setSongStatuses(prev => ({
+          ...prev,
+          [song._id]: response.status
+        }));
+      }
+    } catch (error) {
+      console.error("Error checking job status:", error);
+    }
+  };
+
+  // Poll for status updates
+  useEffect(() => {
+    if (!songs.length) return;
+
+    // Initial check for all songs
+    songs.forEach(song => {
+      checkJobStatus(song);
+    });
+
+    const interval = setInterval(() => {
+      songs.forEach(song => {
+        checkJobStatus(song);
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [songs]);
+
+  const renderProgress = (song) => {
+    let status = "Processing...";
+    let progress = 0;
+
+    const songStatus = songStatuses[song._id];
+    console.log("Rendering progress for song:", song._id, "Status:", songStatus);
+
+    if (song.stemsStatus === "completed" || (songStatus && songStatus.completedJobs === songStatus.totalJobs)) {
+      progress = 100;
+      status = "Ready";
+    } else if (songStatus) {
+      const { completedJobs, totalJobs } = songStatus;
+      progress = Math.floor((completedJobs / totalJobs) * 100);
+      status = `Processing stems (${completedJobs}/${totalJobs})`;
+    } else if (song.stemsStatus === "pending") {
+      status = "Starting";
+    } else if (song.stemsStatus === "failed") {
+      status = "Failed";
+    }
+
+    return (
+      <div className="progress-section">
+        <div className="progress-container">
+          <div 
+            className="progress-bar" 
+            style={{ 
+              width: `${progress}%`,
+              transition: "width 0.3s ease-in-out"
+            }} 
+          />
+        </div>
+        <span className="progress-status">
+          {status} (<span>{progress}%</span>)
+        </span>
+      </div>
+    );
+  };
+
   if (loading) {
     return <div className="song-library-message">Loading your songs...</div>;
   }
@@ -98,6 +178,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
                     <li key={song._id} className="song-item">
                       <span className="song-name">{song.title}</span>
                       <span className="song-date">{new Date(song.uploadDate).toLocaleDateString()}</span>
+                      {renderProgress(song)}
                       <div className="song-actions">
                         <button className="u-link delete" onClick={() => handleDelete(song._id)}>
                           Delete

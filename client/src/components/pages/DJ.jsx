@@ -344,69 +344,100 @@ const DJ = () => {
     });
   };
 
-  const handleBPMChange = (deck, value) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+  const handleBPMChange = (deck, direction) => {
+    const track = deck === "left" ? leftTrack : rightTrack;
+    const setTrack = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
-    if (!trackState.name) return;
+    if (!track.name) return;
 
-    // Update the current deck
-    const updateDeck = (deckToUpdate, newBpm) => {
-      const state = deckToUpdate === "left" ? leftTrack : rightTrack;
-      const setState = deckToUpdate === "left" ? setLeftTrack : setRightTrack;
-      const deckWavesurfers = deckToUpdate === "left" ? leftWavesurfers : rightWavesurfers;
+    const currentBPM = track.bpm || track.originalBpm;
+    const targetBPM = direction === "up" ? currentBPM + 1 : currentBPM - 1;
 
-      if (!state.name) return;
+    // Calculate target rate based on original BPM
+    const targetRate = targetBPM / track.originalBpm;
 
-      // Calculate audio playback rate based on BPM change from original
-      const audioRate = newBpm / state.originalBpm;
+    // Get current rate
+    const currentRate = Object.values(track.audioElements || {})[0]?.playbackRate || 1;
 
-      // Calculate wavesurfer playback rate based on current BPM
-      const wavesurferRate = newBpm / 100;
+    // Animation duration in ms
+    const duration = 150;
+    const startTime = performance.now();
 
-      // Store current position before changing rates
-      const currentTime = Object.values(deckWavesurfers.current)[0]?.getCurrentTime() || 0;
+    // Update the track state immediately for UI feedback
+    setTrack((prev) => ({
+      ...prev,
+      bpm: targetBPM,
+    }));
 
-      // Update audio elements playback rate - this affects the actual audio speed
-      Object.values(state.audioElements || {}).forEach((audio) => {
+    // Function to animate the rate change
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Use easeInOutQuad for smooth acceleration and deceleration
+      const easeProgress = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+      // Calculate the current rate
+      const rate = currentRate + (targetRate - currentRate) * easeProgress;
+
+      // Update audio elements
+      Object.values(track.audioElements || {}).forEach((audio) => {
         if (audio) {
           audio.preservesPitch = true;
-          audio.playbackRate = audioRate;
+          audio.playbackRate = rate;
         }
       });
 
-      // Update wavesurfer playback rates - this affects the visual playhead speed
-      Object.values(deckWavesurfers.current || {}).forEach((wavesurfer) => {
+      // Update wavesurfers
+      Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
         if (wavesurfer) {
           const mediaElement = wavesurfer.getMediaElement();
           if (mediaElement) {
             mediaElement.preservesPitch = true;
-            mediaElement.playbackRate = audioRate;
+            mediaElement.playbackRate = rate;
           }
-          // Set wavesurfer rate proportional to BPM for visual sync
-          wavesurfer.setPlaybackRate(wavesurferRate);
-          wavesurfer.setTime(currentTime);
+          // Scale the wavesurfer rate proportionally
+          wavesurfer.setPlaybackRate(rate);
         }
       });
 
-      setState((prev) => ({
-        ...prev,
-        bpm: newBpm,
-      }));
+      // Continue animation if not finished
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
     };
 
-    // Update the current deck
-    updateDeck(deck, value);
+    // Start the animation
+    requestAnimationFrame(animate);
 
-    // If sync is enabled, update the other deck with the exact same BPM
+    // If sync is enabled, update the other deck
     if (syncEnabled) {
       const otherDeck = deck === "left" ? "right" : "left";
-      updateDeck(otherDeck, value);
+      handleBPMChange(otherDeck, direction);
     }
+  };
 
-    // Blur the slider to restore keyboard event handling
-    document.activeElement.blur();
+  const handleVolumeChange = (deck, direction) => {
+    const track = deck === "left" ? leftTrack : rightTrack;
+    const currentVol = volume[deck];
+    const newVol = Math.min(Math.max(direction === "up" ? currentVol + 0.1 : currentVol - 0.1, 0), 1);
+
+    setVolume((prev) => ({
+      ...prev,
+      [deck]: newVol,
+    }));
+
+    // Update volume for all audio stems
+    if (track.audioElements) {
+      Object.values(track.audioElements).forEach((audio) => {
+        if (audio) {
+          audio.volume = newVol;
+        }
+      });
+    }
   };
 
   const handleSync = () => {
@@ -542,24 +573,67 @@ const DJ = () => {
     [leftTrack, rightTrack]
   );
 
-  const handleVolumeChange = (deck, value) => {
-    const normalizedValue = value / 100; // Convert percentage to decimal
+  const handleCue = (deck) => {
     const trackState = deck === "left" ? leftTrack : rightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
-    // Update volume state
-    setVolume((prev) => ({ ...prev, [deck]: normalizedValue }));
+    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
 
-    // Update volume for all audio stems
-    if (trackState.audioElements) {
-      Object.values(trackState.audioElements).forEach((audio) => {
-        if (audio) {
-          audio.volume = normalizedValue;
-        }
-      });
+    // Always get the current position
+    const currentTime = wavesurfers.current.bass.getCurrentTime();
+
+    // If track is not playing, set new cue point at current position
+    if (!playing[deck]) {
+      setCuePoints((prev) => ({ ...prev, [deck]: currentTime }));
     }
 
-    // Blur the slider to restore keyboard event handling
-    document.activeElement.blur();
+    // Start playback from current position
+    Object.values(trackState.audioElements).forEach((audio) => {
+      if (audio) {
+        audio.currentTime = currentTime;
+        audio.play();
+      }
+    });
+
+    Object.values(wavesurfers.current).forEach((wavesurfer) => {
+      wavesurfer.setTime(currentTime);
+      wavesurfer.play();
+    });
+
+    // Start sync for temporary playback
+    if (trackState.syncControl) {
+      trackState.syncControl.start();
+    }
+  };
+
+  const handleCueEnd = (deck) => {
+    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
+
+    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
+
+    // Only stop if we're not in regular playback mode
+    if (!playing[deck]) {
+      const cuePoint = cuePoints[deck] || 0;
+
+      // Immediately stop playback and return to cue point
+      Object.values(trackState.audioElements).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.currentTime = cuePoint;
+        }
+      });
+
+      Object.values(wavesurfers.current).forEach((wavesurfer) => {
+        wavesurfer.pause();
+        wavesurfer.setTime(cuePoint);
+      });
+
+      // Stop sync when cue preview ends
+      if (trackState.syncControl) {
+        trackState.syncControl.stop();
+      }
+    }
   };
 
   const handleReset = () => {
@@ -648,69 +722,6 @@ const DJ = () => {
       right: { current: 0, total: 0 },
     });
     setIsLoading({ left: false, right: false });
-  };
-
-  const handleCue = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
-
-    // Always get the current position
-    const currentTime = wavesurfers.current.bass.getCurrentTime();
-
-    // If track is not playing, set new cue point at current position
-    if (!playing[deck]) {
-      setCuePoints((prev) => ({ ...prev, [deck]: currentTime }));
-    }
-
-    // Start playback from current position
-    Object.values(trackState.audioElements).forEach((audio) => {
-      if (audio) {
-        audio.currentTime = currentTime;
-        audio.play();
-      }
-    });
-
-    Object.values(wavesurfers.current).forEach((wavesurfer) => {
-      wavesurfer.setTime(currentTime);
-      wavesurfer.play();
-    });
-
-    // Start sync for temporary playback
-    if (trackState.syncControl) {
-      trackState.syncControl.start();
-    }
-  };
-
-  const handleCueEnd = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
-    const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
-
-    // Only stop if we're not in regular playback mode
-    if (!playing[deck]) {
-      const cuePoint = cuePoints[deck] || 0;
-
-      // Immediately stop playback and return to cue point
-      Object.values(trackState.audioElements).forEach((audio) => {
-        if (audio) {
-          audio.pause();
-          audio.currentTime = cuePoint;
-        }
-      });
-
-      Object.values(wavesurfers.current).forEach((wavesurfer) => {
-        wavesurfer.pause();
-        wavesurfer.setTime(cuePoint);
-      });
-
-      // Stop sync when cue preview ends
-      if (trackState.syncControl) {
-        trackState.syncControl.stop();
-      }
-    }
   };
 
   useEffect(() => {
@@ -1260,17 +1271,24 @@ const DJ = () => {
             <div className="deck left-deck">
               <div className="deck-top">
                 <div className="bpm-slider-container-left">
-                  <input
-                    type="range"
-                    className="bpm-slider"
-                    min="60"
-                    max="160"
-                    value={leftTrack.bpm}
-                    onChange={(e) => handleBPMChange("left", parseInt(e.target.value))}
-                    onMouseUp={(e) => e.target.blur()}
-                    disabled={!leftTrack.name || isLoading.left}
-                  />
-                  <div className="bpm-display">{leftTrack.bpm} BPM</div>
+                  <div className="control-group">
+                    <div className="control-label">BPM</div>
+                    <div className="control-buttons">
+                      <button
+                        className="control-button"
+                        onClick={() => handleBPMChange("left", "up")}
+                      >
+                        ▲
+                      </button>
+                      <div className="control-value">{Math.round(leftTrack.bpm || leftTrack.originalBpm || 0)}</div>
+                      <button
+                        className="control-button"
+                        onClick={() => handleBPMChange("left", "down")}
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="turntable">
                   <img
@@ -1280,17 +1298,24 @@ const DJ = () => {
                   />
                 </div>
                 <div className="volume-slider-container-left">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={volume.left * 100}
-                    className="volume-slider"
-                    onChange={(e) => handleVolumeChange("left", e.target.value)}
-                    onMouseUp={(e) => e.target.blur()}
-                    disabled={!leftTrack.name || isLoading.left}
-                  />
-                  <div className="volume-display">VOL</div>
+                  <div className="control-group">
+                    <div className="control-label">VOL</div>
+                    <div className="control-buttons">
+                      <button
+                        className="control-button"
+                        onClick={() => handleVolumeChange("left", "up")}
+                      >
+                        ▲
+                      </button>
+                      <div className="control-value">{Math.round(volume.left * 100)}%</div>
+                      <button
+                        className="control-button"
+                        onClick={() => handleVolumeChange("left", "down")}
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1385,17 +1410,24 @@ const DJ = () => {
             <div className="deck right-deck">
               <div className="deck-top">
                 <div className="volume-slider-container-right">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={volume.right * 100}
-                    className="volume-slider"
-                    onChange={(e) => handleVolumeChange("right", e.target.value)}
-                    onMouseUp={(e) => e.target.blur()}
-                    disabled={!rightTrack.name || isLoading.right}
-                  />
-                  <div className="volume-display">VOL</div>
+                  <div className="control-group">
+                    <div className="control-label">VOL</div>
+                    <div className="control-buttons">
+                      <button
+                        className="control-button"
+                        onClick={() => handleVolumeChange("right", "up")}
+                      >
+                        ▲
+                      </button>
+                      <div className="control-value">{Math.round(volume.right * 100)}%</div>
+                      <button
+                        className="control-button"
+                        onClick={() => handleVolumeChange("right", "down")}
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="turntable">
                   <img
@@ -1405,17 +1437,24 @@ const DJ = () => {
                   />
                 </div>
                 <div className="bpm-slider-container-right">
-                  <input
-                    type="range"
-                    className="bpm-slider"
-                    min="60"
-                    max="160"
-                    value={rightTrack.bpm}
-                    onChange={(e) => handleBPMChange("right", parseInt(e.target.value))}
-                    onMouseUp={(e) => e.target.blur()}
-                    disabled={!rightTrack.name || isLoading.right}
-                  />
-                  <div className="bpm-display">{rightTrack.bpm} BPM</div>
+                  <div className="control-group">
+                    <div className="control-label">BPM</div>
+                    <div className="control-buttons">
+                      <button
+                        className="control-button"
+                        onClick={() => handleBPMChange("right", "up")}
+                      >
+                        ▲
+                      </button>
+                      <div className="control-value">{Math.round(rightTrack.bpm || rightTrack.originalBpm || 0)}</div>
+                      <button
+                        className="control-button"
+                        onClick={() => handleBPMChange("right", "down")}
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 

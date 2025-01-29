@@ -189,15 +189,16 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
 
     // Start the stem separation process immediately
     console.log("Starting stem separation process...");
-    let assetId, jobIds; // Declare these at a higher scope
+    let assetId, jobIds;
     createStems(song.filePath, song._id)
       .then((result) => {
         console.log("Stems creation started:", result);
-        assetId = result.assetId; // Store in outer scope
-        jobIds = result.jobIds; // Store in outer scope
+        assetId = result.assetId;
+        jobIds = result.jobIds;
         song.audioshakeAssetId = assetId;
         song.audioshakeJobIds = jobIds;
         song.stemsStatus = "processing";
+        song.stems = {}; // Initialize empty stems object
         return song.save();
       })
       .then(() => {
@@ -213,10 +214,6 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
                       Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
                     },
                   });
-                  console.log(
-                    `Full response for job ${jobId}:`,
-                    JSON.stringify(response.data, null, 2)
-                  );
                   return { jobId, status: response.data.job.status, data: response.data.job };
                 } catch (error) {
                   console.error(`Error checking job ${jobId}:`, error);
@@ -224,11 +221,6 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
                 }
               })
             );
-
-            // Track which stems have been downloaded
-            if (!song.stems) {
-              song.stems = {};
-            }
 
             // Download completed stems that haven't been downloaded yet
             const stemTypes = ["vocals", "drums", "bass", "other"];
@@ -240,9 +232,8 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
               const stemType = stemTypes[i];
 
               if (jobStatus.status === "completed" && !song.stems[stemType]) {
-                console.log(`Downloading completed stem: ${stemType}`);
-                console.log("Job status data:", JSON.stringify(jobStatus.data, null, 2));
                 try {
+                  // Download logic here...
                   // Create stems directory if it doesn't exist
                   if (!fs.existsSync(songStemsDir)) {
                     fs.mkdirSync(songStemsDir, { recursive: true });
@@ -331,9 +322,9 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
                     console.log(`File size: ${stats.size} bytes`);
 
                     // Update the stems object with the new stem
-                    song.stems[stemType] = path.basename(`${stemType}_stem.wav`);
+                    song.stems[stemType] = `${stemType}_stem.wav`;
                     anyNewDownloads = true;
-                    console.log(`Successfully downloaded ${stemType} stem to ${songStemsDir}`);
+                    await song.save(); // Save after each stem to track progress
                   } catch (writeError) {
                     console.error(`Error writing file ${songStemsDir}:`, writeError);
                     continue;
@@ -346,21 +337,12 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
               }
             }
 
-            // Save progress if we downloaded any new stems
-            if (anyNewDownloads) {
-              song.stemsPath = songStemsDir;
-              await song.save();
-            }
-
             // If all jobs are complete, finish up
             if (allCompleted) {
               clearInterval(pollInterval);
               song.stemsStatus = "completed";
               song.processed = true;
               await song.save();
-              console.log("All stems downloaded successfully");
-            } else {
-              console.log("Some stems still processing...");
             }
           } catch (error) {
             console.error("Error in stem processing:", error);
@@ -368,7 +350,7 @@ router.post("/song", auth.ensureLoggedIn, upload.single("audio"), async (req, re
             song.stemsStatus = "failed";
             await song.save();
           }
-        }, 10000); // Check every 10 seconds
+        }, 5000); // Check every 5 seconds
       })
       .catch((error) => {
         console.error("Error starting stem process:", error);
@@ -606,6 +588,91 @@ router.delete("/song/:id", auth.ensureLoggedIn, async (req, res) => {
   } catch (err) {
     console.error("Error deleting song:", err);
     res.status(500).json({ error: "Error deleting song" });
+  }
+});
+
+// Get song processing status
+router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    console.log("Checking status for song:", req.params.songId);
+    const song = await Song.findById(req.params.songId);
+    if (!song) {
+      console.log("Song not found:", req.params.songId);
+      return res.status(404).send({ error: "Song not found" });
+    }
+
+    console.log("Found song:", song._id, "Status:", song.stemsStatus);
+
+    // If song is already completed or failed, return current status
+    if (song.stemsStatus === "completed") {
+      console.log("Song already completed");
+      return res.send({ status: { completedJobs: 4, totalJobs: 4 } });
+    }
+    if (song.stemsStatus === "failed") {
+      console.log("Song failed");
+      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
+    }
+
+    // Check if we have jobIds
+    if (!song.audioshakeJobIds || song.audioshakeJobIds.length === 0) {
+      console.log("No job IDs found for song");
+      return res.send({ status: { completedJobs: 0, totalJobs: 4 } });
+    }
+
+    console.log("Checking job statuses for:", song.audioshakeJobIds);
+
+    // Check status of each job
+    const jobStatuses = await Promise.all(
+      song.audioshakeJobIds.map(async (jobId) => {
+        try {
+          const response = await axios.get(`https://groovy.audioshake.ai/job/${jobId}`, {
+            headers: {
+              Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+            },
+          });
+          console.log(`Job ${jobId} status:`, response.data.job.status);
+          return response.data.job.status;
+        } catch (error) {
+          console.error(`Error checking job ${jobId}:`, error.message);
+          if (error.response) {
+            console.error("Response data:", error.response.data);
+          }
+          return "error";
+        }
+      })
+    );
+
+    // Count completed jobs
+    const completedJobs = jobStatuses.filter(status => status === "completed").length;
+    const totalJobs = jobStatuses.length;
+
+    console.log("Job completion:", completedJobs, "/", totalJobs);
+
+    // Update song status if all jobs are complete
+    if (completedJobs === totalJobs && !jobStatuses.includes("error")) {
+      console.log("All jobs completed, updating song status");
+      song.stemsStatus = "completed";
+      await song.save();
+    }
+
+    const response = {
+      status: {
+        completedJobs,
+        totalJobs,
+        jobStatuses
+      }
+    };
+    console.log("Sending response:", response);
+    res.send(response);
+  } catch (error) {
+    console.error("Error checking song status:", error.message);
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+    }
+    res.status(500).send({ 
+      error: "Error checking song status",
+      details: error.message 
+    });
   }
 });
 
