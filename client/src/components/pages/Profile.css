@@ -102,6 +102,7 @@ img.Profile-avatar,
   padding: 0;
   /* padding-bottom: env(safe-area-inset-bottom, 20px); */
   justify-content: flex-start;
+  overflow: hidden;
 }
 
 .upload-library-container {
@@ -121,10 +122,11 @@ img.Profile-avatar,
   min-width: 300px;
   max-width: 800px;
   border-radius: 8px;
-  padding: 0px 20px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .song-library-container {
@@ -132,12 +134,19 @@ img.Profile-avatar,
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.song-library-container::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 
 .profile-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  overflow: hidden;
 }
 
 .profile-header {
@@ -816,5 +825,132 @@ img.Profile-avatar,
   .button-text-inline {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media screen and (max-height: 820px) {
+  .profile-container {
+    gap: 0.5rem;
+    overflow: hidden;
+  }
+
+  .avatar-wrapper {
+    width: 140px !important;
+    height: 140px !important;
+    margin-bottom: 0;
+  }
+
+  .profile-title {
+    font-size: 2rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .greeting-text {
+    font-size: 2rem;
+    margin: 0.3rem 0;
+  }
+
+  .upload-library-container {
+    gap: 20px;
+  }
+
+  .song-library-wrapper {
+    padding: 0;
+    overflow: hidden;
+    max-width: 700px;
+  }
+
+  .song-library-container {
+    max-height: calc(100vh - 450px);
+    overflow-y: auto;
+  }
+
+  .profile-content {
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  .profile-header {
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+
+  .song-management-section {
+    margin-bottom: 10px;
+  }
+
+  .theme-section {
+    margin-top: 0.5rem;
+  }
+
+  .theme-buttons-container .button-text-inline {
+    margin-top: 20px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .profile-container {
+    gap: 0.3rem;
+    overflow: hidden;
+  }
+
+  .avatar-wrapper {
+    width: 120px !important;
+    height: 120px !important;
+    margin-bottom: 0;
+  }
+
+  .profile-title {
+    font-size: 1.6rem;
+    margin-top: 0;
+    margin-bottom: 0.3rem;
+  }
+
+  .greeting-text {
+    font-size: 1.8rem;
+    margin: 0.2rem 0;
+  }
+
+  .upload-library-container {
+    gap: 15px;
+  }
+
+  .song-library-wrapper {
+    padding: 0;
+    min-width: 300px;
+    max-width: 750px;
+    overflow: hidden;
+  }
+
+  .song-library-container {
+    max-height: calc(100vh - 400px);
+    overflow-y: auto;
+  }
+
+  .profile-content {
+    padding: 5px;
+    overflow: hidden;
+  }
+
+  .profile-header {
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+
+  .song-management-section {
+    margin-bottom: 8px;
+  }
+
+  .theme-section {
+    margin-top: 0.25rem;
+  }
+
+  .theme-buttons-container .button-text-inline {
+    margin-top: 15px;
+  }
+
+  .theme-title {
+    font-size: 1.5rem;
   }
 }
