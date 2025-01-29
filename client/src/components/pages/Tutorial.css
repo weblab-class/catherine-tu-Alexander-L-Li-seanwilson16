@@ -43,3 +43,25 @@
   position: relative;
   z-index: 10002;
 }
+
+.Tutorial-container,
+.Tutorial-container *,
+.decks-container,
+.decks-container *,
+.controls-container,
+.controls-container *,
+.deck-container,
+.deck-container *,
+.deck-controls,
+.deck-controls *,
+.deck-info,
+.deck-info *,
+.effect-button,
+.effect-button *,
+.effect-button-container,
+.effect-button-container * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

@@ -18,6 +18,10 @@
   height: auto;
   z-index: 10002;
   font-size: 1.1rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .help-text-container.walkthrough-mode {
@@ -89,6 +93,18 @@
 
 .help-text-walkthrough:hover {
   color: #000;
+}
+
+.help-text,
+.help-text *,
+.help-text-button,
+.help-text-button *,
+.help-text-walkthrough,
+.help-text-walkthrough * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 @media (max-width: 800px) {

@@ -376,9 +376,8 @@ const DJ = () => {
       const progress = Math.min(elapsed / duration, 1);
 
       // Use easeInOutQuad for smooth acceleration and deceleration
-      const easeProgress = progress < 0.5
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      const easeProgress =
+        progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
       // Calculate the current rate
       const rate = currentRate + (targetRate - currentRate) * easeProgress;
@@ -423,7 +422,10 @@ const DJ = () => {
   const handleVolumeChange = (deck, direction) => {
     const track = deck === "left" ? leftTrack : rightTrack;
     const currentVol = volume[deck];
-    const newVol = Math.min(Math.max(direction === "up" ? currentVol + 0.1 : currentVol - 0.1, 0), 1);
+    const newVol = Math.min(
+      Math.max(direction === "up" ? currentVol + 0.1 : currentVol - 0.1, 0),
+      1
+    );
 
     setVolume((prev) => ({
       ...prev,
@@ -1280,7 +1282,9 @@ const DJ = () => {
                       >
                         ▲
                       </button>
-                      <div className="control-value">{Math.round(leftTrack.bpm || leftTrack.originalBpm || 0)}</div>
+                      <div className="control-value">
+                        {Math.round(leftTrack.bpm || leftTrack.originalBpm || 0)}
+                      </div>
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("left", "down")}
@@ -1446,7 +1450,9 @@ const DJ = () => {
                       >
                         ▲
                       </button>
-                      <div className="control-value">{Math.round(rightTrack.bpm || rightTrack.originalBpm || 0)}</div>
+                      <div className="control-value">
+                        {Math.round(rightTrack.bpm || rightTrack.originalBpm || 0)}
+                      </div>
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("right", "down")}
@@ -1459,6 +1465,31 @@ const DJ = () => {
               </div>
 
               <div className="deck-row right-deck-row">
+                <div className="effect-buttons">
+                  {STEM_TYPES.map((effect, index) => {
+                    const hotkey = {
+                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
+                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
+                    };
+                    return (
+                      <div key={effect} className="effect-button-container">
+                        <div className="hotkey-indicator">
+                          <span className="hotkey-text">{hotkey.right[effect]}</span>
+                        </div>
+                        <button
+                          className={`effect-btn ${
+                            rightTrack.effectsEnabled?.[effect] ? "active" : ""
+                          }`}
+                          onClick={() => handleEffectToggle("right", effect)}
+                          data-effect={effect}
+                        >
+                          <div className="effect-content"></div>
+                        </button>
+                        <span className="effect-label">{effect}</span>
+                      </div>
+                    );
+                  })}
+                </div>
                 <div className="playback-section">
                   <div className="playback-controls">
                     <button
@@ -1492,32 +1523,6 @@ const DJ = () => {
                       )}
                     </button>
                   </div>
-                </div>
-
-                <div className="effect-buttons">
-                  {STEM_TYPES.map((effect, index) => {
-                    const hotkey = {
-                      left: { bass: "Q", drums: "W", melody: "E", vocals: "R" },
-                      right: { bass: "U", drums: "I", melody: "O", vocals: "P" },
-                    };
-                    return (
-                      <div key={effect} className="effect-button-container">
-                        <div className="hotkey-indicator">
-                          <span className="hotkey-text">{hotkey.right[effect]}</span>
-                        </div>
-                        <button
-                          className={`effect-btn ${
-                            rightTrack.effectsEnabled?.[effect] ? "active" : ""
-                          }`}
-                          onClick={() => handleEffectToggle("right", effect)}
-                          data-effect={effect}
-                        >
-                          <div className="effect-content"></div>
-                        </button>
-                        <span className="effect-label">{effect}</span>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
             </div>

@@ -21,6 +21,22 @@ body {
 }
 
 /* Top Bar Styles */
+.top-bar,
+.top-bar *,
+.top-bar-content,
+.top-bar-content *,
+.top-bar-title,
+.top-bar-title *,
+.top-bar-links,
+.top-bar-links *,
+.top-bar-link,
+.top-bar-link * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 .top-bar {
   border-radius: 0;
   display: flex;
@@ -749,24 +765,6 @@ body {
   align-items: center;
 }
 
-.vinyl {
-  width: 280px;
-  height: 280px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.platter {
-  width: 280px;
-  height: 280px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
 .turntable {
   width: 280px;
   height: 280px;
@@ -842,6 +840,60 @@ body {
   display: none;
 }
 
+.greeting-container,
+.greeting-container *,
+.greeting-text,
+.greeting-text *,
+.time-text,
+.time-text *,
+.user-greeting,
+.user-greeting * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.user-greeting span,
+.user-greeting strong,
+.greeting-text span,
+.greeting-text strong,
+.time-text span,
+.time-text strong {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none;
+}
+
+.greeting-container,
+.greeting-container *,
+.greeting-text,
+.greeting-text *,
+.time-text,
+.time-text *,
+.user-greeting,
+.user-greeting * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.user-greeting span,
+.user-greeting strong,
+.greeting-text span,
+.greeting-text strong,
+.time-text span,
+.time-text strong {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none;
+}
+
 /* Waveform */
 .waveforms-section {
   width: 100%;
@@ -903,13 +955,6 @@ body {
   font-family: var(--josefin);
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
-}
-
-/* Turntable */
-.turntable {
-  width: 200px;
-  height: 200px;
-  flex-shrink: 0;
 }
 
 /* BPM and Volume Controls */

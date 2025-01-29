@@ -1,3 +1,69 @@
+.Profile-container,
+.Profile-container *,
+.Profile-avatarContainer,
+.Profile-avatarContainer *,
+.Profile-name,
+.Profile-name *,
+.Profile-subContainer,
+.Profile-subContainer *,
+.Profile-description,
+.Profile-description *,
+.Profile-line,
+.Profile-line *,
+.Profile-header,
+.Profile-header *,
+.Profile-songs,
+.Profile-songs *,
+.song-card,
+.song-card *,
+.song-title,
+.song-title *,
+.song-artist,
+.song-artist *,
+.song-info,
+.song-info *,
+.theme-title,
+.theme-title *,
+.theme-container,
+.theme-container *,
+.avatar,
+.avatar *,
+.song-library,
+.song-library *,
+.theme-button,
+.theme-button *,
+.greeting,
+.greeting *,
+.time-of-day,
+.time-of-day *,
+.song-library-container,
+.song-library-container *,
+.theme-buttons-container,
+.theme-buttons-container * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.Profile-avatarContainer img,
+.Profile-avatar,
+.Profile-avatar *,
+img.Profile-avatar,
+.theme-button,
+.theme-button span,
+.theme-button img,
+.theme-buttons button,
+.theme-buttons button *,
+.theme-buttons-container button,
+.theme-buttons-container button * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none;
+}
+
 .theme-title {
   font-family: var(--josefin);
   text-align: center;
