@@ -18,11 +18,11 @@ async function downloadOtherStem() {
     };
 
     const jobResponse = await axios.request(jobConfig);
-    console.log('Job Status:', jobResponse.data.job.status);
+    // console.log('Job Status:', jobResponse.data.job.status);
     
     if (jobResponse.data.job.stemAssets && jobResponse.data.job.stemAssets.length > 0) {
       const stemAsset = jobResponse.data.job.stemAssets[0];
-      console.log('Stem Asset:', stemAsset);
+      // console.log('Stem Asset:', stemAsset);
       
       // Download the stem
       const downloadConfig = {
@@ -36,14 +36,14 @@ async function downloadOtherStem() {
       const outputPath = path.join(outputDir, 'other.wav');
       
       fs.writeFileSync(outputPath, response.data);
-      console.log(`Successfully downloaded other stem to ${outputPath}`);
+      // console.log(`Successfully downloaded other stem to ${outputPath}`);
     } else {
-      console.log('No stem assets found in job response');
+      // console.log('No stem assets found in job response');
     }
   } catch (error) {
-    console.log("Error:", error.message);
+    // console.log("Error:", error.message);
     if (error.response) {
-      console.log("Response data:", error.response.data);
+      // console.log("Response data:", error.response.data);
     }
   }
 }

@@ -32,22 +32,22 @@ const Profile = () => {
           setLoading(false);
         })
         .catch((err) => {
-          console.log("Failed to fetch user", err);
+          // console.log("Failed to fetch user", err);
           setLoading(false);
         });
     }
   }, [userId, isLoggedIn]);
 
   const handleUploadSuccess = (song) => {
-    console.log("Upload completed successfully in Profile:", song);
-    console.log("Stems created:", song.stems);
+    // console.log("Upload completed successfully in Profile:", song);
+    // console.log("Stems created:", song.stems);
     // Trigger a refresh of the song library
     setRefreshLibrary((prev) => prev + 1);
   };
 
   const handleSongSelect = (song) => {
     // You can implement song selection logic here
-    console.log("Selected song:", song);
+    // console.log("Selected song:", song);
   };
 
   if (loading) {

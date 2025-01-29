@@ -45,9 +45,9 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
         if (status && status.completedJobs < status.totalJobs) {
           try {
             await post(`/api/songs/${song._id}/delete`);
-            console.log("Deleted incomplete song:", song._id);
+            // console.log("Deleted incomplete song:", song._id);
           } catch (error) {
-            console.error("Error deleting incomplete song:", error);
+            // console.error("Error deleting incomplete song:", error);
           }
         }
       }
@@ -68,7 +68,7 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
       const response = await get("/api/songs");
       setSongs(response || []);
     } catch (err) {
-      console.log("Error fetching songs:", err);
+      // console.log("Error fetching songs:", err);
       setError("Failed to fetch songs. Please refresh and log in again.");
     } finally {
       setLoading(false);
@@ -142,14 +142,14 @@ const SongLibrary = ({ userId, onUploadSuccess }) => {
   // Function to check job status
   const checkJobStatus = async (song) => {
     if (!song.audioshakeJobIds) {
-      console.log("No job IDs found for song:", song._id);
+      // console.log("No job IDs found for song:", song._id);
       return;
     }
 
     try {
-      console.log("Checking status for song:", song._id);
+      // console.log("Checking status for song:", song._id);
       const response = await get(`/api/songs/${song._id}/status`);
-      console.log("Status response:", response);
+      // console.log("Status response:", response);
       
       if (response.status) {
         setSongStatuses(prev => ({

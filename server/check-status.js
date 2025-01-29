@@ -10,8 +10,8 @@ async function checkJobStatus(jobId) {
         'Authorization': `Bearer ${process.env.AUDIOSHAKE_API_KEY}`
       }
     });
-    console.log(`Job ${jobId} status:`, response.data.job.status);
-    console.log('Full response:', JSON.stringify(response.data, null, 2));
+    // console.log(`Job ${jobId} status:`, response.data.job.status);
+    // console.log('Full response:', JSON.stringify(response.data, null, 2));
   } catch (error) {
     console.error(`Error checking job ${jobId}:`, error.message);
   }
@@ -29,12 +29,12 @@ async function main() {
 
     // Find most recent song
     const songs = await Song.find({ creator_id: { $exists: true } }).sort({ _id: -1 }).limit(5);
-    console.log('Recent songs:', songs.map(s => ({
-      id: s._id,
-      title: s.title,
-      jobIds: s.audioshakeJobIds,
-      status: s.stemsStatus
-    })));
+    // console.log('Recent songs:', songs.map(s => ({
+    //   id: s._id,
+    //   title: s.title,
+    //   jobIds: s.audioshakeJobIds,
+    //   status: s.stemsStatus
+    // })));
 
     if (songs.length === 0) {
       console.error('No songs found');
@@ -48,7 +48,7 @@ async function main() {
       return;
     }
 
-    console.log('\nChecking status for most recent song:', song._id);
+    // console.log('\nChecking status for most recent song:', song._id);
     for (const jobId of song.audioshakeJobIds) {
       await checkJobStatus(jobId);
     }

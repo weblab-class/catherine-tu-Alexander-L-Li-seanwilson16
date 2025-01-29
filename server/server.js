@@ -118,7 +118,7 @@ app.use(express.static(reactPath));
 app.get("*", (req, res) => {
   res.sendFile(path.join(reactPath, "index.html"), (err) => {
     if (err) {
-      console.log("Error sending client/dist/index.html:", err.status || 500);
+      // console.log("Error sending client/dist/index.html:", err.status || 500);
       res
         .status(err.status || 500)
         .send("Error sending client/dist/index.html - have you run `npm run build`?");
@@ -131,7 +131,7 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   if (status === 500) {
     // 500 means Internal Server Error
-    console.log("The server errored when processing a request!");
+    // console.log("The server errored when processing a request!");
     console.log(err);
   }
 
@@ -148,5 +148,5 @@ const server = http.Server(app);
 socketManager.init(server);
 
 server.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
+  // console.log(`Server running on port: ${port}`);
 });

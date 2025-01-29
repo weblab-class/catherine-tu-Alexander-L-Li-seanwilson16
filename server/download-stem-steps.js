@@ -12,10 +12,10 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
  */
 async function downloadStems(assetId, jobIds, songStemsDir) {
   try {
-    console.log("Starting stem downloads...");
-    console.log("Asset ID:", assetId);
-    console.log("Job IDs:", jobIds);
-    console.log("Song stems directory:", songStemsDir);
+    // console.log("Starting stem downloads...");
+    // console.log("Asset ID:", assetId);
+    // console.log("Job IDs:", jobIds);
+    // console.log("Song stems directory:", songStemsDir);
 
     // Ensure stems directory exists
     if (!fs.existsSync(songStemsDir)) {
@@ -28,7 +28,7 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
     for (let i = 0; i < jobIds.length; i++) {
       const jobId = jobIds[i];
       const stemType = stemTypes[i];
-      console.log(`\nDownloading ${stemType} stem (Job ID: ${jobId})...`);
+      // console.log(`\nDownloading ${stemType} stem (Job ID: ${jobId})...`);
 
       try {
         // First get the download URL
@@ -43,7 +43,7 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
           !jobResponse.data.job ||
           jobResponse.data.job.status !== "completed"
         ) {
-          console.log(`Job ${jobId} not ready yet:`, jobResponse.data);
+          // console.log(`Job ${jobId} not ready yet:`, jobResponse.data);
           continue;
         }
 
@@ -76,9 +76,9 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
           continue;
         }
 
-        console.log(`Found stem URL for ${stemType}:`, stemUrl);
+        // console.log(`Found stem URL for ${stemType}:`, stemUrl);
 
-        console.log(`Downloading stem from URL: ${stemUrl}`);
+        // console.log(`Downloading stem from URL: ${stemUrl}`);
 
         // Set up headers - only include Authorization for non-S3 URLs
         const headers = {
@@ -112,18 +112,18 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
 
         // Download the stem file with the formatted name
         const stemPath = path.join(songStemsDir, formatStemFilename(stemType));
-        console.log(`Downloading to ${stemPath}`);
+        // console.log(`Downloading to ${stemPath}`);
 
         // Write the buffer to file
         try {
           await fs.promises.writeFile(stemPath, response.data);
-          console.log(`Successfully wrote ${stemType} stem to ${stemPath}`);
+          // console.log(`Successfully wrote ${stemType} stem to ${stemPath}`);
 
           // Verify the file was written
           const stats = await fs.promises.stat(stemPath);
-          console.log(`File size: ${stats.size} bytes`);
+          // console.log(`File size: ${stats.size} bytes`);
 
-          console.log(`Successfully downloaded ${stemType} to ${stemPath}`);
+          // console.log(`Successfully downloaded ${stemType} to ${stemPath}`);
           stemPaths[stemType] = path.basename(stemPath); // Store just the filename
         } catch (writeError) {
           console.error(`Error writing file ${stemPath}:`, writeError);

@@ -13,12 +13,12 @@ async function checkJobStatus() {
     };
 
     const response = await axios.request(config);
-    console.log("Job Status:", JSON.stringify(response.data, null, 2));
+    // console.log("Job Status:", JSON.stringify(response.data, null, 2));
 
   } catch (error) {
     console.log("Error:", error.message);
     if (error.response) {
-      console.log("Response data:", error.response.data);
+      // console.log("Response data:", error.response.data);
     }
   }
 }

@@ -136,13 +136,13 @@ const DJ = () => {
   // Fetch user songs function
   const fetchUserSongs = useCallback(async () => {
     if (!isLoggedIn) {
-      console.log("User not logged in, skipping user songs fetch");
+      // console.log("User not logged in, skipping user songs fetch");
       return;
     }
 
     try {
       const response = await get("/api/songs");
-      console.log("Fetched songs from server:", response);
+      // console.log("Fetched songs from server:", response);
 
       const userSongs = await Promise.all(
         response.map(async (song) => {
@@ -153,18 +153,18 @@ const DJ = () => {
             path: song._id,
           };
 
-          console.log("Processing song:", {
-            title: song.title,
-            isUserSong: true,
-            bpm: song.bpm,
-            key: song.key,
-          });
+          // console.log("Processing song:", {
+          //   title: song.title,
+          //   isUserSong: true,
+          //   bpm: song.bpm,
+          //   key: song.key,
+          // });
 
           if (true) {
             try {
-              console.log(`Starting analysis for song: ${song.title}`);
+              // console.log(`Starting analysis for song: ${song.title}`);
               const audioUrl = `http://localhost:3000/stems/${song._id}/other_stem.wav`;
-              console.log("Fetching audio from:", audioUrl);
+              // console.log("Fetching audio from:", audioUrl);
 
               const response = await fetch(audioUrl);
               if (!response.ok) {
@@ -172,11 +172,11 @@ const DJ = () => {
               }
 
               const arrayBuffer = await response.arrayBuffer();
-              console.log("Audio file fetched, size:", arrayBuffer.byteLength);
+              // console.log("Audio file fetched, size:", arrayBuffer.byteLength);
 
               const audioContext = new AudioContext();
               const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-              console.log("Audio decoded, duration:", audioBuffer.duration);
+              // console.log("Audio decoded, duration:", audioBuffer.duration);
 
               const audioData = audioBuffer.getChannelData(0);
               const sampleRate = audioBuffer.sampleRate;
@@ -239,11 +239,11 @@ const DJ = () => {
                 const bpm =
                   medianBpm < 60 ? medianBpm * 2 : medianBpm > 180 ? medianBpm / 2 : medianBpm;
 
-                console.log(`Analysis results for ${song.title}:`, { bpm });
+                // console.log(`Analysis results for ${song.title}:`, { bpm });
                 return { ...baseSong, bpm, key: "C Major" };
               }
 
-              console.log(`Could not detect BPM for ${song.title}, using default`);
+              // console.log(`Could not detect BPM for ${song.title}, using default`);
               return { ...baseSong, bpm: 120, key: "C Major" };
             } catch (error) {
               console.error(`Error analyzing song ${song.title}:`, error);
@@ -253,7 +253,7 @@ const DJ = () => {
           return { ...baseSong, bpm: song.bpm || 120, key: song.key || "" };
         })
       );
-      console.log("Final processed user songs:", userSongs);
+      // console.log("Final processed user songs:", userSongs);
       setTracks((prevTracks) => [...userSongs, ...AVAILABLE_TRACKS]);
     } catch (err) {
       console.error("Error fetching user songs:", err);
@@ -392,7 +392,7 @@ const DJ = () => {
   }, [playing, syncWavesurfers]);
 
   const handlePlayPause = (deck) => {
-    console.log("Play/Pause clicked for deck:", deck);
+    // console.log("Play/Pause clicked for deck:", deck);
     const trackState = deck === "left" ? leftTrack : rightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
 
@@ -403,7 +403,7 @@ const DJ = () => {
 
       // Get all audio elements for this deck
       const audioElements = trackState.audioElements;
-      console.log("Audio elements:", audioElements);
+      // console.log("Audio elements:", audioElements);
 
       if (newPlaying[deck]) {
         // Get current position from the first available wavesurfer
@@ -412,7 +412,7 @@ const DJ = () => {
         // Play all enabled stems and sync them to the same position
         Object.entries(audioElements).forEach(([stem, audio]) => {
           if (trackState.effectsEnabled[stem]) {
-            console.log(`Playing ${stem}`);
+            // console.log(`Playing ${stem}`);
             audio.currentTime = currentTime;
             audio.play().catch((err) => console.error(`Error playing ${stem}:`, err));
           }
@@ -421,7 +421,7 @@ const DJ = () => {
         // Start all wavesurfers at the same position
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
           if (wavesurfer) {
-            console.log("Starting wavesurfer");
+            // console.log("Starting wavesurfer");
             wavesurfer.setTime(currentTime);
             wavesurfer.play();
           }
@@ -438,7 +438,7 @@ const DJ = () => {
 
         // Pause all stems and sync their positions
         Object.entries(audioElements).forEach(([stem, audio]) => {
-          console.log(`Pausing ${stem}`);
+          // console.log(`Pausing ${stem}`);
           audio.pause();
           audio.currentTime = currentTime;
         });
@@ -446,7 +446,7 @@ const DJ = () => {
         // Pause all wavesurfers and sync their positions
         Object.values(wavesurfers.current).forEach((wavesurfer) => {
           if (wavesurfer) {
-            console.log("Pausing wavesurfer");
+            // console.log("Pausing wavesurfer");
             wavesurfer.pause();
             wavesurfer.setTime(currentTime);
           }
@@ -1093,7 +1093,7 @@ const DJ = () => {
   }, [leftTrack.audioElements, rightTrack.audioElements]);
 
   const handleTrackSelect = async (track, deck) => {
-    console.log(`Loading track for ${deck} deck:`, track);
+    // console.log(`Loading track for ${deck} deck:`, track);
 
     try {
       // Set loading state to true at the start
@@ -1146,7 +1146,7 @@ const DJ = () => {
 
       // Load audio elements first
       for (const stem of STEM_TYPES) {
-        console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
+        // console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
         const audio = new Audio();
         audio.crossOrigin = "anonymous";
         audio.src = getAudioPath(stem);
@@ -1159,7 +1159,7 @@ const DJ = () => {
         try {
           await new Promise((resolve, reject) => {
             const loadHandler = () => {
-              console.log(`${stem} audio loaded successfully`);
+              // console.log(`${stem} audio loaded successfully`);
               audio.removeEventListener("canplaythrough", loadHandler);
               resolve();
             };
@@ -1173,7 +1173,7 @@ const DJ = () => {
           });
 
           audioElements[stem] = audio;
-          console.log(`Successfully loaded ${stem} stem`);
+          // console.log(`Successfully loaded ${stem} stem`);
         } catch (error) {
           console.error(`Error loading ${stem} stem:`, error);
         }
@@ -1227,7 +1227,7 @@ const DJ = () => {
                 });
                 wavesurfer.once("error", reject);
               });
-              console.log(`Successfully loaded ${stem} waveform`);
+              // console.log(`Successfully loaded ${stem} waveform`);
             } catch (error) {
               console.error(`Error loading waveform for ${stem}:`, error);
               throw error;

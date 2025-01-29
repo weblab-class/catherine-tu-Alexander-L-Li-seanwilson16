@@ -75,7 +75,7 @@ function App() {
     const decodedCredential = jwt_decode(userToken);
     post("/api/login", { token: userToken })
       .then((user) => {
-        console.log("login response:", user);
+        // console.log("login response:", user);
         setUserId(user._id);
         post("/api/initsocket", { socketid: socket.id });
         // Fetch and set theme after successful login

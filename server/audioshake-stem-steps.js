@@ -14,14 +14,14 @@ const fs = require('fs');
 async function createStems(filePath, songId) {
   try {
     // Step 1: Upload file and create asset
-    console.log("\n=== Starting stem creation process ===");
-    console.log("Input:", { filePath, songId });
-    console.log("API Key present:", !!process.env.AUDIOSHAKE_API_KEY);
+    // console.log("\n=== Starting stem creation process ===");
+    // console.log("Input:", { filePath, songId });
+    // console.log("API Key present:", !!process.env.AUDIOSHAKE_API_KEY);
     
     const formData = new FormData();
     formData.append('file', fs.createReadStream(filePath));
 
-    console.log("Making upload request to AudioShake...");
+    // console.log("Making upload request to AudioShake...");
     const uploadConfig = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -34,7 +34,7 @@ async function createStems(filePath, songId) {
     };
 
     const uploadResponse = await axios.request(uploadConfig);
-    console.log("Asset created:", uploadResponse.data);
+    // console.log("Asset created:", uploadResponse.data);
     const assetId = uploadResponse.data.id;
 
     // Step 2: Create stem separation jobs
@@ -77,7 +77,7 @@ async function createStems(filePath, songId) {
     }
 
     console.log("\n=== Stem creation complete ===");
-    console.log("Results:", { assetId, jobIds });
+    // console.log("Results:", { assetId, jobIds });
     
     return {
       assetId,
@@ -116,13 +116,13 @@ async function checkStemStatus(jobIds) {
     }));
 
     const allComplete = jobStatuses.every(response => response.data.job.status === 'completed');
-    console.log("All jobs complete?", allComplete);
+    // console.log("All jobs complete?", allComplete);
     
     if (!allComplete) {
       // Log individual job statuses
       jobStatuses.forEach(response => {
         const job = response.data.job;
-        console.log(`Job ${job.id}: status=${job.status}, progress=${job.progress || 'N/A'}`);
+        // console.log(`Job ${job.id}: status=${job.status}, progress=${job.progress || 'N/A'}`);
       });
     }
 

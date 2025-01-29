@@ -58,7 +58,7 @@ const FileUpload = ({ onUploadSuccess }) => {
 
     try {
       // First upload the file
-      console.log("Starting file upload...");
+      // console.log("Starting file upload...");
       const formData = new FormData();
       formData.append("audio", uploadedFiles.audio);
       formData.append("title", uploadedFiles.audio.name);
@@ -75,7 +75,7 @@ const FileUpload = ({ onUploadSuccess }) => {
       }
 
       const result = await response.json();
-      console.log("Upload successful:", result);
+      // console.log("Upload successful:", result);
 
       // Clear the upload state
       setUploadedFiles({
