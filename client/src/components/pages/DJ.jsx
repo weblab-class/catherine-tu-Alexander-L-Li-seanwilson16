@@ -1136,7 +1136,7 @@ const DJ = () => {
       const getAudioPath = (stem) => {
         const stemFileName = mapStemName(stem);
         if (track.isUserSong === true) {
-          return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
+          return `/stems/${track.id}/${stemFileName}_stem.wav`;
         }
         return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };

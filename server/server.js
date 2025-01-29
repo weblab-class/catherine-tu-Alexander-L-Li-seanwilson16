@@ -59,16 +59,20 @@ mongoose
 const app = express();
 app.use(validator.checkRoutes);
 
-// allow us to process POST requests
-app.use(express.json());
-
 // Set up cors middleware BEFORE routes
 app.use(cors({ 
   origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
+  exposedHeaders: ['Content-Range', 'Accept-Ranges']
 }));
+
+// Set up all middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// allow us to process POST requests
 
 // set up a session, which will persist login data across requests
 app.use(
@@ -87,28 +91,29 @@ app.use(
 // this checks if the user is logged in, and populates "req.user"
 app.use(auth.populateCurrentUser);
 
+// Serve static files with CORS headers
+app.use("/uploads", (req, res, next) => {
+  res.set({
+    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Range',
+    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges'
+  });
+  next();
+}, express.static(path.join(__dirname, "..", "uploads")));
+
+app.use("/stems", (req, res, next) => {
+  res.set({
+    'Access-Control-Allow-Origin': 'http://localhost:5173',
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Range',
+    'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges'
+  });
+  next();
+}, express.static(path.join(__dirname, "..", "stems")));
+
 // connect user-defined routes
 app.use("/api", api);
-
-// Set up middleware for uploads directory with CORS headers
-app.use("/uploads", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
-  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-  next();
-}, express.static(path.join(__dirname, "../uploads")));
-
-// Set up middleware for stems directory with CORS headers
-app.use("/stems", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Range");
-  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-  res.header("Access-Control-Expose-Headers", "Content-Range, Accept-Ranges");
-  next();
-}, express.static(path.resolve(__dirname, "..", "stems")));
 
 // load the compiled react files, which will serve /index.html and /bundle.js
 const reactPath = path.resolve(__dirname, "..", "client", "dist");
