@@ -4,7 +4,7 @@ import "./HelpText.css";
 const walkthroughSteps = [
   {
     id: "import-left",
-    text: "Click here to import a song for your left track. You can choose any audio file from your computer.",
+    text: "Click here to import a song for your left track. The songs are already downloaded and ready to go!",
     selector: ".import-container-left .import-btn",
     spotlightSize: 150
   },
@@ -16,55 +16,31 @@ const walkthroughSteps = [
   },
   {
     id: "waveform-left",
-    text: "This is your left track's waveform display. Click anywhere on it to jump to that position in the track.",
+    text: "This is your left track's waveform display. It displays the waveforms for each of the stems in your left track.",
     selector: ".waveforms-section > div:first-child",
     spotlightSize: 300
   },
   {
     id: "waveform-right",
-    text: "This is your right track's waveform display. Like the left track, you can click anywhere to jump to that position.",
+    text: "This is your right track's waveform display. It displays the waveforms for each of the stems in your right track.",
     selector: ".waveforms-section > div:last-child",
     spotlightSize: 300
   },
   {
-    id: "bpm-left",
-    text: "Adjust the BPM (speed) of your left track. This will affect how fast the track plays.",
-    selector: ".deck.left-deck .bpm-slider-container-left",
-    spotlightSize: 150
-  },
-  {
     id: "turntable-left",
-    text: "Click and drag to scratch your left track, just like a real turntable!",
+    text: "This is a visual indicator of your left track's playback, with a chill twist!",
     selector: ".deck.left-deck .turntable",
     spotlightSize: 200
   },
   {
-    id: "volume-left",
-    text: "Adjust the volume of your left track. Slide up to increase, down to decrease.",
-    selector: ".deck.left-deck .volume-slider",
-    spotlightSize: 150
-  },
-  {
-    id: "volume-right",
-    text: "Adjust the volume of your right track. Slide up to increase, down to decrease.",
-    selector: ".deck.right-deck .volume-slider",
-    spotlightSize: 150
-  },
-  {
     id: "turntable-right",
-    text: "Click and drag to scratch your right track, just like a real turntable!",
+    text: "This is a visual indicator of your right track's playback, with a chill twist!",
     selector: ".deck.right-deck .turntable",
     spotlightSize: 200
   },
   {
-    id: "bpm-right",
-    text: "Adjust the BPM (speed) of your right track independently from the left track.",
-    selector: ".deck.right-deck .bpm-slider-container-right",
-    spotlightSize: 150
-  },
-  {
     id: "cue-left",
-    text: "Press 'T' or click this button to set a cue point for your left track. When playing, the track will jump back to this point.",
+    text: "Hold 'T' or this button when the track is paused to make the left track play for as long as you hold cue.",
     selector: ".deck.left-deck .cue-btn",
     spotlightSize: 80
   },
@@ -78,17 +54,17 @@ const walkthroughSteps = [
     id: "effects-left",
     text: "Press 'Q', 'W', 'E', or 'R' to toggle bass/drums/melody/vocals for your left track.",
     selector: ".deck.left-deck .effect-buttons",
-    spotlightSize: 200
+    spotlightSize: 400
   },
   {
     id: "effects-right",
     text: "Press 'U', 'I', 'O', or 'P' to toggle bass/drums/melody/vocals for your right track.",
     selector: ".deck.right-deck .effect-buttons",
-    spotlightSize: 200
+    spotlightSize: 400
   },
   {
     id: "cue-right",
-    text: "Press 'Y' or click this button to set a cue point for your right track. When playing, the track will jump back to this point.",
+    text: "Hold 'Y' or this button when the track is paused to make the right track play for as long as you hold cue.",
     selector: ".deck.right-deck .cue-btn",
     spotlightSize: 80
   },
@@ -106,7 +82,7 @@ const walkthroughSteps = [
   },
   {
     id: "reset",
-    text: "Press 'K' or click this button to reset both tracks to their original state.",
+    text: "Press 'K' or click this button to completely clear and reset the deck.",
     selector: ".deck-controls .reset-btn",
     spotlightSize: 80
   }

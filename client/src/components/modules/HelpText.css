@@ -12,8 +12,8 @@
   align-items: center;
   justify-content: flex-start;
   gap: 0.25rem;
-  /* Maintain max width but increase shrink rate */
-  width: clamp(140px, calc(30vw - 140px), 450px);
+  /* Increase width for longer text */
+  width: clamp(200px, calc(35vw - 100px), 500px);
   min-height: 12vh;
   height: auto;
   z-index: 10002;
@@ -33,6 +33,9 @@
   flex: 1;
   display: flex;
   align-items: center;
+  width: 100%;
+  padding: 0 0.5rem;
+  position: relative;
 }
 
 .help-text-controls {
@@ -52,6 +55,7 @@
   text-align: center;
   flex: 1;
   padding: 0.5rem 0;
+  max-width: calc(100% - 60px); /* Account for arrow buttons */
 }
 
 .help-text-button {
@@ -68,6 +72,8 @@
   width: 24px;
   height: 24px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .help-text-button:hover {
@@ -107,9 +113,66 @@
   -ms-user-select: none;
 }
 
+@media screen and (max-height: 820px) {
+  .help-text-container {
+    top: calc(100% - 140px);
+    padding: 0.75rem 1rem;
+    min-height: 10vh;
+    width: clamp(180px, calc(30vw - 80px), 450px);
+  }
+
+  .help-text {
+    font-size: 1rem;
+    line-height: 1.3;
+    padding: 0.35rem 0;
+  }
+
+  .help-text-button {
+    font-size: 1.75rem;
+    width: 20px;
+    height: 20px;
+  }
+
+  .help-text-walkthrough {
+    font-size: 0.85rem;
+  }
+
+  .help-text-container.walkthrough-mode {
+    min-height: 8vh;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .help-text-container {
+    top: calc(100% - 80px);
+    padding: 0.5rem 0.75rem;
+    min-height: 8vh;
+    width: clamp(160px, calc(25vw - 60px), 400px);
+  }
+
+  .help-text {
+    font-size: 0.9rem;
+    line-height: 1.2;
+    padding: 0.25rem 0;
+  }
+
+  .help-text-button {
+    font-size: 1.5rem;
+    width: 18px;
+    height: 18px;
+  }
+
+  .help-text-walkthrough {
+    font-size: 0.8rem;
+  }
+
+  .help-text-container.walkthrough-mode {
+    min-height: 6vh;
+  }
+}
+
 @media (max-width: 800px) {
   .help-text-container {
     width: calc(100% - 40px);
-    top: calc(100% - 170px);
   }
 }

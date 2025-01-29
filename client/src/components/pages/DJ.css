@@ -1830,3 +1830,82 @@ body {
     gap: 6px;
   }
 }
+
+.sync-button,
+.reset-button {
+  position: fixed;
+  right: 20px;
+  top: calc(100% - 220px);
+  z-index: 10001;
+  background: var(--white);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.reset-button {
+  right: 70px;
+}
+
+.sync-button:hover,
+.reset-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.sync-button:active,
+.reset-button:active {
+  transform: scale(0.95);
+}
+
+.sync-button svg,
+.reset-button svg {
+  width: 24px;
+  height: 24px;
+  color: var(--darkgrey);
+}
+
+@media screen and (max-height: 820px) {
+  .sync-button,
+  .reset-button {
+    top: calc(100% - 200px);
+    width: 36px;
+    height: 36px;
+  }
+
+  .sync-button svg,
+  .reset-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .reset-button {
+    right: 66px;
+  }
+}
+
+@media screen and (max-height: 730px) {
+  .sync-button,
+  .reset-button {
+    top: calc(100% - 240px);
+    width: 32px;
+    height: 32px;
+  }
+
+  .sync-button svg,
+  .reset-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .reset-button {
+    right: 62px;
+  }
+}
