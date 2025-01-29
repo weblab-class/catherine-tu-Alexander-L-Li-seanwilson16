@@ -6,33 +6,36 @@ import "./DJ.css";
 import { get } from "../../utilities";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import LoginOverlay from "../modules/LoginOverlay";
-import path from 'path-browserify';
+import path from "path-browserify";
 
 const AVAILABLE_TRACKS = [
   {
+    isUserSong: false,
     id: 1,
-    name: "Fall to Light - NCS",
+    name: "Fall to Light by NCS",
     path: "NCS_Fall_to_Light",
     bpm: 87,
-    key: "1B",
+    key: "B Major",
   },
   {
+    isUserSong: false,
     id: 2,
-    name: "On & On - NCS",
+    name: "On & On by NCS",
     path: "NCS_On&On",
     bpm: 86,
-    key: "1B",
+    key: "B Major",
   },
   {
+    isUserSong: false,
     id: 3,
-    name: "Chill Guy Remix - 류서진",
+    name: "Chill Guy Remix by 류서진",
     path: "chill-guy-remix",
     bpm: 80,
-    key: "4B",
+    key: "A-Flat Major",
   },
 ];
 
-const STEM_TYPES = ["bass", "drums", "vocals", "melody"];
+const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
 
 const stemColors = {
   bass: {
@@ -112,21 +115,15 @@ const DJ = () => {
       console.log("User not logged in, skipping user songs fetch");
       return;
     }
-    
+
     try {
       const response = await get("/api/songs");
       const userSongs = response.map((song) => ({
         isUserSong: true,
         id: song._id,
         name: song.title,
-        title: song.title,
-        path: `http://localhost:3000/uploads/${path.basename(song.filePath)}`,
-        stems: song.stems ? Object.fromEntries(
-          Object.entries(song.stems).map(([stem, stemPath]) => [
-            stem,
-            `http://localhost:3000/uploads/${path.basename(stemPath)}`
-          ])
-        ) : {},
+        path: song._id,
+        // path: `http://localhost:3000/uploads/${path.basename(song.filePath)}`,
         bpm: song.bpm || 120,
         key: song.key || "1A",
       }));
@@ -297,7 +294,7 @@ const DJ = () => {
           if (trackState.effectsEnabled[stem]) {
             console.log(`Playing ${stem}`);
             audio.currentTime = currentTime;
-            audio.play().catch(err => console.error(`Error playing ${stem}:`, err));
+            audio.play().catch((err) => console.error(`Error playing ${stem}:`, err));
           }
         });
 
@@ -310,7 +307,10 @@ const DJ = () => {
           }
         });
 
-        const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
+        const turntable =
+          deck === "left"
+            ? document.querySelector(".left-deck .turntable")
+            : document.querySelector(".right-deck .turntable");
         if (turntable) turntable.classList.add("playing");
       } else {
         // Get current position before pausing
@@ -332,7 +332,10 @@ const DJ = () => {
           }
         });
 
-        const turntable = deck === "left" ? document.querySelector(".left-deck .turntable") : document.querySelector(".right-deck .turntable");
+        const turntable =
+          deck === "left"
+            ? document.querySelector(".left-deck .turntable")
+            : document.querySelector(".right-deck .turntable");
         if (turntable) turntable.classList.remove("playing");
       }
 
@@ -357,7 +360,7 @@ const DJ = () => {
 
       // Calculate audio playback rate based on BPM change from original
       const audioRate = newBpm / state.originalBpm;
-      
+
       // Calculate wavesurfer playback rate based on current BPM
       const wavesurferRate = newBpm / 100;
 
@@ -411,7 +414,7 @@ const DJ = () => {
 
     setSyncEnabled((prevSync) => {
       const newSyncEnabled = !prevSync;
-      
+
       if (newSyncEnabled) {
         const leftBPM = leftTrack.bpm;
         const rightBPM = rightTrack.bpm;
@@ -422,7 +425,7 @@ const DJ = () => {
         const rightRate = targetBPM / rightTrack.originalBpm;
 
         // Update left deck
-        setLeftTrack(prev => {
+        setLeftTrack((prev) => {
           // Update audio elements
           Object.values(prev.audioElements || {}).forEach((audio) => {
             if (audio) {
@@ -443,12 +446,12 @@ const DJ = () => {
           });
           return {
             ...prev,
-            bpm: targetBPM
+            bpm: targetBPM,
           };
         });
 
         // Update right deck
-        setRightTrack(prev => {
+        setRightTrack((prev) => {
           // Update audio elements
           Object.values(prev.audioElements || {}).forEach((audio) => {
             if (audio) {
@@ -469,11 +472,11 @@ const DJ = () => {
           });
           return {
             ...prev,
-            bpm: targetBPM
+            bpm: targetBPM,
           };
         });
       }
-      
+
       return newSyncEnabled;
     });
   };
@@ -950,154 +953,128 @@ const DJ = () => {
 
   const handleTrackSelect = async (track, deck) => {
     console.log(`Loading track for ${deck} deck:`, track);
-    
+
     try {
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
       const trackState = deck === "left" ? leftTrack : rightTrack;
       const audioElements = {};
 
-      if (track.isUserSong) {
-        // Handle user-uploaded song with stems
-        const stemPromises = STEM_TYPES.map(async (stem) => {
-          console.log(`Creating wavesurfer for ${stem}`);
-          const ws = wavesurfers.current[stem];
-          if (!ws) {
-            console.error(`No wavesurfer found for ${stem}`);
-            return;
-          }
+      const getAudioPath = (stem) => {
+        if (track.isUserSong === true) {
+          return `http://localhost:3000/stems/${track.path}/${stem}.wav`;
+        }
+        return `/assets/processed/${track.path}/${stem}.wav`;
+      };
 
-          // For user songs, stems are in /stems/{songId}/{type}_stem.wav
-          // Map UI stem types to file stem types
-          const stemFileType = stem === 'melody' ? 'other' : stem;
-          const stemUrl = `${window.location.protocol}//${window.location.hostname}:3000/stems/${track.id}/${stemFileType}_stem.wav`;
-          console.log(`Loading ${stem} stem from:`, stemUrl);
+      // Calculate playback rate
+      const currentBPM = trackState.bpm || track.bpm;
+      const newRate = currentBPM / track.bpm;
 
-          // Create audio element for this stem
-          const audio = new Audio();
-          audio.crossOrigin = "anonymous";
-          audio.src = stemUrl;
-          audio.preload = "auto";
-          audio.preservesPitch = true;
-          
-          // Set initial volume and mute state
-          audio.volume = volume[deck];
-          audio.muted = !trackState.effectsEnabled?.[stem];
-          
+      // Load audio elements first
+      for (const stem of STEM_TYPES) {
+        console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
+        const audio = new Audio();
+        audio.crossOrigin = "anonymous"; // Important for CORS
+        audio.src = getAudioPath(stem);
+        audio.preload = "auto";
+        audio.volume = volume[deck];
+        audio.preservesPitch = true;
+        audio.playbackRate = newRate;
+        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
+
+        try {
+          await new Promise((resolve, reject) => {
+            const loadHandler = () => {
+              console.log(`${stem} audio loaded successfully`);
+              audio.removeEventListener("canplaythrough", loadHandler);
+              resolve();
+            };
+            const errorHandler = (error) => {
+              console.error(`Error loading ${stem} audio:`, error);
+              audio.removeEventListener("error", errorHandler);
+              reject(error);
+            };
+            audio.addEventListener("canplaythrough", loadHandler);
+            audio.addEventListener("error", errorHandler);
+          });
+
           audioElements[stem] = audio;
-
-          // Load the stem into wavesurfer
-          try {
-            await new Promise((resolve, reject) => {
-              const loadHandler = () => {
-                console.log(`${stem} audio loaded successfully`);
-                audio.removeEventListener('canplaythrough', loadHandler);
-                resolve();
-              };
-              const errorHandler = (error) => {
-                console.error(`Error loading ${stem} audio:`, error);
-                console.error(`Failed URL: ${audio.src}`);
-                audio.removeEventListener('error', errorHandler);
-                reject(error);
-              };
-              audio.addEventListener('canplaythrough', loadHandler);
-              audio.addEventListener('error', errorHandler);
-            });
-
-            await ws.load(audio);
-            console.log(`Successfully loaded ${stem} stem into wavesurfer`);
-          } catch (error) {
-            console.error(`Error loading ${stem} stem:`, error);
-            // Remove the failed audio element
-            delete audioElements[stem];
-          }
-        });
-
-        // Wait for all stems to load
-        await Promise.allSettled(stemPromises);
-        console.log('All stems loaded');
-
-        // Only proceed if we have at least one stem loaded
-        if (Object.keys(audioElements).length === 0) {
-          console.error('No stems were loaded successfully');
-          throw new Error('Failed to load any stems');
+          console.log(`Successfully loaded ${stem} stem`);
+        } catch (error) {
+          console.error(`Error loading ${stem} stem:`, error);
         }
-
-        // Update track state with loaded audio elements
-        const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-        setTrackState((prev) => ({
-          ...prev,
-          name: track.name,
-          bpm: track.bpm || prev.bpm,
-          audioElements,
-          effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {})
-        }));
-      } else {
-        // Handle default track (existing logic)
-        const trackInfo = tracks.find((t) => t.path === track.path);
-        if (!trackInfo) return;
-
-        const currentBPM = trackState.bpm || trackInfo.bpm;
-        const newRate = currentBPM / trackInfo.bpm;
-
-        // Load audio elements first
-        for (const stem of STEM_TYPES) {
-          const audio = new Audio();
-          const stemName = stem;
-          audio.src = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${stemName}.mp3`;
-          audio.volume = 1;
-          audio.preservesPitch = true;
-          audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-          audio.playbackRate = newRate;
-          audioElements[stem] = audio;
-          await new Promise((resolve) => audio.addEventListener("loadeddata", resolve));
-        }
-
-        // Then load waveforms
-        if (Object.keys(wavesurfers.current).length > 0) {
-          await Promise.all(
-            [...STEM_TYPES, "timeline"].map(async (stem) => {
-              try {
-                const wavesurfer = wavesurfers.current[stem];
-                const stemName = stem;
-                const audioPath = `/assets/processed/${trackInfo.path}/${trackInfo.path}_${
-                  stem === "timeline" ? "bass" : stemName
-                }.mp3`;
-
-                await new Promise((resolve, reject) => {
-                  wavesurfer.load(audioPath);
-                  wavesurfer.once("ready", () => {
-                    wavesurfer.setVolume(0);
-                    wavesurfer.setPlaybackRate(newRate);
-                    const mediaElement = wavesurfer.getMediaElement();
-                    if (mediaElement) {
-                      mediaElement.preservesPitch = true;
-                      mediaElement.volume = 0;
-                      mediaElement.muted = true;
-                      mediaElement.playbackRate = newRate;
-                    }
-                    resolve();
-                  });
-                  wavesurfer.once("error", reject);
-                });
-              } catch (error) {
-                console.error(`Error loading waveform for ${stem}:`, error);
-                throw error;
-              }
-            })
-          );
-        }
-
-        // Update track state
-        const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
-        setTrackState((prev) => ({
-          ...prev,
-          ...trackInfo,
-          audioElements,
-          originalBpm: trackInfo.bpm,
-          bpm: currentBPM,
-        }));
       }
 
+      // Only proceed if we have at least one stem loaded
+      if (Object.keys(audioElements).length === 0) {
+        console.error("No stems were loaded successfully");
+        throw new Error("Failed to load any stems");
+      }
+
+      // Then load waveforms
+      if (Object.keys(wavesurfers.current).length > 0) {
+        await Promise.all(
+          [...STEM_TYPES, "timeline"].map(async (stem) => {
+            try {
+              const wavesurfer = wavesurfers.current[stem];
+              if (!wavesurfer) {
+                console.error(`No wavesurfer found for ${stem}`);
+                return;
+              }
+
+              const stemToUse = stem === "timeline" ? "bass" : stem;
+              const audioPath = getAudioPath(stemToUse);
+
+              await new Promise((resolve, reject) => {
+                // Set wavesurfer options for CORS
+                wavesurfer.setOptions({
+                  backend: "MediaElement",
+                  mediaControls: false,
+                  autoplay: false,
+                  normalize: true,
+                  xhr: {
+                    credentials: "include",
+                    mode: "cors",
+                  },
+                });
+
+                wavesurfer.load(audioPath);
+                wavesurfer.once("ready", () => {
+                  wavesurfer.setVolume(0);
+                  wavesurfer.setPlaybackRate(newRate);
+                  const mediaElement = wavesurfer.getMediaElement();
+                  if (mediaElement) {
+                    mediaElement.preservesPitch = true;
+                    mediaElement.volume = 0;
+                    mediaElement.muted = true;
+                    mediaElement.playbackRate = newRate;
+                    mediaElement.crossOrigin = "anonymous"; // Important for CORS
+                  }
+                  resolve();
+                });
+                wavesurfer.once("error", reject);
+              });
+              console.log(`Successfully loaded ${stem} waveform`);
+            } catch (error) {
+              console.error(`Error loading waveform for ${stem}:`, error);
+              throw error;
+            }
+          })
+        );
+      }
+
+      // Update track state
+      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+      setTrackState((prev) => ({
+        ...prev,
+        name: track.name,
+        path: track.path,
+        key: track.key,
+        bpm: currentBPM,
+        originalBpm: track.bpm,
+        audioElements,
+        effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
+      }));
     } catch (error) {
       console.error("Error loading track:", error);
       // Reset track state on error
@@ -1105,8 +1082,12 @@ const DJ = () => {
       setTrackState((prev) => ({
         ...prev,
         name: "",
+        path: "",
+        key: "",
+        bpm: null,
+        originalBpm: null,
         audioElements: {},
-        effectsEnabled: {}
+        effectsEnabled: {},
       }));
       throw error;
     }
