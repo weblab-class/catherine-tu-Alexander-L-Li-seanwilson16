@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import WaveSurfer from "wavesurfer.js/dist/wavesurfer.js";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline.js";
 import NavBar from "../modules/NavBar";
+import Loading from "../modules/Loading";
 import "./DJ.css";
 import { get } from "../../utilities";
 import useRequireLogin from "../../hooks/useRequireLogin";
@@ -103,12 +104,9 @@ const createWaveSurfer = (container, options = {}) => {
 
 const DJ = () => {
   const isLoggedIn = useRequireLogin();
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
   const [tracks, setTracks] = useState(AVAILABLE_TRACKS);
   const [isLoading, setIsLoading] = useState({
-    left: false,
-    right: false,
-  });
-  const [waveformsReady, setWaveformsReady] = useState({
     left: false,
     right: false,
   });
@@ -650,7 +648,6 @@ const DJ = () => {
       right: { current: 0, total: 0 },
     });
     setIsLoading({ left: false, right: false });
-    setWaveformsReady({ left: false, right: false });
   };
 
   const handleCue = (deck) => {
@@ -959,9 +956,6 @@ const DJ = () => {
     console.log(`Loading track for ${deck} deck:`, track);
 
     try {
-      setIsLoading((prev) => ({ ...prev, [deck]: true }));
-      setWaveformsReady((prev) => ({ ...prev, [deck]: false }));
-
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
       const trackState = deck === "left" ? leftTrack : rightTrack;
       const audioElements = {};
@@ -1057,57 +1051,52 @@ const DJ = () => {
                   wavesurfer.setPlaybackRate(newRate);
                   const mediaElement = wavesurfer.getMediaElement();
                   if (mediaElement) {
-                    mediaElement.crossOrigin = "anonymous";
+                    mediaElement.preservesPitch = true;
+                    mediaElement.volume = 0;
+                    mediaElement.muted = true;
+                    mediaElement.playbackRate = newRate;
+                    mediaElement.crossOrigin = "anonymous"; // Important for CORS
                   }
                   resolve();
                 });
-
-                wavesurfer.once("error", (error) => {
-                  console.error(`Error loading waveform for ${stem}:`, error);
-                  reject(error);
-                });
+                wavesurfer.once("error", reject);
               });
               console.log(`Successfully loaded ${stem} waveform`);
             } catch (error) {
               console.error(`Error loading waveform for ${stem}:`, error);
+              throw error;
             }
           })
         );
       }
 
-      // Update states after successful load
-      if (deck === "left") {
-        setLeftTrack({
-          ...track,
-          audioElements,
-          bpm: track.bpm,
-          effectsEnabled: {
-            bass: true,
-            drums: true,
-            melody: true,
-            vocals: true,
-          },
-        });
-      } else {
-        setRightTrack({
-          ...track,
-          audioElements,
-          bpm: track.bpm,
-          effectsEnabled: {
-            bass: true,
-            drums: true,
-            melody: true,
-            vocals: true,
-          },
-        });
-      }
-
-      // Mark waveforms as ready
-      setWaveformsReady((prev) => ({ ...prev, [deck]: true }));
+      // Update track state
+      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+      setTrackState((prev) => ({
+        ...prev,
+        name: track.name,
+        path: track.path,
+        key: track.key,
+        bpm: currentBPM,
+        originalBpm: track.bpm,
+        audioElements,
+        effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
+      }));
     } catch (error) {
       console.error("Error loading track:", error);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, [deck]: false }));
+      // Reset track state on error
+      const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
+      setTrackState((prev) => ({
+        ...prev,
+        name: "",
+        path: "",
+        key: "",
+        bpm: null,
+        originalBpm: null,
+        audioElements: {},
+        effectsEnabled: {},
+      }));
+      throw error;
     }
   };
 
@@ -1143,10 +1132,18 @@ const DJ = () => {
     }));
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoadingScreen(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
-      {!isLoggedIn && <LoginOverlay />}
-      <div className="dj-page">
+      {showLoadingScreen && <Loading />}
+      <div className={`dj-container ${showLoadingScreen ? "hidden" : ""}`}>
+        {!isLoggedIn && <LoginOverlay />}
         <div
           className="dj-container"
           onClick={(e) => {
@@ -1302,7 +1299,7 @@ const DJ = () => {
                   <div className="playback-controls">
                     <button
                       className={`cue-btn cue-btn-left ${isCueing.left ? "active" : ""} ${
-                        !leftTrack.name || isLoading.left || !waveformsReady.left ? "disabled" : ""
+                        !leftTrack.name || isLoading.left ? "disabled" : ""
                       }`}
                       onMouseDown={() => handleCue("left")}
                       onMouseUp={() => handleCueEnd("left")}
@@ -1313,10 +1310,10 @@ const DJ = () => {
                     </button>
                     <button
                       className={`play-btn play-btn-left ${playing.left ? "playing" : ""} ${
-                        !leftTrack.name || isLoading.left || !waveformsReady.left ? "disabled" : ""
+                        !leftTrack.name || isLoading.left ? "disabled" : ""
                       }`}
                       onClick={() => handlePlayPause("left")}
-                      disabled={!leftTrack.name || isLoading.left || !waveformsReady.left}
+                      disabled={!leftTrack.name || isLoading.left}
                     >
                       {playing.left ? (
                         <span className="pause-symbol">
@@ -1427,7 +1424,7 @@ const DJ = () => {
                   <div className="playback-controls">
                     <button
                       className={`cue-btn cue-btn-right ${isCueing.right ? "active" : ""} ${
-                        !rightTrack.name || isLoading.right || !waveformsReady.right ? "disabled" : ""
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
                       }`}
                       onMouseDown={() => handleCue("right")}
                       onMouseUp={() => handleCueEnd("right")}
@@ -1438,10 +1435,10 @@ const DJ = () => {
                     </button>
                     <button
                       className={`play-btn play-btn-right ${playing.right ? "playing" : ""} ${
-                        !rightTrack.name || isLoading.right || !waveformsReady.right ? "disabled" : ""
+                        !rightTrack.name || isLoading.right ? "disabled" : ""
                       }`}
                       onClick={() => handlePlayPause("right")}
-                      disabled={!rightTrack.name || isLoading.right || !waveformsReady.right}
+                      disabled={!rightTrack.name || isLoading.right}
                     >
                       {playing.right ? (
                         <span className="pause-symbol">
