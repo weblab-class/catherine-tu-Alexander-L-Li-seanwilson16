@@ -4,6 +4,25 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 /**
+ * Formats a stem filename consistently
+ * @param {string} stemType - Type of stem (vocals, drums, bass, melody)
+ * @returns {string} - Formatted filename
+ */
+function formatStemFilename(stemType) {
+  // Map 'other' to 'melody'
+  const typeMap = {
+    other: "melody",
+    vocals: "vocals",
+    drums: "drums",
+    bass: "bass",
+  };
+
+  // Get the correct stem type name and append .wav
+  const mappedType = typeMap[stemType] || stemType;
+  return `${mappedType}.wav`;
+}
+
+/**
  * Downloads and saves stems from AudioShake
  * @param {string} assetId - AudioShake asset ID
  * @param {string[]} jobIds - Array of AudioShake job IDs
@@ -50,11 +69,11 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
         // Get the stem URL based on stem type
         let stemUrl;
         if (stemType === "other") {
-          // For 'other' stem, look in stemAssets array
-          const otherStem = jobResponse.data.job.stemAssets?.find(
+          // For 'melody' stem (previously 'other'), look in stemAssets array
+          const melodyStem = jobResponse.data.job.stemAssets?.find(
             (asset) => asset.name === "other.wav"
           );
-          stemUrl = otherStem?.link;
+          stemUrl = melodyStem?.link;
         } else {
           // For other stems, look in stemAssets array with their respective names
           const stem = jobResponse.data.job.stemAssets?.find(
@@ -110,8 +129,8 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
           fs.mkdirSync(songStemsDir, { recursive: true });
         }
 
-        // Download the stem file with a unique name
-        const stemPath = path.join(songStemsDir, `${stemType}.wav`);
+        // Download the stem file with the formatted name
+        const stemPath = path.join(songStemsDir, formatStemFilename(stemType));
         console.log(`Downloading to ${stemPath}`);
 
         // Write the buffer to file

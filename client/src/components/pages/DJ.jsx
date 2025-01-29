@@ -123,7 +123,6 @@ const DJ = () => {
         id: song._id,
         name: song.title,
         path: song._id,
-        // path: `http://localhost:3000/uploads/${path.basename(song.filePath)}`,
         bpm: song.bpm || 120,
         key: song.key || "1A",
       }));
@@ -959,11 +958,17 @@ const DJ = () => {
       const trackState = deck === "left" ? leftTrack : rightTrack;
       const audioElements = {};
 
+      const mapStemName = (stem) => {
+        // Map 'melody' to 'other' for file paths while keeping frontend display as 'melody'
+        return stem === "melody" ? "other" : stem;
+      };
+
       const getAudioPath = (stem) => {
+        const stemFileName = mapStemName(stem);
         if (track.isUserSong === true) {
-          return `http://localhost:3000/stems/${track.path}/${stem}.wav`;
+          return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
         }
-        return `/assets/processed/${track.path}/${stem}.wav`;
+        return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };
 
       // Calculate playback rate
