@@ -7,14 +7,11 @@ import "./FileUpload.css";
 const FileUpload = ({ onUploadSuccess }) => {
   const [uploadedFiles, setUploadedFiles] = useState({
     audio: null,
-    stem_bass: null,
-    stem_drums: null,
-    stem_melody: null,
-    stem_vocals: null,
   });
   const [fileError, setFileError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [processingStatus, setProcessingStatus] = useState("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const acceptedTypes = ["audio/mpeg", "audio/wav", "audio/mp3"];
 
@@ -49,13 +46,6 @@ const FileUpload = ({ onUploadSuccess }) => {
       formData.append("audio", uploadedFiles.audio);
       formData.append("title", uploadedFiles.audio.name);
 
-      // Append stems if they exist
-      Object.entries(uploadedFiles).forEach(([type, file]) => {
-        if (type !== "audio" && file) {
-          formData.append(type, file);
-        }
-      });
-
       const response = await fetch("/api/song", {
         method: "POST",
         body: formData,
@@ -73,10 +63,6 @@ const FileUpload = ({ onUploadSuccess }) => {
       // Clear the upload state
       setUploadedFiles({
         audio: null,
-        stem_bass: null,
-        stem_drums: null,
-        stem_melody: null,
-        stem_vocals: null,
       });
       setFileError("");
       setProcessingStatus("");
@@ -96,26 +82,55 @@ const FileUpload = ({ onUploadSuccess }) => {
 
   return (
     <div className="file-upload-container">
-      <FileInput
-        className="file-input"
-        label="upload your song"
-        description="acceptable types: .mp3, .wav"
-        placeholder="upload main song file"
-        rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
-        accept={acceptedTypes.join(",")}
-        onChange={(file) => handleFileUpload(file, "audio")}
-        error={fileError}
-        disabled={isUploading}
-        value={uploadedFiles.audio}
-      />
-
-      <button
-        className="submit-button"
-        onClick={handleSubmit}
-        disabled={isUploading || !uploadedFiles.audio}
+      <button 
+        className="upload-button"
+        onClick={() => setShowUploadModal(true)}
       >
-        {isUploading ? "uploading..." : "upload"}
+        <img src={musicPlusIcon} alt="upload" width="18" />
+        <span>upload song</span>
       </button>
+
+      {showUploadModal && (
+        <div className="upload-modal">
+          <div className="upload-modal-content">
+            <h3>Upload Your Song</h3>
+            <FileInput
+              className="file-input"
+              description="acceptable types: .mp3, .wav, etc."
+              placeholder="choose a song file"
+              rightSection={<img src={musicPlusIcon} alt="music plus" width="18" />}
+              accept={acceptedTypes.join(",")}
+              onChange={(file) => handleFileUpload(file, "audio")}
+              error={fileError}
+              disabled={isUploading}
+              value={uploadedFiles.audio}
+            />
+
+            <div className="modal-buttons">
+              <button
+                className="cancel-button"
+                onClick={() => {
+                  setShowUploadModal(false);
+                  setUploadedFiles({ audio: null });
+                  setFileError("");
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="submit-button"
+                onClick={() => {
+                  handleSubmit();
+                  setShowUploadModal(false);
+                }}
+                disabled={isUploading || !uploadedFiles.audio}
+              >
+                {isUploading ? "Uploading..." : "Upload"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

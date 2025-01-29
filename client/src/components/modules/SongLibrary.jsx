@@ -5,12 +5,14 @@ import LoginOverlay from "./LoginOverlay";
 import FileUpload from "./FileUpload";
 import "./SongLibrary.css";
 
-const SongLibrary = ({ onUploadSuccess }) => {
+const SongLibrary = ({ userId, onUploadSuccess }) => {
   const isLoggedIn = useRequireLogin();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [songStatuses, setSongStatuses] = useState({});
+  const [editingSongId, setEditingSongId] = useState(null);
+  const [newTitle, setNewTitle] = useState("");
 
   // Add refresh warning and cleanup
   useEffect(() => {
@@ -97,11 +99,38 @@ const SongLibrary = ({ onUploadSuccess }) => {
     }
   };
 
+  const handleRename = async (songId) => {
+    try {
+      const response = await post("/api/songs/rename", { songId: songId, newTitle: newTitle });
+      if (response.success) {
+        setSongs((prevSongs) =>
+          prevSongs.map((song) =>
+            song._id === songId ? { ...song, title: newTitle } : song
+          )
+        );
+        setEditingSongId(null);
+        setNewTitle("");
+      }
+    } catch (err) {
+      console.error("Error renaming song:", err);
+    }
+  };
+
   const handleUploadSuccess = (newSong) => {
     setSongs((prevSongs) => [...prevSongs, newSong]);
     if (onUploadSuccess) {
       onUploadSuccess(newSong);
     }
+  };
+
+  const startEditing = (song) => {
+    setEditingSongId(song._id);
+    setNewTitle(song.title);
+  };
+
+  const cancelEditing = () => {
+    setEditingSongId(null);
+    setNewTitle("");
   };
 
   // Function to check job status
@@ -146,7 +175,7 @@ const SongLibrary = ({ onUploadSuccess }) => {
   }, [songs]);
 
   const renderProgress = (song) => {
-    let status = "Processing...";
+    let status = "processing...";
     let progress = 0;
 
     const songStatus = songStatuses[song._id];
@@ -154,15 +183,15 @@ const SongLibrary = ({ onUploadSuccess }) => {
 
     if (song.stemsStatus === "completed" || (songStatus && songStatus.completedJobs === songStatus.totalJobs)) {
       progress = 100;
-      status = "Ready";
+      status = "ready";
     } else if (songStatus) {
       const { completedJobs, totalJobs } = songStatus;
       progress = Math.floor((completedJobs / totalJobs) * 100);
-      status = `Processing stems (${completedJobs}/${totalJobs})`;
+      status = `processing stems (${completedJobs}/${totalJobs})`;
     } else if (song.stemsStatus === "pending") {
-      status = "Starting";
+      status = "starting";
     } else if (song.stemsStatus === "failed") {
-      status = "Failed";
+      status = "failed";
     }
 
     return (
@@ -183,8 +212,61 @@ const SongLibrary = ({ onUploadSuccess }) => {
     );
   };
 
+  const renderSongTitle = (song) => {
+    if (editingSongId === song._id) {
+      return (
+        <div className="song-rename-container">
+          <input
+            type="text"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="song-rename-input"
+            autoFocus
+            onBlur={(e) => {
+              // Check if the click was on a save/cancel button
+              const clickedElement = e.relatedTarget;
+              if (!clickedElement?.classList.contains('song-rename-save') && 
+                  !clickedElement?.classList.contains('song-rename-cancel')) {
+                cancelEditing();
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleRename(song._id);
+              } else if (e.key === "Escape") {
+                cancelEditing();
+              }
+            }}
+          />
+          <div className="song-rename-buttons">
+            <button 
+              onClick={() => handleRename(song._id)} 
+              className="song-rename-save"
+            >
+              Save
+            </button>
+            <button 
+              onClick={cancelEditing} 
+              className="song-rename-cancel"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="song-title-container">
+        <button onClick={() => startEditing(song)} className="song-rename-button">
+          ✎
+        </button>
+        <span className="song-name">{song.title}</span>
+      </div>
+    );
+  };
+
   if (loading) {
-    return <div className="song-library-message">Loading your songs...</div>;
+    return <div className="song-library-message">loading your songs...</div>;
   }
 
   if (error) {
@@ -203,10 +285,10 @@ const SongLibrary = ({ onUploadSuccess }) => {
           
           <div className="song-list-container">
             <div className="song-list-header">
-              <span className="header-title">Title</span>
-              <span className="header-date">Date Uploaded</span>
-              <span className="header-progress">Stem Split Progress</span>
-              <span className="header-actions">Actions</span>
+              <span className="header-title">file title</span>
+              <span className="header-date">date uploaded</span>
+              <span className="header-progress">stem split progress</span>
+              <span className="header-actions">actions</span>
             </div>
             {error ? (
               <div className="error-message">{error}</div>
@@ -214,12 +296,12 @@ const SongLibrary = ({ onUploadSuccess }) => {
               <ul className="song-list">
                 {songs.length === 0 ? (
                   <li className="song-library-message">
-                    No songs in your library yet
+                    no songs in your library yet
                   </li>
                 ) : (
                   songs.map((song) => (
                     <li key={song._id} className="song-item">
-                      <span className="song-name">{song.title}</span>
+                      {renderSongTitle(song)}
                       <span className="song-date">
                         {new Date(song.uploadDate).toLocaleDateString()}
                       </span>
@@ -227,12 +309,14 @@ const SongLibrary = ({ onUploadSuccess }) => {
                         {renderProgress(song)}
                       </div>
                       <div className="song-actions">
-                        <button 
-                          className="u-link delete" 
-                          onClick={() => handleDelete(song._id)}
-                        >
-                          Delete
-                        </button>
+                        <div className="delete-container">
+                          <button 
+                            className="u-link delete" 
+                            onClick={() => handleDelete(song._id)}
+                          >
+                            delete
+                          </button>
+                        </div>
                       </div>
                     </li>
                   ))

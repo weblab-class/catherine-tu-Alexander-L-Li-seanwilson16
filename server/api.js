@@ -684,7 +684,7 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
     );
 
     // Count completed jobs
-    const completedJobs = jobStatuses.filter(status => status === "completed").length;
+    const completedJobs = jobStatuses.filter((status) => status === "completed").length;
     const totalJobs = jobStatuses.length;
 
     console.log("Job completion:", completedJobs, "/", totalJobs);
@@ -700,8 +700,8 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
       status: {
         completedJobs,
         totalJobs,
-        jobStatuses
-      }
+        jobStatuses,
+      },
     };
     console.log("Sending response:", response);
     res.send(response);
@@ -710,9 +710,9 @@ router.get("/songs/:songId/status", auth.ensureLoggedIn, async (req, res) => {
     if (error.response) {
       console.error("Response data:", error.response.data);
     }
-    res.status(500).send({ 
+    res.status(500).send({
       error: "Error checking song status",
-      details: error.message 
+      details: error.message,
     });
   }
 });
@@ -746,7 +746,7 @@ router.post("/audioshake/upload", async (req, res) => {
       data: formData,
     };
 
-    const response = await axios(config);
+    const response = await axios.request(config);
 
     // Clean up temp file
     fs.unlinkSync(tempPath);
@@ -1007,6 +1007,29 @@ router.get("/audioshake/stems/:jobId", async (req, res) => {
       error: "Error getting AudioShake stems",
       details: error.response?.data || error.message,
     });
+  }
+});
+
+// rename a song!
+router.post("/songs/rename", auth.ensureLoggedIn, async (req, res) => {
+  try {
+    const song = await Song.findById(req.body.songId);
+    
+    if (!song) {
+      return res.status(404).send({ error: "Song not found" });
+    }
+
+    if (song.creator_id !== req.user._id) {
+      return res.status(403).send({ error: "Not authorized to rename this song" });
+    }
+
+    song.title = req.body.newTitle;
+    await song.save();
+
+    res.send({ success: true });
+  } catch (err) {
+    console.error("Error in /api/songs/rename:", err);
+    res.status(500).send({ error: "Error renaming song" });
   }
 });
 

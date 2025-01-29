@@ -32,7 +32,7 @@ const SongSchema = new mongoose.Schema({
     vocals: String,
     drums: String,
     bass: String,
-    other: String
+    other: String,
   },
   processed: {
     type: Boolean,
@@ -42,8 +42,8 @@ const SongSchema = new mongoose.Schema({
   audioshakeJobIds: [String],
   stemsStatus: {
     type: String,
-    enum: ['pending', 'processing', 'completed', 'failed'],
-    default: 'pending'
+    enum: ["pending", "processing", "completed", "failed"],
+    default: "pending",
   },
   stemsPath: String,
   uploadDate: {

@@ -32,30 +32,52 @@ const AVAILABLE_TRACKS = [
     name: "Chill Guy Remix by 류서진",
     path: "chill-guy-remix",
     bpm: 80,
-    key: "A-Flat Major",
+    key: "Ab Major",
+  },
+  {
+    isUserSong: false,
+    id: 4,
+    name: "Disfigure by Blank",
+    path: "Disfigure_Blank",
+    bpm: 140,
+    key: "B Minor",
+  },
+  {
+    isUserSong: false,
+    id: 5,
+    name: "Let Me Down Slowly (Not So Good Remix) by Alec Benjamin",
+    path: "Let_Me_Down_Slowly_Alec_Benjamin",
+    bpm: 75,
+    key: "C# Minor",
+  },
+  {
+    isUserSong: false,
+    id: 6,
+    name: "Cradles by Sub Urban",
+    path: "Sub_Urban",
+    bpm: 79,
+    key: "Bb Minor",
+  },
+  {
+    isUserSong: false,
+    id: 7,
+    name: "Shine by Spektrum",
+    path: "Shine",
+    bpm: 128,
+    key: "Ab Major",
+  },
+  { isUserSong: false, id: 8, name: "Vertigo by NCS", path: "Vertigo", bpm: 87, key: "G Minor" },
+  {
+    isUserSong: false,
+    id: 9,
+    name: "We Are by Whales",
+    path: "We_Are",
+    bpm: 75,
+    key: "F Major",
   },
 ];
 
 const STEM_TYPES = ["bass", "drums", "melody", "vocals"];
-
-// const stemColors = {
-//   bass: {
-//     waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
-//     progressColor: "rgba(255, 49, 140, 0.8)",
-//   },
-//   drums: {
-//     waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
-//     progressColor: "rgba(56, 255, 130, 0.8)",
-//   },
-//   melody: {
-//     waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
-//     progressColor: "rgba(255, 247, 32, 0.8)",
-//   },
-//   vocals: {
-//     waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
-//     progressColor: "rgba(70, 237, 255, 0.8)",
-//   },
-// };
 
 const createWaveSurfer = (container, options = {}) => {
   const timeline = TimelinePlugin.create({
@@ -120,14 +142,118 @@ const DJ = () => {
 
     try {
       const response = await get("/api/songs");
-      const userSongs = response.map((song) => ({
-        isUserSong: true,
-        id: song._id,
-        name: song.title,
-        path: song._id,
-        bpm: song.bpm || 120,
-        key: song.key || "1A",
-      }));
+      console.log("Fetched songs from server:", response);
+
+      const userSongs = await Promise.all(
+        response.map(async (song) => {
+          const baseSong = {
+            isUserSong: true,
+            id: song._id,
+            name: song.title,
+            path: song._id,
+          };
+
+          console.log("Processing song:", {
+            title: song.title,
+            isUserSong: true,
+            bpm: song.bpm,
+            key: song.key,
+          });
+
+          if (true) {
+            try {
+              console.log(`Starting analysis for song: ${song.title}`);
+              const audioUrl = `http://localhost:3000/stems/${song._id}/other_stem.wav`;
+              console.log("Fetching audio from:", audioUrl);
+
+              const response = await fetch(audioUrl);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch audio: ${response.status} ${response.statusText}`);
+              }
+
+              const arrayBuffer = await response.arrayBuffer();
+              console.log("Audio file fetched, size:", arrayBuffer.byteLength);
+
+              const audioContext = new AudioContext();
+              const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+              console.log("Audio decoded, duration:", audioBuffer.duration);
+
+              const audioData = audioBuffer.getChannelData(0);
+              const sampleRate = audioBuffer.sampleRate;
+
+              // Analyze only first 30 seconds for efficiency
+              const maxSamples = Math.min(audioData.length, 30 * sampleRate);
+              const samples = audioData.slice(0, maxSamples);
+
+              // Calculate energy values in 1024-sample windows
+              const windowSize = 1024;
+              const energies = [];
+              for (let i = 0; i < samples.length - windowSize; i += windowSize) {
+                let energy = 0;
+                for (let j = 0; j < windowSize; j++) {
+                  energy += Math.abs(samples[i + j]);
+                }
+                energies.push(energy);
+              }
+
+              // Normalize energies
+              const maxEnergy = Math.max(...energies);
+              const normalizedEnergies = energies.map((e) => e / maxEnergy);
+
+              // Find peaks (beats)
+              const peaks = [];
+              const minPeakDistance = 12; // Minimum distance between peaks (about 200ms)
+              let lastPeakIndex = -minPeakDistance;
+
+              for (let i = 2; i < normalizedEnergies.length - 2; i++) {
+                if (
+                  normalizedEnergies[i] > 0.5 && // Threshold
+                  normalizedEnergies[i] > normalizedEnergies[i - 1] &&
+                  normalizedEnergies[i] > normalizedEnergies[i - 2] &&
+                  normalizedEnergies[i] > normalizedEnergies[i + 1] &&
+                  normalizedEnergies[i] > normalizedEnergies[i + 2] &&
+                  i - lastPeakIndex >= minPeakDistance
+                ) {
+                  peaks.push(i);
+                  lastPeakIndex = i;
+                }
+              }
+
+              // Calculate BPM
+              if (peaks.length >= 2) {
+                const intervals = [];
+                for (let i = 1; i < peaks.length; i++) {
+                  intervals.push(peaks[i] - peaks[i - 1]);
+                }
+
+                // Convert intervals to BPM values
+                const bpmValues = intervals.map(
+                  (interval) => (60 * sampleRate) / (interval * windowSize)
+                );
+
+                // Get median BPM (more robust than mean)
+                const sortedBpms = bpmValues.sort((a, b) => a - b);
+                const medianBpm = Math.round(sortedBpms[Math.floor(sortedBpms.length / 2)]);
+
+                // Ensure BPM is in reasonable range (60-180)
+                const bpm =
+                  medianBpm < 60 ? medianBpm * 2 : medianBpm > 180 ? medianBpm / 2 : medianBpm;
+
+                console.log(`Analysis results for ${song.title}:`, { bpm });
+                return { ...baseSong, bpm, key: "C Major" };
+              }
+
+              console.log(`Could not detect BPM for ${song.title}, using default`);
+              return { ...baseSong, bpm: 120, key: "C Major" };
+            } catch (error) {
+              console.error(`Error analyzing song ${song.title}:`, error);
+              return { ...baseSong, bpm: 120, key: "C Major" };
+            }
+          }
+          return { ...baseSong, bpm: song.bpm || 120, key: song.key || "" };
+        })
+      );
+      console.log("Final processed user songs:", userSongs);
       setTracks((prevTracks) => [...userSongs, ...AVAILABLE_TRACKS]);
     } catch (err) {
       console.error("Error fetching user songs:", err);
@@ -970,12 +1096,37 @@ const DJ = () => {
     console.log(`Loading track for ${deck} deck:`, track);
 
     try {
+      // Set loading state to true at the start
+      setIsLoading((prev) => ({ ...prev, [deck]: true }));
+
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
       const trackState = deck === "left" ? leftTrack : rightTrack;
       const audioElements = {};
 
+      // Find the track in AVAILABLE_TRACKS if it exists
+      const defaultTrack = AVAILABLE_TRACKS.find((t) => t.path === track.path);
+      const trackBpm = defaultTrack ? defaultTrack.bpm : track.bpm || 120;
+      const trackKey = defaultTrack ? defaultTrack.key : track.key || "C";
+
+      // Stop any currently playing audio
+      if (trackState.audioElements) {
+        Object.values(trackState.audioElements).forEach((audio) => {
+          if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+          }
+        });
+      }
+
+      // Stop and reset wavesurfers
+      Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
+        if (wavesurfer) {
+          wavesurfer.pause();
+          wavesurfer.seekTo(0);
+        }
+      });
+
       const mapStemName = (stem) => {
-        // Map 'melody' to 'other' for file paths while keeping frontend display as 'melody'
         return stem === "melody" ? "other" : stem;
       };
 
@@ -987,15 +1138,14 @@ const DJ = () => {
         return `/assets/processed/${track.path}/${stemFileName}.wav`;
       };
 
-      // Calculate playback rate
-      const currentBPM = trackState.bpm || track.bpm;
-      const newRate = currentBPM / track.bpm;
+      // Use trackBpm directly for initial load
+      const newRate = 1.0; // Start at original speed
 
       // Load audio elements first
       for (const stem of STEM_TYPES) {
         console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
         const audio = new Audio();
-        audio.crossOrigin = "anonymous"; // Important for CORS
+        audio.crossOrigin = "anonymous";
         audio.src = getAudioPath(stem);
         audio.preload = "auto";
         audio.volume = volume[deck];
@@ -1047,7 +1197,6 @@ const DJ = () => {
               const audioPath = getAudioPath(stemToUse);
 
               await new Promise((resolve, reject) => {
-                // Set wavesurfer options for CORS
                 wavesurfer.setOptions({
                   backend: "MediaElement",
                   mediaControls: false,
@@ -1069,7 +1218,7 @@ const DJ = () => {
                     mediaElement.volume = 0;
                     mediaElement.muted = true;
                     mediaElement.playbackRate = newRate;
-                    mediaElement.crossOrigin = "anonymous"; // Important for CORS
+                    mediaElement.crossOrigin = "anonymous";
                   }
                   resolve();
                 });
@@ -1084,21 +1233,20 @@ const DJ = () => {
         );
       }
 
-      // Update track state
+      // Update track state with the correct BPM and key
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
         name: track.name,
         path: track.path,
-        key: track.key,
-        bpm: currentBPM,
-        originalBpm: track.bpm,
+        key: trackKey,
+        bpm: trackBpm,
+        originalBpm: trackBpm,
         audioElements,
         effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
       }));
     } catch (error) {
       console.error("Error loading track:", error);
-      // Reset track state on error
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
@@ -1111,6 +1259,9 @@ const DJ = () => {
         effectsEnabled: {},
       }));
       throw error;
+    } finally {
+      // Always set loading state to false when done, whether successful or not
+      setIsLoading((prev) => ({ ...prev, [deck]: false }));
     }
   };
 
@@ -1154,6 +1305,44 @@ const DJ = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const renderImportDropdown = (deck) => {
+    return (
+      <div className="import-dropdown">
+        {tracks.map((track) => (
+          <button key={track.id} onClick={() => handleTrackSelect(track, deck)}>
+            <div className="song-info">
+              <span className="song-name">{track.name}</span>
+              <span className="song-details">
+                BPM: {track.bpm} | Key: {track.key}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const renderTrackInfo = (deck) => {
+    const track = deck === "left" ? leftTrack : rightTrack;
+    return (
+      <div className="track-info">
+        <div className="track-title">
+          {track.name ? (
+            <>
+              {track.name}
+              <span className="track-details">
+                {" "}
+                • BPM: {track.bpm} • Key: {track.key}
+              </span>
+            </>
+          ) : (
+            "No track loaded"
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       {showLoadingScreen && <Loading />}
@@ -1182,39 +1371,9 @@ const DJ = () => {
                     IMPORT SONG ▼
                   </button>
                   {isLoading.left && <div className="track-loading-spinner left" />}
-                  {dropdownOpen.left && (
-                    <div className="import-dropdown">
-                      {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelectWrapper("left", track);
-                          }}
-                        >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {dropdownOpen.left && renderImportDropdown("left")}
                 </div>
-                <div className="track-info">
-                  {leftTrack.name ? (
-                    <>
-                      <div className="track-name-left">{leftTrack.name}</div>
-                      <div className="track-details-left">
-                        {leftTrack.bpm + " BPM • " + leftTrack.key}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-track-left">NO TRACK LOADED</div>
-                  )}
-                </div>
+                {renderTrackInfo("left")}
               </div>
 
               <div className="import-container import-container-right">
@@ -1229,39 +1388,9 @@ const DJ = () => {
                     IMPORT SONG ▼
                   </button>
                   {isLoading.right && <div className="track-loading-spinner right" />}
-                  {dropdownOpen.right && (
-                    <div className="import-dropdown">
-                      {tracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleTrackSelectWrapper("right", track);
-                          }}
-                        >
-                          <div className="song-info">
-                            <span className="song-name">{track.name}</span>
-                            <span className="song-details">
-                              {track.bpm} BPM • {track.key}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {dropdownOpen.right && renderImportDropdown("right")}
                 </div>
-                <div className="track-info">
-                  {rightTrack.name ? (
-                    <>
-                      <div className="track-name-right">{rightTrack.name}</div>
-                      <div className="track-details-right">
-                        {rightTrack.bpm + " BPM • " + rightTrack.key}
-                      </div>
-                    </>
-                  ) : (
-                    <div className="no-track-right">NO TRACK LOADED</div>
-                  )}
-                </div>
+                {renderTrackInfo("right")}
               </div>
             </div>
           </div>

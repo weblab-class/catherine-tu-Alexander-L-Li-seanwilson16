@@ -3,6 +3,7 @@ import "./Home.css";
 import PlayPauseHome from "../modules/PlayPauseHome";
 import HomeButtons from "../modules/HomeButtons";
 import NavBar from "../modules/NavBar";
+import MusicNoteGenerator from "../modules/MusicNoteGenerator";
 
 const Home = () => {
   return (
@@ -14,7 +15,10 @@ const Home = () => {
           chilldeck
           <p className="homepage-subtitle">made by chill people for chill people</p>
         </h1>
-        <HomeButtons />
+        <div className="Home-container">
+          <HomeButtons />
+          <MusicNoteGenerator />
+        </div>
       </div>
     </>
   );

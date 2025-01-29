@@ -49,28 +49,109 @@
   padding: 1rem;
   border-radius: 8px;
   background-color: var(--primary);
+  position: relative;
 }
 
 .file-input {
   width: 100%;
+  margin-bottom: 1rem;
 }
 
-.submit-button {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.file-input input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-family: var(--raleway);
+}
+
+.upload-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.4);
   border: none;
-  background-color: var(--darkGrey);
-  color: var(--white);
-  cursor: pointer;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  color: white;
+  font-family: var(--josefin);
   font-size: 1rem;
-  transition: background-color 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.submit-button:hover:not(:disabled) {
-  background-color: var(--medGrey);
+.upload-button:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.submit-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.upload-button img {
+  filter: brightness(0) invert(1);
+}
+
+.upload-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.upload-modal-content {
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.upload-modal-content h3 {
+  color: white;
+  font-family: var(--josefin);
+  /* margin: 0 0 1.5rem 0; */
+  margin-bottom: 0.25rem;
+  font-size: 1.5rem;
+}
+
+.upload-modal-content img {
+  filter: brightness(0) invert(1);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.upload-modal-content .modal-buttons button.cancel-button,
+.upload-modal-content .modal-buttons button.submit-button {
+  background-color: rgba(255, 255, 255, 0.4) !important;
+  color: rgba(255, 255, 255, 1) !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 4px !important;
+  font-family: var(--josefin) !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-width: 80px !important;
+  text-align: center !important;
+  opacity: 1 !important;
+  font-weight: 400 !important;
+  filter: contrast(100%) !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+.upload-modal-content .modal-buttons button.cancel-button:hover,
+.upload-modal-content .modal-buttons button.submit-button:hover {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Remove any specific button classes to prevent style conflicts */
+.cancel-button, .submit-button {
+  all: unset;
 }
