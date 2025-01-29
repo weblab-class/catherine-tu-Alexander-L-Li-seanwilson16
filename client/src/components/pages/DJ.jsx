@@ -352,7 +352,15 @@ const DJ = () => {
     if (!track.name) return;
 
     const currentBPM = track.bpm || track.originalBpm;
-    const targetBPM = direction === "up" ? currentBPM + 1 : currentBPM - 1;
+    const MIN_BPM = 60;
+    const MAX_BPM = 140;
+
+    // Calculate new BPM with constraints
+    let targetBPM = direction === "up" ? currentBPM + 1 : currentBPM - 1;
+    targetBPM = Math.min(Math.max(targetBPM, MIN_BPM), MAX_BPM);
+
+    // If we're already at the limit, don't proceed
+    if (targetBPM === currentBPM) return;
 
     // Calculate target rate based on original BPM
     const targetRate = targetBPM / track.originalBpm;
@@ -398,7 +406,6 @@ const DJ = () => {
             mediaElement.preservesPitch = true;
             mediaElement.playbackRate = rate;
           }
-          // Scale the wavesurfer rate proportionally
           wavesurfer.setPlaybackRate(rate);
         }
       });
@@ -427,19 +434,20 @@ const DJ = () => {
       1
     );
 
+    // If we're already at the limit, don't proceed
+    if (newVol === currentVol) return;
+
     setVolume((prev) => ({
       ...prev,
       [deck]: newVol,
     }));
 
-    // Update volume for all audio stems
-    if (track.audioElements) {
-      Object.values(track.audioElements).forEach((audio) => {
-        if (audio) {
-          audio.volume = newVol;
-        }
-      });
-    }
+    // Update audio elements volume
+    Object.values(track.audioElements || {}).forEach((audio) => {
+      if (audio) {
+        audio.volume = newVol;
+      }
+    });
   };
 
   const handleSync = () => {
@@ -1280,6 +1288,9 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("left", "up")}
+                        style={{
+                          opacity: (leftTrack.bpm || leftTrack.originalBpm) >= 140 ? 0.4 : 1,
+                        }}
                       >
                         ▲
                       </button>
@@ -1289,6 +1300,9 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("left", "down")}
+                        style={{
+                          opacity: (leftTrack.bpm || leftTrack.originalBpm) <= 60 ? 0.4 : 1,
+                        }}
                       >
                         ▼
                       </button>
@@ -1309,6 +1323,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("left", "up")}
+                        style={{ opacity: volume.left >= 1 ? 0.4 : 1 }}
                       >
                         ▲
                       </button>
@@ -1316,6 +1331,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("left", "down")}
+                        style={{ opacity: volume.left <= 0 ? 0.4 : 1 }}
                       >
                         ▼
                       </button>
@@ -1421,6 +1437,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("right", "up")}
+                        style={{ opacity: volume.right >= 1 ? 0.7 : 1 }}
                       >
                         ▲
                       </button>
@@ -1428,6 +1445,7 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleVolumeChange("right", "down")}
+                        style={{ opacity: volume.right <= 0 ? 0.7 : 1 }}
                       >
                         ▼
                       </button>
@@ -1448,6 +1466,9 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("right", "up")}
+                        style={{
+                          opacity: (rightTrack.bpm || rightTrack.originalBpm) >= 140 ? 0.7 : 1,
+                        }}
                       >
                         ▲
                       </button>
@@ -1457,6 +1478,9 @@ const DJ = () => {
                       <button
                         className="control-button"
                         onClick={() => handleBPMChange("right", "down")}
+                        style={{
+                          opacity: (rightTrack.bpm || rightTrack.originalBpm) <= 60 ? 0.7 : 1,
+                        }}
                       >
                         ▼
                       </button>
