@@ -46,8 +46,14 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
               onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
               onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
             >
-              <input type="range" className="volume-slider" min="0" max="100" />
-              <div className="volume-display">VOL</div>
+              <div className="control-group">
+                <div className="control-label">VOL</div>
+                <div className="control-buttons">
+                  <button className="control-button" disabled>▲</button>
+                  <div className="control-value">100%</div>
+                  <button className="control-button" disabled>▼</button>
+                </div>
+              </div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
@@ -97,8 +103,14 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
               onMouseEnter={() => handleMouseEnter(setBpmOpened)}
               onMouseLeave={() => handleMouseLeave(setBpmOpened)}
             >
-              <input type="range" className="bpm-slider" min="60" max="180" />
-              <div className="bpm-display">BPM</div>
+              <div className="control-group">
+                <div className="control-label">BPM</div>
+                <div className="control-buttons">
+                  <button className="control-button" disabled>▲</button>
+                  <div className="control-value">120</div>
+                  <button className="control-button" disabled>▼</button>
+                </div>
+              </div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
@@ -136,7 +148,7 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
                     <div className="hotkey-indicator hotkey">
                       <span className="hotkey-text">{hotkey}</span>
                     </div>
-                    <button className={`effect-btn ${effect}-btn`} />
+                    <button className={`effect-btn ${effect}-btn`} disabled />
                     <span className="effect-label">{effect}</span>
                   </div>
                 );
@@ -164,6 +176,7 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
                   className="cue-btn cue-btn-right"
                   onMouseEnter={() => handleMouseEnter(setCueOpened)}
                   onMouseLeave={() => handleMouseLeave(setCueOpened)}
+                  disabled
                 >
                   <span className="cue-symbol">CUE</span>
                   <span className="playback-text">(Y)</span>
@@ -188,6 +201,7 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
                   className="play-btn play-btn-right"
                   onMouseEnter={() => handleMouseEnter(setPlayOpened)}
                   onMouseLeave={() => handleMouseLeave(setPlayOpened)}
+                  disabled
                 >
                   <div className="play-symbol">
                     <span>▶</span>

@@ -46,8 +46,14 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
               onMouseEnter={() => handleMouseEnter(setBpmOpened)}
               onMouseLeave={() => handleMouseLeave(setBpmOpened)}
             >
-              <input type="range" className="bpm-slider" min="60" max="180" />
-              <div className="bpm-display">BPM</div>
+              <div className="control-group">
+                <div className="control-label">BPM</div>
+                <div className="control-buttons">
+                  <button className="control-button" disabled>▲</button>
+                  <div className="control-value">120</div>
+                  <button className="control-button" disabled>▼</button>
+                </div>
+              </div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
@@ -97,8 +103,14 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
               onMouseEnter={() => handleMouseEnter(setVolumeOpened)}
               onMouseLeave={() => handleMouseLeave(setVolumeOpened)}
             >
-              <input type="range" className="volume-slider" min="0" max="100" />
-              <div className="volume-display">VOL</div>
+              <div className="control-group">
+                <div className="control-label">VOL</div>
+                <div className="control-buttons">
+                  <button className="control-button" disabled>▲</button>
+                  <div className="control-value">100%</div>
+                  <button className="control-button" disabled>▼</button>
+                </div>
+              </div>
             </div>
           </Popover.Target>
           <Popover.Dropdown>
@@ -108,6 +120,46 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
       </div>
 
       <div className="deck-row">
+        <Popover
+          width={215}
+          position="top"
+          closeOnClickOutside={false}
+          withArrow
+          opened={effectsOpened}
+          onClose={() => handleMouseLeave(setEffectsOpened)}
+          styles={popoverStyles}
+        >
+          <Popover.Target>
+            <div
+              className="effect-buttons"
+              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
+              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
+            >
+              {STEM_TYPES.map((effect, index) => {
+                const hotkey = {
+                  bass: "Q",
+                  drums: "W", 
+                  melody: "E",
+                  vocals: "R",
+                }[effect];
+
+                return (
+                  <div key={effect} className="effect-button-container">
+                    <div className="hotkey-indicator hotkey">
+                      <span className="hotkey-text">{hotkey}</span>
+                    </div>
+                    <button className={`effect-btn ${effect}-btn`} disabled />
+                    <span className="effect-label">{effect}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Text ta="center">Toggle individual track elements.</Text>
+          </Popover.Dropdown>
+        </Popover>
+
         <div className="playback-section">
           <div className="playback-controls">
             <Popover
@@ -124,6 +176,7 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
                   className="cue-btn cue-btn-left"
                   onMouseEnter={() => handleMouseEnter(setCueOpened)}
                   onMouseLeave={() => handleMouseLeave(setCueOpened)}
+                  disabled
                 >
                   <span className="cue-symbol">CUE</span>
                   <span className="playback-text">(T)</span>
@@ -148,6 +201,7 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
                   className="play-btn play-btn-left"
                   onMouseEnter={() => handleMouseEnter(setPlayOpened)}
                   onMouseLeave={() => handleMouseLeave(setPlayOpened)}
+                  disabled
                 >
                   <div className="play-symbol">
                     <span>▶</span>
@@ -161,46 +215,6 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
             </Popover>
           </div>
         </div>
-
-        <Popover
-          width={215}
-          position="top"
-          closeOnClickOutside={false}
-          withArrow
-          opened={effectsOpened}
-          onClose={() => handleMouseLeave(setEffectsOpened)}
-          styles={popoverStyles}
-        >
-          <Popover.Target>
-            <div
-              className="effect-buttons"
-              onMouseEnter={() => handleMouseEnter(setEffectsOpened)}
-              onMouseLeave={() => handleMouseLeave(setEffectsOpened)}
-            >
-              {STEM_TYPES.map((effect, index) => {
-                const hotkey = {
-                  bass: "Q",
-                  drums: "W",
-                  melody: "E",
-                  vocals: "R",
-                }[effect];
-
-                return (
-                  <div key={effect} className="effect-button-container">
-                    <div className="hotkey-indicator hotkey">
-                      <span className="hotkey-text">{hotkey}</span>
-                    </div>
-                    <button className={`effect-btn ${effect}-btn`} />
-                    <span className="effect-label">{effect}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Text ta="center">Toggle individual track elements.</Text>
-          </Popover.Dropdown>
-        </Popover>
       </div>
     </div>
   );
