@@ -25,6 +25,7 @@
     "@react-oauth/google": "^0.12.1",
     "@tabler/icons-react": "^3.29.0",
     "axios": "^1.7.9",
+    "canvas-confetti": "^1.9.3",
     "connect-ensure-login": "^0.1.1",
     "core-js": "^3.8.1",
     "dotenv": "^16.4.7",

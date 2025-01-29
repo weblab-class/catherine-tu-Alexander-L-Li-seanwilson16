@@ -8,6 +8,7 @@ import TimeOfDay from "../modules/TimeOfDay";
 import Avatar from "../modules/Avatar";
 import NavBar from "../modules/NavBar";
 import SongLibrary from "../modules/SongLibrary";
+import ConfettiButton from "../modules/ConfettiButton";
 
 import "./Profile.css";
 
@@ -65,26 +66,33 @@ const Profile = () => {
   return (
     <>
       <div className="profile-container">
-        <NavBar />
-        <Avatar
-          userId={user._id}
-          currentAvatar={user.avatar}
-          onAvatarChange={(newAvatar) => {
-            setUser({ ...user, avatar: newAvatar });
-          }}
-        />
-        <TimeOfDay name={user.name} />
-        <div className="upload-library-container">
-          <div className="song-library-wrapper">
-            <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} onUploadSuccess={handleUploadSuccess} />
+        {isLoggedIn ? (
+          <div className="Profile-container">
+            <NavBar />
+            <ConfettiButton />
+            <Avatar
+              userId={user._id}
+              currentAvatar={user.avatar}
+              onAvatarChange={(newAvatar) => {
+                setUser({ ...user, avatar: newAvatar });
+              }}
+            />
+            <TimeOfDay name={user.name} />
+            <div className="upload-library-container">
+              <div className="song-library-wrapper">
+                <SongLibrary key={refreshLibrary} onSongSelect={handleSongSelect} onUploadSuccess={handleUploadSuccess} />
+              </div>
+            </div>
+            <div className="theme-section">
+              <div className="button-text-inline">
+                <h2 className="theme-title">choose a theme:</h2>
+                <ThemeButtons />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="theme-section">
-          <div className="button-text-inline">
-            <h2 className="theme-title">choose a theme:</h2>
-            <ThemeButtons />
-          </div>
-        </div>
+        ) : (
+          <LoginOverlay />
+        )}
       </div>
     </>
   );
