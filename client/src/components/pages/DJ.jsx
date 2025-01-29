@@ -8,6 +8,7 @@ import { get } from "../../utilities";
 import useRequireLogin from "../../hooks/useRequireLogin";
 import LoginOverlay from "../modules/LoginOverlay";
 import path from "path-browserify";
+import { API_BASE_URL } from '../../config';
 
 const AVAILABLE_TRACKS = [
   {
@@ -967,87 +968,87 @@ const DJ = () => {
     rightTrack.name,
   ]);
 
-  useEffect(() => {
-    const initializeWaveSurfers = async (containerRef, wavesurfersRef) => {
-      if (!containerRef.current) return;
+  const initializeWaveSurfers = useCallback(async (containerRef, wavesurfersRef) => {
+    if (!containerRef.current) return;
 
-      containerRef.current.innerHTML = "";
+    containerRef.current.innerHTML = "";
 
-      const stemColors = {
-        bass: {
-          waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
-          progressColor: "rgba(255, 49, 140, 0.5)",
-          disabledColor: "rgba(128, 128, 128, 0.2)",
-        },
-        drums: {
-          waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
-          progressColor: "rgba(56, 255, 130, 0.5)",
-          disabledColor: "rgba(128, 128, 128, 0.2)",
-        },
-        melody: {
-          waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
-          progressColor: "rgba(255, 247, 32, 0.5)",
-          disabledColor: "rgba(128, 128, 128, 0.2)",
-        },
-        vocals: {
-          waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
-          progressColor: "rgba(70, 237, 255, 0.5)",
-          disabledColor: "rgba(128, 128, 128, 0.2)",
-        },
-      };
-
-      containerRef.current.style.position = "relative";
-      containerRef.current.style.height = "70px";
-      containerRef.current.style.width = "100%";
-      containerRef.current.style.pointerEvents = "none";
-      containerRef.current.style.zIndex = "1";
-      containerRef.current.classList.add("waveform-container");
-
-      // Create timeline wavesurfer first (will be at the bottom)
-      const timelineContainer = document.createElement("div");
-      timelineContainer.style.position = "absolute";
-      timelineContainer.style.left = "0";
-      timelineContainer.style.right = "0";
-      timelineContainer.style.top = "0";
-      timelineContainer.style.height = "100%";
-      timelineContainer.style.pointerEvents = "none";
-      timelineContainer.style.zIndex = "0";
-      containerRef.current.appendChild(timelineContainer);
-
-      // Create timeline wavesurfer using bass stem
-      wavesurfersRef.current.timeline = createWaveSurfer(timelineContainer, {
-        waveColor: "rgba(0,0,0,0)",
-        progressColor: "rgba(0,0,0,0)",
-        cursorColor: "#ffffff",
-        height: 70,
-        interact: false,
-        showTimeline: true,
-        hideWaveform: true,
-      });
-
-      // Create other stem waveforms on top
-      for (const [stem, colors] of Object.entries(stemColors)) {
-        const stemContainer = document.createElement("div");
-        stemContainer.style.position = "absolute";
-        stemContainer.style.left = "0";
-        stemContainer.style.right = "0";
-        stemContainer.style.top = "0";
-        stemContainer.style.height = "100%";
-        stemContainer.style.pointerEvents = "none";
-        stemContainer.style.zIndex = "1";
-        containerRef.current.appendChild(stemContainer);
-
-        wavesurfersRef.current[stem] = createWaveSurfer(stemContainer, {
-          waveColor: colors.waveColor,
-          progressColor: colors.progressColor,
-          height: 70,
-          cursorColor: "transparent",
-          interact: false,
-          showTimeline: false,
-        });
-      }
+    const stemColors = {
+      bass: {
+        waveColor: "rgba(255, 49, 140, 0.5)", // Hot Pink
+        progressColor: "rgba(255, 49, 140, 0.5)",
+        disabledColor: "rgba(128, 128, 128, 0.2)",
+      },
+      drums: {
+        waveColor: "rgba(56, 255, 130, 0.5)", // Neon Green
+        progressColor: "rgba(56, 255, 130, 0.5)",
+        disabledColor: "rgba(128, 128, 128, 0.2)",
+      },
+      melody: {
+        waveColor: "rgba(255, 247, 32, 0.5)", // Neon Yellow
+        progressColor: "rgba(255, 247, 32, 0.5)",
+        disabledColor: "rgba(128, 128, 128, 0.2)",
+      },
+      vocals: {
+        waveColor: "rgba(70, 237, 255, 0.5)", // Cyan
+        progressColor: "rgba(70, 237, 255, 0.5)",
+        disabledColor: "rgba(128, 128, 128, 0.2)",
+      },
     };
 
+    containerRef.current.style.position = "relative";
+    containerRef.current.style.height = "70px";
+    containerRef.current.style.width = "100%";
+    containerRef.current.style.pointerEvents = "none";
+    containerRef.current.style.zIndex = "1";
+    containerRef.current.classList.add("waveform-container");
+
+    // Create timeline wavesurfer first (will be at the bottom)
+    const timelineContainer = document.createElement("div");
+    timelineContainer.style.position = "absolute";
+    timelineContainer.style.left = "0";
+    timelineContainer.style.right = "0";
+    timelineContainer.style.top = "0";
+    timelineContainer.style.height = "100%";
+    timelineContainer.style.pointerEvents = "none";
+    timelineContainer.style.zIndex = "0";
+    containerRef.current.appendChild(timelineContainer);
+
+    // Create timeline wavesurfer using bass stem
+    wavesurfersRef.current.timeline = createWaveSurfer(timelineContainer, {
+      waveColor: "rgba(0,0,0,0)",
+      progressColor: "rgba(0,0,0,0)",
+      cursorColor: "#ffffff",
+      height: 70,
+      interact: false,
+      showTimeline: true,
+      hideWaveform: true,
+    });
+
+    // Create other stem waveforms on top
+    for (const [stem, colors] of Object.entries(stemColors)) {
+      const stemContainer = document.createElement("div");
+      stemContainer.style.position = "absolute";
+      stemContainer.style.left = "0";
+      stemContainer.style.right = "0";
+      stemContainer.style.top = "0";
+      stemContainer.style.height = "100%";
+      stemContainer.style.pointerEvents = "none";
+      stemContainer.style.zIndex = "1";
+      containerRef.current.appendChild(stemContainer);
+
+      wavesurfersRef.current[stem] = createWaveSurfer(stemContainer, {
+        waveColor: colors.waveColor,
+        progressColor: colors.progressColor,
+        height: 70,
+        cursorColor: "transparent",
+        interact: false,
+        showTimeline: false,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     initializeWaveSurfers(leftContainerRef, leftWavesurfers);
     initializeWaveSurfers(rightContainerRef, rightWavesurfers);
 
@@ -1092,162 +1093,145 @@ const DJ = () => {
     };
   }, [leftTrack.audioElements, rightTrack.audioElements]);
 
-  const handleTrackSelect = async (track, deck) => {
-    // console.log(`Loading track for ${deck} deck:`, track);
-
+  const loadTrack = async (track, deck) => {
     try {
-      // Set loading state to true at the start
       setIsLoading((prev) => ({ ...prev, [deck]: true }));
 
+      // Get wavesurfers for this deck
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-      const trackState = deck === "left" ? leftTrack : rightTrack;
+      const containerRef = deck === "left" ? leftContainerRef : rightContainerRef;
+      const waveformRef = deck === "left" ? leftWaveformRef : rightWaveformRef;
+
+      // Clear existing waveforms
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
+
+      // Initialize new wavesurfers
+      await initializeWaveSurfers(containerRef, wavesurfers);
+
+      // Create audio elements for each stem
       const audioElements = {};
+      const stemTypes = ["bass", "drums", "vocals", "other"];
 
-      // Find the track in AVAILABLE_TRACKS if it exists
-      const defaultTrack = AVAILABLE_TRACKS.find((t) => t.path === track.path);
-      const trackBpm = defaultTrack ? defaultTrack.bpm : track.bpm || 120;
-      const trackKey = defaultTrack ? defaultTrack.key : track.key || "C";
+      // Load stems based on whether it's a user song or default song
+      if (track.isUserSong) {
+        // For user songs, use the stems from S3
+        const response = await get(`/api/song/${track.id.trim()}`);
+        if (!response || !response.stems) {
+          throw new Error("Failed to fetch song stems");
+        }
 
-      // Close the import list
-      setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
-
-      // Stop any currently playing audio
-      if (trackState.audioElements) {
-        Object.values(trackState.audioElements).forEach((audio) => {
-          if (audio) {
-            audio.pause();
-            audio.currentTime = 0;
+        // Create audio elements for each stem
+        for (const stem of stemTypes) {
+          const stemUrl = `${API_BASE_URL}/api/stems/${track.id.trim()}/${stem}_stem.wav`;
+          if (!stemUrl) {
+            console.error(`No URL found for ${stem} stem`);
+            continue;
           }
-        });
-      }
 
-      // Stop and reset wavesurfers
-      Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-        if (wavesurfer) {
-          wavesurfer.pause();
-          wavesurfer.seekTo(0);
-        }
-      });
-
-      const mapStemName = (stem) => {
-        return stem === "melody" ? "other" : stem;
-      };
-
-      const getAudioPath = (stem) => {
-        const stemFileName = mapStemName(stem);
-        if (track.isUserSong === true) {
-          return `http://localhost:3000/stems/${track.path}/${stemFileName}_stem.wav`;
-        }
-        return `/assets/processed/${track.path}/${stemFileName}.wav`;
-      };
-
-      // Use trackBpm directly for initial load
-      const newRate = 1.0; // Start at original speed
-
-      // Load audio elements first
-      for (const stem of STEM_TYPES) {
-        // console.log(`Loading ${stem} stem from:`, getAudioPath(stem));
-        const audio = new Audio();
-        audio.crossOrigin = "anonymous";
-        audio.src = getAudioPath(stem);
-        audio.preload = "auto";
-        audio.volume = volume[deck];
-        audio.preservesPitch = true;
-        audio.playbackRate = newRate;
-        audio.muted = trackState.effectsEnabled ? !trackState.effectsEnabled[stem] : false;
-
-        try {
-          await new Promise((resolve, reject) => {
-            const loadHandler = () => {
-              // console.log(`${stem} audio loaded successfully`);
-              audio.removeEventListener("canplaythrough", loadHandler);
-              resolve();
-            };
-            const errorHandler = (error) => {
-              console.error(`Error loading ${stem} audio:`, error);
-              audio.removeEventListener("error", errorHandler);
-              reject(error);
-            };
-            audio.addEventListener("canplaythrough", loadHandler);
-            audio.addEventListener("error", errorHandler);
-          });
-
+          // Create and configure audio element
+          const audio = document.createElement("audio");
+          audio.crossOrigin = "anonymous";
+          audio.src = stemUrl;
+          audio.preservesPitch = true;
           audioElements[stem] = audio;
-          // console.log(`Successfully loaded ${stem} stem`);
-        } catch (error) {
-          console.error(`Error loading ${stem} stem:`, error);
+
+          // Load waveform
+          try {
+            const wavesurfer = wavesurfers.current[stem];
+            if (!wavesurfer) continue;
+
+            await new Promise((resolve, reject) => {
+              wavesurfer.setOptions({
+                backend: "MediaElement",
+                mediaControls: false,
+                autoplay: false,
+                normalize: true,
+                xhr: {
+                  credentials: "include",
+                  mode: "cors",
+                  headers: {
+                    Range: "bytes=0-",
+                  },
+                },
+              });
+
+              wavesurfer.load(stemUrl);
+              wavesurfer.once("ready", () => {
+                wavesurfer.setVolume(0);
+                const mediaElement = wavesurfer.getMediaElement();
+                if (mediaElement) {
+                  mediaElement.preservesPitch = true;
+                  mediaElement.volume = 0;
+                  mediaElement.muted = true;
+                  mediaElement.crossOrigin = "anonymous";
+                }
+                resolve();
+              });
+              wavesurfer.once("error", reject);
+            });
+          } catch (error) {
+            console.error(`Error loading waveform for ${stem}:`, error);
+            throw error;
+          }
+        }
+      } else {
+        // For default songs, use the original logic
+        for (const stem of stemTypes) {
+          const audioPath = `http://localhost:3000/songs/${track.path}/${stem}.wav`;
+          const audio = document.createElement("audio");
+          audio.crossOrigin = "anonymous";
+          audio.src = audioPath;
+          audio.preservesPitch = true;
+          audioElements[stem] = audio;
+
+          // Load waveform
+          try {
+            const wavesurfer = wavesurfers.current[stem];
+            if (!wavesurfer) continue;
+
+            await new Promise((resolve, reject) => {
+              wavesurfer.setOptions({
+                backend: "MediaElement",
+                mediaControls: false,
+                autoplay: false,
+                normalize: true,
+              });
+
+              wavesurfer.load(audioPath);
+              wavesurfer.once("ready", () => {
+                wavesurfer.setVolume(0);
+                const mediaElement = wavesurfer.getMediaElement();
+                if (mediaElement) {
+                  mediaElement.preservesPitch = true;
+                  mediaElement.volume = 0;
+                  mediaElement.muted = true;
+                }
+                resolve();
+              });
+              wavesurfer.once("error", reject);
+            });
+          } catch (error) {
+            console.error(`Error loading waveform for ${stem}:`, error);
+            throw error;
+          }
         }
       }
 
-      // Only proceed if we have at least one stem loaded
-      if (Object.keys(audioElements).length === 0) {
-        console.error("No stems were loaded successfully");
-        throw new Error("Failed to load any stems");
-      }
-
-      // Then load waveforms
-      if (Object.keys(wavesurfers.current).length > 0) {
-        await Promise.all(
-          [...STEM_TYPES, "timeline"].map(async (stem) => {
-            try {
-              const wavesurfer = wavesurfers.current[stem];
-              if (!wavesurfer) {
-                console.error(`No wavesurfer found for ${stem}`);
-                return;
-              }
-
-              const stemToUse = stem === "timeline" ? "bass" : stem;
-              const audioPath = getAudioPath(stemToUse);
-
-              await new Promise((resolve, reject) => {
-                wavesurfer.setOptions({
-                  backend: "MediaElement",
-                  mediaControls: false,
-                  autoplay: false,
-                  normalize: true,
-                  xhr: {
-                    credentials: "include",
-                    mode: "cors",
-                  },
-                });
-
-                wavesurfer.load(audioPath);
-                wavesurfer.once("ready", () => {
-                  wavesurfer.setVolume(0);
-                  wavesurfer.setPlaybackRate(newRate);
-                  const mediaElement = wavesurfer.getMediaElement();
-                  if (mediaElement) {
-                    mediaElement.preservesPitch = true;
-                    mediaElement.volume = 0;
-                    mediaElement.muted = true;
-                    mediaElement.playbackRate = newRate;
-                    mediaElement.crossOrigin = "anonymous";
-                  }
-                  resolve();
-                });
-                wavesurfer.once("error", reject);
-              });
-              // console.log(`Successfully loaded ${stem} waveform`);
-            } catch (error) {
-              console.error(`Error loading waveform for ${stem}:`, error);
-              throw error;
-            }
-          })
-        );
-      }
-
-      // Update track state with the correct BPM and key
+      // Update track state
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
       setTrackState((prev) => ({
         ...prev,
         name: track.name,
         path: track.path,
-        key: trackKey,
-        bpm: trackBpm,
-        originalBpm: trackBpm,
+        key: track.key,
+        bpm: track.bpm,
+        originalBpm: track.bpm,
         audioElements,
-        effectsEnabled: STEM_TYPES.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
+        effectsEnabled: stemTypes.reduce((acc, stem) => ({ ...acc, [stem]: true }), {}),
       }));
+
     } catch (error) {
       console.error("Error loading track:", error);
       const setTrackState = deck === "left" ? setLeftTrack : setRightTrack;
@@ -1263,9 +1247,13 @@ const DJ = () => {
       }));
       throw error;
     } finally {
-      // Always set loading state to false when done, whether successful or not
       setIsLoading((prev) => ({ ...prev, [deck]: false }));
     }
+  };
+
+  const handleTrackSelect = async (track, deck) => {
+    await loadTrack(track, deck);
+    setDropdownOpen((prev) => ({ ...prev, [deck]: false }));
   };
 
   useEffect(() => {

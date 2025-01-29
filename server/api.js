@@ -49,6 +49,73 @@ const upload = multer({
 });
 
 // api endpoints: all these paths will be prefixed with "/api/"
+
+// Serve stems from S3 - this must be before auth middleware
+router.get("/stems/:songId/:stem", async (req, res) => {
+  try {
+    // Check auth manually since we need to handle it differently for audio files
+    if (!req.session || !req.session.user) {
+      res.status(401).json({ error: "not logged in" });
+      return;
+    }
+
+    console.log("Requesting stem:", req.params.songId, req.params.stem);
+    
+    const song = await Song.findOne({ _id: req.params.songId });
+    if (!song) {
+      console.log("Song not found:", req.params.songId);
+      return res.status(404).json({ error: "Song not found" });
+    }
+    console.log("Found song:", song._id, "with stems:", song.stems);
+
+    // Get the stem from S3
+    const params = {
+      Bucket: BUCKET_NAME,
+      Key: `stems/${req.params.songId}/${req.params.stem}`,
+    };
+    console.log("S3 params:", params);
+
+    try {
+      // First check if the object exists
+      try {
+        await s3.headObject(params).promise();
+        console.log("Stem exists in S3");
+      } catch (error) {
+        console.error("Stem does not exist in S3:", error.message);
+        return res.status(404).json({ error: "Stem file not found" });
+      }
+
+      // Set headers before sending any data
+      res.set({
+        'Content-Type': 'audio/wav',
+        'Accept-Ranges': 'bytes',
+        'Access-Control-Allow-Origin': 'http://localhost:5173',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Range',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges',
+        'Cache-Control': 'no-cache'
+      });
+
+      // Get the file from S3
+      const s3Response = await s3.getObject(params).promise();
+      console.log("Got file from S3, size:", s3Response.Body.length);
+
+      // Send the file
+      res.send(s3Response.Body);
+    } catch (error) {
+      console.error("Error getting stem:", error);
+      res.status(500).json({ error: "Could not access stem file" });
+    }
+  } catch (error) {
+    console.error("Error serving stem:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// All routes after this point require authentication
+router.use(auth.ensureLoggedIn);
+
 router.post("/login", auth.login);
 router.post("/logout", auth.logout);
 router.get("/whoami", (req, res) => {
@@ -310,34 +377,19 @@ router.get("/songs", auth.ensureLoggedIn, (req, res) => {
       const songObj = song.toObject();
       songObj.id = song._id.toString(); // Add id field
 
-      // Initialize stems object if it doesn't exist
-      if (!songObj.stems) {
+      // Return the song object with its S3 stems
+      if (songObj.stems && Object.keys(songObj.stems).length > 0) {
+        // Stems are already in S3 format, just map 'other' to 'melody' for display
+        const displayStems = {};
+        Object.entries(songObj.stems).forEach(([type, url]) => {
+          const displayType = type === "other" ? "melody" : type;
+          displayStems[displayType] = url;
+        });
+        songObj.stems = displayStems;
+      } else {
         songObj.stems = {};
       }
 
-      // Check for stem files in the stems directory
-      const stemTypes = ["bass", "drums", "vocals", "other"];
-      const stemDir = path.join(__dirname, "../stems", song._id.toString());
-
-      if (fs.existsSync(stemDir)) {
-        stemTypes.forEach((stemType) => {
-          const displayType = stemType === "other" ? "melody" : stemType;
-          const stemFile = `${stemType}_stem.wav`;
-          const stemPath = path.join(stemDir, stemFile);
-
-          if (fs.existsSync(stemPath)) {
-            // console.log(`Found stem file: ${stemPath}`);
-            // Use relative URL for stems
-            songObj.stems[displayType] = `/stems/${song._id.toString()}/${stemFile}`;
-          } else {
-            // console.log(`No stem file found at: ${stemPath}`);
-          }
-        });
-      } else {
-        // console.log(`No stem directory found at: ${stemDir}`);
-      }
-
-      // console.log(`Stems for song ${song._id}:`, songObj.stems);
       return songObj;
     });
     res.send(songsWithStems);

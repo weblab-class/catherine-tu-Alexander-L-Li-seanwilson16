@@ -8,6 +8,8 @@
  * e.g. get('/api/foo', { bar: 0 }).then(res => console.log(res))
  */
 
+const API_BASE = "http://localhost:3000";
+
 // ex: formatParams({ some_key: "some_value", a: "b"}) => "some_key=some_value&a=b"
 function formatParams(params) {
   // iterate of all the keys of params as an array,
@@ -38,8 +40,8 @@ function convertToJSON(res) {
 // Helper code to make a get request. Default parameter of empty JSON Object for params.
 // Returns a Promise to a JSON Object.
 export function get(endpoint, params = {}) {
-  const fullPath = endpoint + "?" + formatParams(params);
-  return fetch(fullPath, {
+  const fullPath = Object.keys(params).length > 0 ? endpoint + "?" + formatParams(params) : endpoint;
+  return fetch(API_BASE + fullPath, {
     credentials: "include",  // This ensures cookies are sent with the request
   })
     .then(convertToJSON)
@@ -52,13 +54,11 @@ export function get(endpoint, params = {}) {
 // Helper code to make a post request. Default parameter of empty JSON Object for params.
 // Returns a Promise to a JSON Object.
 export function post(endpoint, params = {}) {
-  return fetch(endpoint, {
+  return fetch(API_BASE + endpoint, {
     method: "POST",
-    headers: {
-      "Content-type": "application/json",
-    },
-    credentials: "include",  // This ensures cookies are sent with the request
+    headers: { "Content-type": "application/json" },
     body: JSON.stringify(params),
+    credentials: "include", // This ensures cookies are sent with the request
   })
     .then(convertToJSON)
     .catch((error) => {

@@ -12,10 +12,10 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
  */
 async function downloadStems(assetId, jobIds, songStemsDir) {
   try {
-    // console.log("Starting stem downloads...");
-    // console.log("Asset ID:", assetId);
-    // console.log("Job IDs:", jobIds);
-    // console.log("Song stems directory:", songStemsDir);
+    console.log("Starting stem downloads...");
+    console.log("Asset ID:", assetId);
+    console.log("Job IDs:", jobIds);
+    console.log("Song stems directory:", songStemsDir);
 
     // Ensure stems directory exists
     if (!fs.existsSync(songStemsDir)) {
@@ -28,7 +28,7 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
     for (let i = 0; i < jobIds.length; i++) {
       const jobId = jobIds[i];
       const stemType = stemTypes[i];
-      // console.log(`\nDownloading ${stemType} stem (Job ID: ${jobId})...`);
+      console.log(`\nDownloading ${stemType} stem (Job ID: ${jobId})...`);
 
       try {
         // First get the download URL
@@ -37,107 +37,57 @@ async function downloadStems(assetId, jobIds, songStemsDir) {
             Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
           },
         });
+        console.log(`Job status for ${stemType}:`, jobResponse.data.job.status);
 
         if (
           !jobResponse.data ||
           !jobResponse.data.job ||
           jobResponse.data.job.status !== "completed"
         ) {
-          // console.log(`Job ${jobId} not ready yet:`, jobResponse.data);
+          console.log(`Job ${jobId} not ready yet:`, jobResponse.data);
           continue;
         }
 
         // Get the stem URL based on stem type
         let stemUrl;
-        if (stemType === "other") {
-          // For 'melody' stem (previously 'other'), look in stemAssets array
-          const melodyStem = jobResponse.data.job.stemAssets?.find(
-            (asset) => asset.name === "other.wav"
-          );
-          stemUrl = melodyStem?.link;
+        if (jobResponse.data.job.stems && jobResponse.data.job.stems[stemType]) {
+          stemUrl = jobResponse.data.job.stems[stemType];
+          console.log(`Got stem URL for ${stemType}:`, stemUrl);
         } else {
-          // For other stems, look in stemAssets array with their respective names
-          const stem = jobResponse.data.job.stemAssets?.find(
-            (asset) => asset.name === `${stemType}.wav`
-          );
-          if (stem) {
-            stemUrl = stem.link;
-          } else {
-            // Fallback to output.url if stemAssets not found
-            stemUrl = jobResponse.data.job.output?.url;
-          }
-        }
-
-        if (!stemUrl) {
-          console.error(
-            `No URL found for ${stemType} stem in job response. Job data:`,
-            JSON.stringify(jobResponse.data.job, null, 2)
-          );
+          console.error(`No stem URL found for ${stemType}`);
           continue;
         }
 
-        // console.log(`Found stem URL for ${stemType}:`, stemUrl);
-
-        // console.log(`Downloading stem from URL: ${stemUrl}`);
-
-        // Set up headers - only include Authorization for non-S3 URLs
-        const headers = {
-          Accept: "*/*",
-        };
-        if (!stemUrl.includes("s3.amazonaws.com")) {
-          headers["Authorization"] = `Bearer ${process.env.AUDIOSHAKE_API_KEY}`;
-        }
-
-        const response = await axios({
-          method: "GET",
-          url: stemUrl,
-          responseType: "arraybuffer",
-          headers,
-          maxRedirects: 5,
-          validateStatus: null,
+        // Download the stem
+        const stemResponse = await axios.get(stemUrl, {
+          responseType: 'arraybuffer',
+          headers: {
+            Authorization: `Bearer ${process.env.AUDIOSHAKE_API_KEY}`,
+          },
         });
+        console.log(`Downloaded ${stemType} stem, size:`, stemResponse.data.length);
 
-        if (response.status !== 200) {
-          console.error(`Error downloading ${stemType} stem: Status ${response.status}`);
-          if (response.data) {
-            console.error("Response:", response.data.toString());
-          }
-          continue;
-        }
+        // Save to S3
+        const s3Key = `stems/${songStemsDir}/${stemType}_stem.wav`;
+        console.log(`Uploading ${stemType} stem to S3:`, s3Key);
+        
+        const uploadParams = {
+          Bucket: BUCKET_NAME,
+          Key: s3Key,
+          Body: stemResponse.data,
+          ContentType: 'audio/wav'
+        };
 
-        // Create directory if it doesn't exist
-        if (!fs.existsSync(songStemsDir)) {
-          fs.mkdirSync(songStemsDir, { recursive: true });
-        }
-
-        // Download the stem file with the formatted name
-        const stemPath = path.join(songStemsDir, formatStemFilename(stemType));
-        // console.log(`Downloading to ${stemPath}`);
-
-        // Write the buffer to file
-        try {
-          await fs.promises.writeFile(stemPath, response.data);
-          // console.log(`Successfully wrote ${stemType} stem to ${stemPath}`);
-
-          // Verify the file was written
-          const stats = await fs.promises.stat(stemPath);
-          // console.log(`File size: ${stats.size} bytes`);
-
-          // console.log(`Successfully downloaded ${stemType} to ${stemPath}`);
-          stemPaths[stemType] = path.basename(stemPath); // Store just the filename
-        } catch (writeError) {
-          console.error(`Error writing file ${stemPath}:`, writeError);
-          continue;
-        }
+        const uploadResult = await s3.upload(uploadParams).promise();
+        console.log(`Uploaded ${stemType} stem to S3:`, uploadResult.Location);
+        
+        stemPaths[stemType] = uploadResult.Location;
       } catch (error) {
-        console.error(`Error downloading ${stemType} stem:`, error);
-        if (error.response) {
-          console.error("Response:", error.response.data);
-        }
+        console.error(`Error processing ${stemType} stem:`, error);
+        throw error;
       }
     }
 
-    console.log("\nAll stems downloaded:", stemPaths);
     return stemPaths;
   } catch (error) {
     console.error("Error in downloadStems:", error);
