@@ -1048,6 +1048,13 @@ router.post("/songs/rename", auth.ensureLoggedIn, async (req, res) => {
   }
 });
 
+// Audio endpoint to serve audio files
+router.get("/audio/:songPath", (req, res) => {
+  const songPath = req.params.songPath;
+  const filePath = path.join(__dirname, "..", "client", "public", "assets", "processed", songPath, "full.wav");
+  res.sendFile(filePath);
+});
+
 // anything else falls to this "not found" case
 router.all("*", (req, res) => {
   console.log(`API route not found: ${req.method} ${req.url}`);
