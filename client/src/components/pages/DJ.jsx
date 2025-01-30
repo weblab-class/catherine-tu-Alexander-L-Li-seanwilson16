@@ -23,7 +23,7 @@ const AVAILABLE_TRACKS = [
     id: 2,
     name: "On & On by Cartoon, Daniel Levi & Jeja",
     path: "NCS_On&On",
-    bpm: 87,
+    bpm: 86,
     key: "B Major",
   },
   {
