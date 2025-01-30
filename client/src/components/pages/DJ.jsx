@@ -410,9 +410,8 @@ const DJ = () => {
       const audioElements = trackState.audioElements;
 
       if (newPlaying[deck]) {
-        // Calculate playback rate based on BPM
-        const REFERENCE_BPM = 120;
-        const displayRate = trackState.bpm / REFERENCE_BPM;
+        // Calculate playback rate based on current BPM vs original BPM
+        const playbackRate = trackState.bpm / trackState.originalBpm;
 
         // Get current position from timeline wavesurfer for consistency
         const currentTime = wavesurfers.current.timeline?.getCurrentTime() || 0;
@@ -422,7 +421,8 @@ const DJ = () => {
           if (audio) {
             audio.pause();
             audio.currentTime = currentTime;
-            audio.playbackRate = 1.0; // Keep audio at original speed
+            audio.preservesPitch = true;
+            audio.playbackRate = playbackRate; // Use same rate as waveform
           }
         });
 
@@ -430,7 +430,12 @@ const DJ = () => {
           if (wavesurfer) {
             wavesurfer.pause();
             wavesurfer.setTime(currentTime);
-            wavesurfer.setPlaybackRate(displayRate); // Set display speed based on BPM
+            const mediaElement = wavesurfer.getMediaElement();
+            if (mediaElement) {
+              mediaElement.preservesPitch = true;
+              mediaElement.playbackRate = playbackRate;
+            }
+            wavesurfer.setPlaybackRate(playbackRate);
           }
         });
 
@@ -484,7 +489,7 @@ const DJ = () => {
     });
   };
 
-  const handleBPMChange = (deck, direction) => {
+  const handleBPMChange = (deck, direction, isSync = false) => {
     const track = deck === "left" ? leftTrack : rightTrack;
     const setTrack = deck === "left" ? setLeftTrack : setRightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
@@ -505,64 +510,36 @@ const DJ = () => {
     // Calculate target rate based on original BPM
     const targetRate = targetBPM / track.originalBpm;
 
-    // Get current rate
-    const currentRate = Object.values(track.audioElements || {})[0]?.playbackRate || 1;
-
-    // Animation duration in ms
-    const duration = 150;
-    const startTime = performance.now();
-
     // Update the track state immediately for UI feedback
     setTrack((prev) => ({
       ...prev,
       bpm: targetBPM,
     }));
 
-    // Function to animate the rate change
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Use easeInOutQuad for smooth acceleration and deceleration
-      const easeProgress =
-        progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-      // Calculate the current rate
-      const rate = currentRate + (targetRate - currentRate) * easeProgress;
-
-      // Update audio elements
-      Object.values(track.audioElements || {}).forEach((audio) => {
-        if (audio) {
-          audio.preservesPitch = true;
-          audio.playbackRate = rate;
-        }
-      });
-
-      // Update wavesurfers
-      Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
-        if (wavesurfer) {
-          const mediaElement = wavesurfer.getMediaElement();
-          if (mediaElement) {
-            mediaElement.preservesPitch = true;
-            mediaElement.playbackRate = rate;
-          }
-          wavesurfer.setPlaybackRate(rate);
-        }
-      });
-
-      // Continue animation if not finished
-      if (progress < 1) {
-        requestAnimationFrame(animate);
+    // Update audio elements immediately
+    Object.values(track.audioElements || {}).forEach((audio) => {
+      if (audio) {
+        audio.preservesPitch = true;
+        audio.playbackRate = targetRate;
       }
-    };
+    });
 
-    // Start the animation
-    requestAnimationFrame(animate);
+    // Update wavesurfers immediately
+    Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        const mediaElement = wavesurfer.getMediaElement();
+        if (mediaElement) {
+          mediaElement.preservesPitch = true;
+          mediaElement.playbackRate = targetRate;
+        }
+        wavesurfer.setPlaybackRate(targetRate);
+      }
+    });
 
-    // If sync is enabled, update the other deck
-    if (syncEnabled) {
+    // If sync is enabled and this is not a sync operation, update the other deck
+    if (syncEnabled && !isSync) {
       const otherDeck = deck === "left" ? "right" : "left";
-      handleBPMChange(otherDeck, direction);
+      handleBPMChange(otherDeck, direction, true);
     }
   };
 
