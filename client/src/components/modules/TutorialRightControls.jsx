@@ -172,11 +172,11 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
               styles={popoverStyles}
             >
               <Popover.Target>
-                <button
-                  className="cue-btn cue-btn-right"
+                <button 
+                  className="cue-btn cue-btn-right tutorial-btn"
                   onMouseEnter={() => handleMouseEnter(setCueOpened)}
                   onMouseLeave={() => handleMouseLeave(setCueOpened)}
-                  disabled
+                  // disabled
                 >
                   <span className="cue-symbol">CUE</span>
                   <span className="playback-text">(Y)</span>
@@ -197,11 +197,11 @@ const TutorialRightControls = ({ enableHover = true, cueOpened, playOpened, setC
               styles={popoverStyles}
             >
               <Popover.Target>
-                <button
-                  className="play-btn play-btn-right"
+                <button 
+                  className="play-btn play-btn-right tutorial-btn"
                   onMouseEnter={() => handleMouseEnter(setPlayOpened)}
                   onMouseLeave={() => handleMouseLeave(setPlayOpened)}
-                  disabled
+                  // disabled
                 >
                   <div className="play-symbol">
                     <span>▶</span>

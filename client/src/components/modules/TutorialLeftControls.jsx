@@ -133,10 +133,9 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
             >
               <Popover.Target>
                 <button
-                  className="cue-btn cue-btn-left"
+                  className="cue-btn cue-btn-left tutorial-btn"
                   onMouseEnter={() => handleMouseEnter(setCueOpened)}
                   onMouseLeave={() => handleMouseLeave(setCueOpened)}
-                  disabled
                 >
                   <span className="cue-symbol">CUE</span>
                   <span className="playback-text">(T)</span>
@@ -158,10 +157,9 @@ const TutorialLeftControls = ({ enableHover = true, cueOpened, playOpened, setCu
             >
               <Popover.Target>
                 <button
-                  className="play-btn play-btn-left"
+                  className="play-btn play-btn-left tutorial-btn"
                   onMouseEnter={() => handleMouseEnter(setPlayOpened)}
                   onMouseLeave={() => handleMouseLeave(setPlayOpened)}
-                  disabled
                 >
                   <div className="play-symbol">
                     <span>▶</span>
