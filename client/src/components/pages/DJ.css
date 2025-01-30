@@ -110,12 +110,14 @@
     margin-top: -30px;
   }
 
-  .play-btn, .cue-btn {
+  .play-btn,
+  .cue-btn {
     width: 60px;
     height: 60px;
   }
 
-  .play-symbol, .pause-symbol {
+  .play-symbol,
+  .pause-symbol {
     font-size: 1em;
   }
 
@@ -127,7 +129,8 @@
     font-size: 10px;
   }
 
-  .sync-btn, .reset-btn {
+  .sync-btn,
+  .reset-btn {
     width: 50px;
     height: 30px;
     font-size: 10px;
@@ -156,7 +159,7 @@
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .deck-controls {
     gap: 0;
   }
@@ -164,7 +167,7 @@
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .effect-buttons {
     margin-right: 30px;
   }
@@ -175,13 +178,14 @@
     font-size: 0.6em !important;
   }
 
-  .sync-text, .reset-text {
+  .sync-text,
+  .reset-text {
     font-size: 1.4em !important;
     font-weight: bold;
     letter-spacing: 1px;
   }
 
-  .sync-btn .playback-text, 
+  .sync-btn .playback-text,
   .reset-btn .playback-text {
     font-size: 1.5em !important;
   }
@@ -191,11 +195,13 @@
     font-size: 0.9em !important;
   }
 
-  .sync-btn, .reset-btn {
+  .sync-btn,
+  .reset-btn {
     padding: 8px 14px !important;
   }
 
-  .play-btn, .cue-btn {
+  .play-btn,
+  .cue-btn {
     width: 65px !important;
     height: 65px !important;
     margin-top: -15px;
@@ -207,7 +213,8 @@
     margin-top: 10px;
   }
 
-  .play-symbol, .pause-symbol {
+  .play-symbol,
+  .pause-symbol {
     font-size: 1em !important;
   }
 
@@ -235,11 +242,13 @@
     gap: 2px;
   }
 
-  .bpm-slider-container-right, .volume-slider-container-right {
+  .bpm-slider-container-right,
+  .volume-slider-container-right {
     margin-top: -20px;
   }
 
-  .bpm-slider-container-left, .volume-slider-container-left {
+  .bpm-slider-container-left,
+  .volume-slider-container-left {
     margin-top: -20px;
   }
 
@@ -251,12 +260,12 @@
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .deck-controls {
     gap: 10px !important;
     margin-top: 10px;
   }
-  
+
   .right-deck .effect-buttons {
     margin-right: -50px;
     margin-left: -50px;
@@ -876,6 +885,22 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.sync-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #444;
+}
+
+.sync-btn:disabled:hover {
+  background-color: #444;
+  transform: none;
+}
+
+.sync-btn:disabled .sync-text,
+.sync-btn:disabled .playback-text {
+  color: #888;
+}
+
 .effect-buttons {
   display: flex;
   /* grid-template-columns: repeat(4, 1fr); */
@@ -1138,7 +1163,8 @@ body {
 }
 
 @media screen and (max-height: 820px) {
-  .turntable-image, .rotating-image {
+  .turntable-image,
+  .rotating-image {
     width: 75px;
     height: 75px;
     margin-top: 0px;
@@ -1146,7 +1172,8 @@ body {
 }
 
 @media screen and (max-height: 730px) {
-  .turntable-image, .rotating-image {
+  .turntable-image,
+  .rotating-image {
     width: 55px;
     height: 55px;
     margin-top: -5px;
@@ -1735,7 +1762,7 @@ body {
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .deck-controls {
     gap: 0;
   }
@@ -1743,7 +1770,7 @@ body {
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .effect-buttons {
     margin-right: 30px;
   }
@@ -1754,13 +1781,14 @@ body {
     font-size: 0.6em !important;
   }
 
-  .sync-text, .reset-text {
+  .sync-text,
+  .reset-text {
     font-size: 1.4em !important;
     font-weight: bold;
     letter-spacing: 1px;
   }
 
-  .sync-btn .playback-text, 
+  .sync-btn .playback-text,
   .reset-btn .playback-text {
     font-size: 1.5em !important;
   }
@@ -1770,11 +1798,13 @@ body {
     font-size: 0.9em !important;
   }
 
-  .sync-btn, .reset-btn {
+  .sync-btn,
+  .reset-btn {
     padding: 8px 14px !important;
   }
 
-  .play-btn, .cue-btn {
+  .play-btn,
+  .cue-btn {
     width: 65px !important;
     height: 65px !important;
     margin-top: -15px;
@@ -1786,7 +1816,8 @@ body {
     margin-top: 10px;
   }
 
-  .play-symbol, .pause-symbol {
+  .play-symbol,
+  .pause-symbol {
     font-size: 1em !important;
   }
 
@@ -1814,11 +1845,13 @@ body {
     gap: 2px;
   }
 
-  .bpm-slider-container-right, .volume-slider-container-right {
+  .bpm-slider-container-right,
+  .volume-slider-container-right {
     margin-top: -20px;
   }
 
-  .bpm-slider-container-left, .volume-slider-container-left {
+  .bpm-slider-container-left,
+  .volume-slider-container-left {
     margin-top: -20px;
   }
 
@@ -1830,12 +1863,12 @@ body {
   .right-deck .deck-top {
     gap: 0;
   }
-  
+
   .right-deck .deck-controls {
     gap: 10px !important;
     margin-top: 10px;
   }
-  
+
   .right-deck .effect-buttons {
     margin-right: -50px;
     margin-left: -50px;
