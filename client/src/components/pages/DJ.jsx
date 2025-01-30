@@ -400,84 +400,48 @@ const DJ = () => {
   }, [playing, syncWavesurfers]);
 
   const handlePlayPause = (deck) => {
-    const trackState = deck === "left" ? leftTrack : rightTrack;
+    const track = deck === "left" ? leftTrack : rightTrack;
     const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
-
-    if (!trackState.name || Object.keys(wavesurfers.current).length === 0) return;
 
     setPlaying((prev) => {
       const newPlaying = { ...prev, [deck]: !prev[deck] };
-      const audioElements = trackState.audioElements;
 
-      if (newPlaying[deck]) {
-        // Calculate playback rate based on BPM
-        const REFERENCE_BPM = 120;
-        const displayRate = trackState.bpm / REFERENCE_BPM;
+      if (track.audioElements) {
+        // Calculate current rate based on current BPM vs original BPM
+        const rate = track.bpm / track.originalBpm;
 
-        // Get current position from timeline wavesurfer for consistency
-        const currentTime = wavesurfers.current.timeline?.getCurrentTime() || 0;
-
-        // First pause everything to ensure clean state
-        Object.values(audioElements).forEach((audio) => {
+        Object.values(track.audioElements).forEach((audio) => {
           if (audio) {
-            audio.pause();
-            audio.currentTime = currentTime;
-            audio.playbackRate = 1.0; // Keep audio at original speed
-          }
-        });
-
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
-          if (wavesurfer) {
-            wavesurfer.pause();
-            wavesurfer.setTime(currentTime);
-            wavesurfer.setPlaybackRate(displayRate); // Set display speed based on BPM
-          }
-        });
-
-        // Small delay to ensure everything is properly paused and positioned
-        setTimeout(() => {
-          // Start audio elements first
-          const playPromises = Object.entries(audioElements).map(([stem, audio]) => {
-            if (trackState.effectsEnabled[stem]) {
-              return audio.play().catch((err) => console.error(`Error playing ${stem}:`, err));
+            if (newPlaying[deck]) {
+              audio.preservesPitch = true;
+              audio.playbackRate = rate;
+              audio.play();
+            } else {
+              audio.pause();
             }
-            return Promise.resolve();
-          });
-
-          // Once audio is playing, start wavesurfers
-          Promise.all(playPromises).then(() => {
-            Object.values(wavesurfers.current).forEach((wavesurfer) => {
-              if (wavesurfer) {
-                wavesurfer.play();
-              }
-            });
-          });
-        }, 50);
-
-        const turntable = document.querySelector(`.${deck}-deck .turntable`);
-        if (turntable) turntable.classList.add("playing");
-      } else {
-        // When pausing, get time from timeline for consistency
-        const currentTime = wavesurfers.current.timeline?.getCurrentTime() || 0;
-
-        // Pause audio elements first
-        Object.values(audioElements).forEach((audio) => {
-          if (audio) {
-            audio.pause();
-            audio.currentTime = currentTime;
           }
         });
 
-        // Then pause and sync all wavesurfers
-        Object.values(wavesurfers.current).forEach((wavesurfer) => {
+        Object.values(wavesurfers.current || {}).forEach((wavesurfer) => {
           if (wavesurfer) {
-            wavesurfer.pause();
-            wavesurfer.setTime(currentTime);
+            if (newPlaying[deck]) {
+              wavesurfer.setPlaybackRate(rate);
+              wavesurfer.play();
+            } else {
+              wavesurfer.pause();
+            }
           }
         });
 
+        // Update turntable animation
         const turntable = document.querySelector(`.${deck}-deck .turntable`);
-        if (turntable) turntable.classList.remove("playing");
+        if (turntable) {
+          if (newPlaying[deck]) {
+            turntable.classList.add("playing");
+          } else {
+            turntable.classList.remove("playing");
+          }
+        }
       }
 
       return newPlaying;
@@ -591,101 +555,54 @@ const DJ = () => {
   };
 
   const handleSync = () => {
-    // Don't allow sync if either deck is playing
-    if (playing.left || playing.right) return;
+    // Don't sync if either track is not loaded
+    if (!leftTrack.name || !rightTrack.name) return;
 
-    setSyncEnabled((prevSyncEnabled) => {
-      const newSyncEnabled = !prevSyncEnabled;
+    // Find the highest BPM between both tracks
+    const targetBPM = Math.max(leftTrack.bpm, rightTrack.bpm);
 
-      if (newSyncEnabled) {
-        // Don't sync if either track is not loaded
-        if (!leftTrack.name || !rightTrack.name) return prevSyncEnabled;
+    // Calculate rates for each deck
+    const leftRate = targetBPM / leftTrack.originalBpm;
+    const rightRate = targetBPM / rightTrack.originalBpm;
 
-        // Find the highest BPM between both tracks for target
-        const leftBPM = leftTrack.bpm;
-        const rightBPM = rightTrack.bpm;
-        const targetBPM = Math.max(leftBPM, rightBPM);
-
-        // Use the higher original BPM as reference for playhead speed
-        const REFERENCE_BPM = Math.max(leftTrack.originalBpm, rightTrack.originalBpm);
-
-        console.log("Syncing BPMs:", { leftBPM, rightBPM, targetBPM, REFERENCE_BPM });
-
-        // Calculate visual playback rates based on reference BPM
-        const visualRate = targetBPM / REFERENCE_BPM;
-
-        // Update left deck
-        setLeftTrack((prev) => {
-          // Update audio elements
-          Object.values(prev.audioElements || {}).forEach((audio) => {
-            if (audio) {
-              audio.preservesPitch = true;
-              audio.playbackRate = targetBPM / prev.originalBpm;
-            }
-          });
-          // Update wavesurfers
-          Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
-            if (wavesurfer) {
-              // Use same visual rate for both decks
-              wavesurfer.setPlaybackRate(visualRate);
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = targetBPM / prev.originalBpm;
-              }
-            }
-          });
-          return {
-            ...prev,
-            bpm: targetBPM,
-          };
-        });
-
-        // Update right deck
-        setRightTrack((prev) => {
-          // Update audio elements
-          Object.values(prev.audioElements || {}).forEach((audio) => {
-            if (audio) {
-              audio.preservesPitch = true;
-              audio.playbackRate = targetBPM / prev.originalBpm;
-            }
-          });
-          // Update wavesurfers
-          Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
-            if (wavesurfer) {
-              // Use same visual rate for both decks
-              wavesurfer.setPlaybackRate(visualRate);
-              const mediaElement = wavesurfer.getMediaElement();
-              if (mediaElement) {
-                mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = targetBPM / prev.originalBpm;
-              }
-            }
-          });
-          return {
-            ...prev,
-            bpm: targetBPM,
-          };
-        });
-
-        // Sync playback positions
-        if (rightTrack.audioElements && leftTrack.audioElements) {
-          const leftAudio = Object.values(leftTrack.audioElements)[0];
-          if (leftAudio) {
-            Object.values(rightTrack.audioElements).forEach((audio) => {
-              if (audio) audio.currentTime = leftAudio.currentTime;
-            });
-            Object.values(rightWavesurfers.current).forEach((wavesurfer) => {
-              if (wavesurfer) {
-                wavesurfer.setTime(leftAudio.currentTime);
-              }
-            });
-          }
-        }
-      }
-
-      return newSyncEnabled;
+    console.log("Syncing BPMs:", {
+      targetBPM,
+      leftOriginalBpm: leftTrack.originalBpm,
+      rightOriginalBpm: rightTrack.originalBpm,
+      leftRate,
+      rightRate,
     });
+
+    // Update left deck immediately
+    setLeftTrack((prev) => ({ ...prev, bpm: targetBPM }));
+    Object.values(leftTrack.audioElements || {}).forEach((audio) => {
+      if (audio) {
+        audio.preservesPitch = true;
+        audio.playbackRate = leftRate;
+      }
+    });
+    Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.setPlaybackRate(leftRate);
+      }
+    });
+
+    // Update right deck immediately
+    setRightTrack((prev) => ({ ...prev, bpm: targetBPM }));
+    Object.values(rightTrack.audioElements || {}).forEach((audio) => {
+      if (audio) {
+        audio.preservesPitch = true;
+        audio.playbackRate = rightRate;
+      }
+    });
+    Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
+      if (wavesurfer) {
+        wavesurfer.setPlaybackRate(rightRate);
+      }
+    });
+
+    // Enable sync
+    setSyncEnabled(true);
   };
 
   const handleEffectToggle = useCallback(
