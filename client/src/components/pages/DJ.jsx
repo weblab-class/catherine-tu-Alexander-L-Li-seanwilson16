@@ -23,7 +23,7 @@ const AVAILABLE_TRACKS = [
     id: 2,
     name: "On & On by Cartoon, Daniel Levi & Jeja",
     path: "NCS_On&On",
-    bpm: 86,
+    bpm: 87,
     key: "B Major",
   },
   {
@@ -422,7 +422,7 @@ const DJ = () => {
           if (audio) {
             audio.pause();
             audio.currentTime = currentTime;
-            audio.playbackRate = 1.0;  // Keep audio at original speed
+            audio.playbackRate = 1.0; // Keep audio at original speed
           }
         });
 
@@ -430,7 +430,7 @@ const DJ = () => {
           if (wavesurfer) {
             wavesurfer.pause();
             wavesurfer.setTime(currentTime);
-            wavesurfer.setPlaybackRate(displayRate);  // Set display speed based on BPM
+            wavesurfer.setPlaybackRate(displayRate); // Set display speed based on BPM
           }
         });
 
@@ -601,14 +601,18 @@ const DJ = () => {
         // Don't sync if either track is not loaded
         if (!leftTrack.name || !rightTrack.name) return prevSyncEnabled;
 
-        // Find the highest BPM between both tracks
+        // Find the highest BPM between both tracks for target
         const leftBPM = leftTrack.bpm;
         const rightBPM = rightTrack.bpm;
         const targetBPM = Math.max(leftBPM, rightBPM);
 
-        // Calculate playback rates based on original BPM
-        const leftRate = targetBPM / leftTrack.originalBpm;
-        const rightRate = targetBPM / rightTrack.originalBpm;
+        // Use the higher original BPM as reference for playhead speed
+        const REFERENCE_BPM = Math.max(leftTrack.originalBpm, rightTrack.originalBpm);
+
+        console.log("Syncing BPMs:", { leftBPM, rightBPM, targetBPM, REFERENCE_BPM });
+
+        // Calculate visual playback rates based on reference BPM
+        const visualRate = targetBPM / REFERENCE_BPM;
 
         // Update left deck
         setLeftTrack((prev) => {
@@ -616,18 +620,19 @@ const DJ = () => {
           Object.values(prev.audioElements || {}).forEach((audio) => {
             if (audio) {
               audio.preservesPitch = true;
-              audio.playbackRate = leftRate;
+              audio.playbackRate = targetBPM / prev.originalBpm;
             }
           });
           // Update wavesurfers
           Object.values(leftWavesurfers.current || {}).forEach((wavesurfer) => {
             if (wavesurfer) {
+              // Use same visual rate for both decks
+              wavesurfer.setPlaybackRate(visualRate);
               const mediaElement = wavesurfer.getMediaElement();
               if (mediaElement) {
                 mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = leftRate;
+                mediaElement.playbackRate = targetBPM / prev.originalBpm;
               }
-              wavesurfer.setPlaybackRate(leftRate);
             }
           });
           return {
@@ -642,18 +647,19 @@ const DJ = () => {
           Object.values(prev.audioElements || {}).forEach((audio) => {
             if (audio) {
               audio.preservesPitch = true;
-              audio.playbackRate = rightRate;
+              audio.playbackRate = targetBPM / prev.originalBpm;
             }
           });
           // Update wavesurfers
           Object.values(rightWavesurfers.current || {}).forEach((wavesurfer) => {
             if (wavesurfer) {
+              // Use same visual rate for both decks
+              wavesurfer.setPlaybackRate(visualRate);
               const mediaElement = wavesurfer.getMediaElement();
               if (mediaElement) {
                 mediaElement.preservesPitch = true;
-                mediaElement.playbackRate = rightRate;
+                mediaElement.playbackRate = targetBPM / prev.originalBpm;
               }
-              wavesurfer.setPlaybackRate(rightRate);
             }
           });
           return {
@@ -667,7 +673,7 @@ const DJ = () => {
           const leftAudio = Object.values(leftTrack.audioElements)[0];
           if (leftAudio) {
             Object.values(rightTrack.audioElements).forEach((audio) => {
-              audio.currentTime = leftAudio.currentTime;
+              if (audio) audio.currentTime = leftAudio.currentTime;
             });
             Object.values(rightWavesurfers.current).forEach((wavesurfer) => {
               if (wavesurfer) {
@@ -1138,6 +1144,7 @@ const DJ = () => {
 
       const wavesurfers = deck === "left" ? leftWavesurfers : rightWavesurfers;
       const trackState = deck === "left" ? leftTrack : rightTrack;
+      const otherTrackState = deck === "left" ? rightTrack : leftTrack;
       const audioElements = {};
 
       // Find the track in AVAILABLE_TRACKS if it exists
@@ -1146,8 +1153,10 @@ const DJ = () => {
       const trackKey = defaultTrack ? defaultTrack.key : track.key || "C";
 
       // Calculate initial playback rate based on BPM
-      // Higher BPM should mean faster movement
-      const REFERENCE_BPM = 120;
+      // Use the higher original BPM as reference if both tracks are loaded
+      const REFERENCE_BPM = otherTrackState.originalBpm
+        ? Math.max(trackBpm, otherTrackState.originalBpm)
+        : trackBpm;
       const newRate = trackBpm / REFERENCE_BPM;
 
       // Close the import list
@@ -1302,21 +1311,21 @@ const DJ = () => {
   useEffect(() => {
     // Load default tracks on mount
     const loadDefaultTracks = async () => {
-      // Load left track (Chill Guy Remix)
-      const leftTrackInfo = tracks.find((t) => t.path === "chill-guy-remix");
+      // Load left track (On & On)
+      const leftTrackInfo = tracks.find((t) => t.path === "NCS_On&On");
       if (leftTrackInfo) {
         await handleTrackSelect(leftTrackInfo, "left");
       }
 
-      // Load right track (On & On)
-      const rightTrackInfo = tracks.find((t) => t.path === "NCS_On&On");
+      // Load right track (Fall to Light)
+      const rightTrackInfo = tracks.find((t) => t.path === "NCS_Fall_to_Light");
       if (rightTrackInfo) {
         await handleTrackSelect(rightTrackInfo, "right");
       }
     };
 
     loadDefaultTracks();
-  }, []); // Empty dependency array means this runs once on mount
+  }, [tracks]);
 
   const handleTrackSelectWrapper = (deck, track) => {
     handleTrackSelect(track, deck);
@@ -1584,7 +1593,9 @@ const DJ = () => {
                   handleSync();
                 }}
                 disabled={playing.left || playing.right}
-                title={playing.left || playing.right ? "Stop playback before syncing" : "Sync tracks"}
+                title={
+                  playing.left || playing.right ? "Stop playback before syncing" : "Sync tracks"
+                }
               >
                 <span className="sync-text">SYNC</span>
                 <span className="playback-text">(S)</span>
