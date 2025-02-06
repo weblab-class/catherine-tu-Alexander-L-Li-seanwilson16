@@ -47,7 +47,6 @@
   flex-direction: column;
 }
 
-
 .song-list-header {
   display: grid;
   grid-template-columns: 0.85fr 0.6fr 0.25fr 1.5fr;
@@ -219,7 +218,6 @@
 }
 
 .song-library h2 {
-  /* margin-bottom: 16px; */
   color: white;
   font-size: 1.2rem;
   text-align: center;
@@ -253,7 +251,7 @@
 
 .progress-bar {
   height: 100%;
-  background-color: #2196F3;
+  background-color: #2196f3;
   position: absolute;
   left: 0;
   top: 0;
@@ -267,8 +265,6 @@
   white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* display: flex; */
-  /* align-items: center; */
   justify-content: center;
   margin-left: 8px;
 }
@@ -521,7 +517,7 @@
 
 .time-current {
   padding: 0;
-  margin: 0
+  margin: 0;
 }
 
 .play-button:hover {
@@ -561,7 +557,7 @@
   border-radius: 50%;
   background: white;
   cursor: pointer;
-  transition: all .3s ease-in-out;
+  transition: all 0.3s ease-in-out;
   position: relative;
   top: -4px;
 }
